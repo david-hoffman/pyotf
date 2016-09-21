@@ -11,6 +11,7 @@ https://en.wikipedia.org/wiki/Zernike_polynomials
 
 import numpy as np
 from scipy.special import binom, hyp2f1
+from .utils import cart2pol
 
 # forward mapping of Noll indices
 noll_mapping = np.array([
@@ -186,13 +187,6 @@ def _zernike(r, theta, n, m, norm=True):
     if norm:
         zern /= np.linalg.norm(zern.ravel())
     return zern
-
-
-def cart2pol(y, x):
-    """utility function for converting from cartesian to polar"""
-    theta = np.arctan2(y, x)
-    rho = np.hypot(y, x)
-    return rho, theta
 
 
 if __name__ == "__main__":
