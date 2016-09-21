@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Utility functions for the pyOTF module"""
 import numpy as np
 try:
     from pyfftw.interfaces.numpy_fft import (ifftshift, fftshift,
@@ -11,7 +12,7 @@ except ImportError:
 
 
 def easy_fft(data, axes=None):
-    """utility method that includes shifting"""
+    """utility method that includes fft shifting"""
     return ifftshift(
         fftn(
             fftshift(
@@ -21,7 +22,7 @@ def easy_fft(data, axes=None):
 
 
 def easy_ifft(data, axes=None):
-    """utility method that includes shifting"""
+    """utility method that includes fft shifting"""
     return fftshift(
         ifftn(
             ifftshift(
@@ -62,9 +63,14 @@ class NumericProperty(property):
 
             def fset(obj, value):
                 if not isinstance(value, self.vartype):
-                    raise TypeError("{} must be an {}, var = {!r}".format(self.attr, self.vartype, value))
+                    raise TypeError(
+                        "{} must be an {}, var = {!r}".format(
+                            self.attr, self.vartype, value)
+                    )
                 if value <= 0:
-                    raise ValueError("{} must be larger than 0".format(self.attr))
+                    raise ValueError(
+                        "{} must be larger than 0".format(self.attr)
+                    )
                 if getattr(obj, self.attr, None) != value:
                     setattr(obj, self.attr, value)
                     # call update code

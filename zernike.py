@@ -1,9 +1,9 @@
-# zernike.py
+# -*- coding: utf-8 -*-
 """
 A module defining the zernike polynomials and associated functions to convert
 between radial and azimuthal degree pairs and Noll's indices.
 
-Running this file as a scrip will output a graph of the first 15 zernike
+Running this file as a script will output a graph of the first 15 zernike
 polynomials on the unit disk.
 
 https://en.wikipedia.org/wiki/Zernike_polynomials
@@ -196,12 +196,12 @@ if __name__ == "__main__":
     xx, yy = np.meshgrid(x, x)  # xy indexing is default
     r, theta = cart2pol(yy, xx)
     # set up plot
-    fig, axs = plt.subplots(3, 5, figsize=(15, 9))
+    fig, axs = plt.subplots(3, 5, figsize=(20, 12))
     # fill out plot
     for ax, (k, v) in zip(axs.ravel(), noll2name.items()):
         zern = zernike(r, theta, k, norm=False)
         ax.matshow(zern, vmin=-1, vmax=1, cmap="coolwarm")
-        ax.set_title(v)
+        ax.set_title(v + r", $Z_{{{}}}^{{{}}}$".format(*noll2degrees(k)))
         ax.axis("off")
     fig.tight_layout()
     plt.show()

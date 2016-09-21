@@ -1,98 +1,140 @@
 # -*- coding: utf-8 -*-
+"""
+A module to simulate optical transfer functions and point spread functions
+
+https://en.wikipedia.org/wiki/Optical_transfer_function
+https://en.wikipedia.org/wiki/Point_spread_function
+"""
 
 import numpy as np
 from numpy.linalg import norm
 try:
     from pyfftw.interfaces.numpy_fft import (ifftshift, fftshift,
-                                             fftn, ifftn, fftfreq)
+                                             fftn, fftfreq)
     import pyfftw
     # Turn on the cache for optimum performance
     pyfftw.interfaces.cache.enable()
 except ImportError:
-    from numpy.fft import ifftshift, fftshift, fftn, ifftn, fftfreq
+    from numpy.fft import ifftshift, fftshift, fftn, fftfreq
 from .utils import *
 
 
 class BasePSF(object):
-    """A base class for objects that can calculate OTF's and PSF's. It is not intended to be used alone"""
+    """A base class for objects that can calculate OTF's and PSF's.
+    It is not intended to be used alone"""
 
-    wl = NumericProperty(attr="_wl", vartype=(float, int), doc="Wavelength of emission, in nm")
-    na = NumericProperty(attr="_na", vartype=(float, int), doc="Numerical Aperature")
-    ni = NumericProperty(attr="_ni", vartype=(float, int), doc="Refractive index")
+    # Define all the numeric properties of the base class
+    wl = NumericProperty(attr="_wl", vartype=(float, int),
+                         doc="Wavelength of emission, in nm")
+    na = NumericProperty(attr="_na", vartype=(float, int),
+                         doc="Numerical Aperature")
+    ni = NumericProperty(attr="_ni", vartype=(float, int),
+                         doc="Refractive index")
     size = NumericProperty(attr="_size", vartype=int, doc="x/y size")
     zsize = NumericProperty(attr="_zsize", vartype=int, doc="z size")
-    
-    def __init__(self, wl, na, ni, res, size, zres=None, zsize=None, vec_corr="none"):
+
+    def __init__(self, wl, na, ni, res, size, zres=None, zsize=None,
+                 vec_corr="none"):
         """Generate a PSF object
-        To fully describe a PSF or OTF of an objective lens, assuming no abberation, we generally need a few parameters:
+        To fully describe a PSF or OTF of an objective lens, assuming no
+        abberation, we generally need a few parameters:
         - The wavelength of operation (assume monochromatic light)
         - the numerical aperature of the objective
         - the index of refraction of the medium
-        
-        For numerical calculations we'll also want to know the x/y resolution and number of points.
+
+        For numerical calculations we'll also want to know the x/y resolution
+        and number of points. Note that it is assumed that z is the optical
+        axis of the objective lens
+
+        Parameters
+        ----------
+        wl : numeric
+            Emission wavelength of the simulation
+        na : numeric
+            Numerical aperature of the simulation
+        res : numeric
+            x/y resolution of the simulation, must have same units as wl
+        size : int
+            x/y size of the simulation
+
+        Optional Parameters
+        -------------------
+        zres : numeric
+            z resolution of simuation, must have same units a wl
+        zsize : int
+            z size of simulation
+        vec_corr : str
+            keyword to indicate whether to include vectorial effects
+                Valid options are: "none", "x", "y", "z", "total"
+                Default is: "none"
         """
         self.wl = wl
         self.na = na
         self.ni = ni
         self.res = res
         self.size = size
+        # if zres is not passed, set it to res
         if zres is None:
             zres = res
         self.zres = zres
+        # if zsize isn't passed set it to size
         if zsize is None:
             zsize = size
         self.zsize = zsize
         self.vec_corr = vec_corr
 
     def _attribute_changed(self):
-        """called whenever key attributes are changed"""
-        # update internals that depend on this
-        raise NotImplementedError
-
-    def _gen_psf(self):
-        """Generate the PSF"""
-        raise NotImplementedError
-
-    def _gen_otf(self):
-        """Generate the OTF"""
-        raise NotImplementedError
+        """called whenever key attributes are changed
+        Sets internal state variable to None so that when the
+        user asks for them they are recalculated"""
+        self._PSFi = None
+        self._PSFa = None
+        self._OTFi = None
+        self._OTFa = None
 
     @property
     def zres(self):
-        """z resolution, nm"""
+        """z resolution (nm)"""
         return self._zres
 
     @zres.setter
     def zres(self, value):
+        # this checks the nyquist limit for z, but it is not strictly
+        # correct. This is the correct limit for the Sheppard method
+        # but is overkill for the Hanser method.
         max_val = 1 / (2 * self.ni / self.wl)
         if value >= max_val:
-            raise ValueError("{!r} is too large try a number smaller than {!r}".format(value, max_val))
+            raise ValueError(
+                "{!r} is too large try a number smaller than {!r}".format(
+                    value, max_val)
+            )
         self._zres = value
         self._attribute_changed()
 
     @property
     def res(self):
-        """x/y resolution, nm"""
+        """x/y resolution (nm)"""
         return self._res
 
     @res.setter
     def res(self, value):
-        max_val = 1 / (2 * self.na/self.wl) / 2
+        # max_val is the nyquist limit, for an accurate simulation
+        # the pixel size must be smaller than this number
+        max_val = 1 / (2 * self.na / self.wl) / 2
         if value >= max_val:
-            raise ValueError("{!r} is too large try a number smaller than {!r}".format(value, max_val))
+            raise ValueError(
+                ("{!r} is larger than the Nyquist Limit,",
+                 " try a number smaller than {!r}").format(
+                    value, max_val)
+            )
         self._res = value
         self._attribute_changed()
 
     @property
     def vec_corr(self):
-        """Whether to apply a correction to take into account the vectorial nature of light
-        
-        Valid values are:
-        none
-        x
-        y
-        z
-        total"""
+        """Whether to apply a correction to take into account the vectorial nature of
+        light. Valid values are: "none", "x", "y", "z", "total"
+        """
         return self._vec_corr
 
     @vec_corr.setter
@@ -101,54 +143,75 @@ class BasePSF(object):
             self._vec_corr = value
             self._attribute_changed()
         else:
-            raise ValueError("{!r} is not a valid vector correction".format(value))
-
-    @property
-    def OTFi(self):
-        """Intensity OTF"""
-        raise NotImplementedError
+            raise ValueError(
+                "{!r} is not a valid vector correction".format(value)
+            )
 
     @property
     def OTFa(self):
-        """Amplitude OTF, complex"""
-        raise NotImplementedError
-
-    @property
-    def PSFi(self):
-        """Intensity PSF"""
+        """Amplitude OTF (coherent transfer function), complex array"""
         raise NotImplementedError
 
     @property
     def PSFa(self):
-        """Amplitude PSF, complex"""
+        """Amplitude PSF, complex array"""
         raise NotImplementedError
+
+    @property
+    def PSFi(self):
+        """Intensity PSF, real array"""
+        if self._PSFi is None:
+            # the intensity PSFs are the absolute value of the coherent PSF
+            # because our imaging is _incoherent_ the result is simply the sum
+            # of the intensities for each vectorial component.
+            self._PSFi = (abs(self.PSFa)**2).sum(axis=0)
+        return self._PSFi
+
+    @property
+    def OTFi(self):
+        """Intensity OTF, complex array"""
+        if self._OTFi is None:
+            self._OTFi = easy_fft(self.PSFi)
+        return self._OTFi
 
 
 class HanserPSF(BasePSF):
-    """
-    A class defining the pupil function and its closely related methods.
+    """A class defining the pupil function and its closely related methods.
 
     Based on the following work
 
     [(1) Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W.
     Phase-Retrieved Pupil Functions in Wide-Field Fluorescence Microscopy.
     Journal of Microscopy 2004, 216 (1), 32–48.](dx.doi.org/10.1111/j.0022-2720.2004.01393.x)
+    [(2) Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W.
+    Phase Retrieval for High-Numerical-Aperture Optical Systems.
+    Optics Letters 2003, 28 (10), 801.](dx.doi.org/10.1364/OL.28.000801)
+
     """
 
     def __init__(self, *args, zrange=None, **kwargs):
-        """See BasePSF for more details"""
+        """zrange : array-like
+            An alternate way to specify the z range for the calculation
+            must be expressed in the same units as wavelength
+        """
         super().__init__(*args, **kwargs)
         if zrange is None:
             self._gen_zrange()
         else:
             self.zrange = zrange
 
+    # include parent documentation
+    __init__.__doc__ = BasePSF.__init__.__doc__ + __init__.__doc__
+
     def _gen_zrange(self):
+        """Internal utility to generate the zrange from zsize and zres"""
         self.zrange = (np.arange(self.zsize) - self.zsize / 2) * self.zres
 
     @BasePSF.zsize.setter
     def zsize(self, value):
+        # we need override this setter so that the zrange is recalculated
         BasePSF.zsize.fset(self, value)
+        # try and except is necessary for initialization
         try:
             self._gen_zrange()
         except AttributeError:
@@ -156,6 +219,7 @@ class HanserPSF(BasePSF):
 
     @BasePSF.zres.setter
     def zres(self, value):
+        # same as for zsize
         BasePSF.zres.fset(self, value)
         try:
             self._gen_zrange()
@@ -170,80 +234,73 @@ class HanserPSF(BasePSF):
     @zrange.setter
     def zrange(self, value):
         self._zrange = np.asarray(value)
+        # check if passed value is scalar
         if not self._zrange.shape:
+            # convert to array for later multiplications
             self._zrange.shape = (1, )
         self._attribute_changed()
 
-    def _attribute_changed(self):
-        """called whenever key attributes are changed"""
-        # set the PSFs to None so they get recalculated
-        self._PSFi = None
-        self._PSFa = None
-        self._OTFi = None
-        self._OTFa = None
-
     def _gen_kr(self):
-        # we"re generating complex data in k-space which means the total
-        # bandwidth is k_max, but the positive max is half that
+        """Internal utiltiy to generate coordinate system and other internal
+        parameters"""
         k = fftfreq(self.size, self.res)
         kxx, kyy = np.meshgrid(k, k)
         self._kr, self._phi = cart2pol(kyy, kxx)
+        # kmag is the radius of the spherical shell of the OTF
         self._kmag = self.ni / self.wl
-        self._kz = np.real(np.sqrt((self._kmag**2 - self._kr**2).astype(complex)))
+        # because the OTF only exists on a spherical shell we can calculate
+        # a kz value for any pair of kx and ky values
+        # conversion to complex is necessary to avoid errors in the sqrt
+        # TODO: switch this to check for positive points, then sqrt
+        # kz2 = self._kmag**2 - self._kr**2
+        # kz = np.zeros_like(kz2)
+        # kz[kz2 > 0] = np.sqrt(kz2[kz2 > 0])
+        self._kz = np.real(
+            np.sqrt((self._kmag**2 - self._kr**2).astype(complex)))
 
     def _gen_pupil(self):
-        """Generate ideal pupil function"""
+        """Generate an ideal pupil"""
         kr = self._kr
-
         # define the diffraction limit
         # remember we"re working with _coherent_ data _not_ intensity,
         # so drop the factor of 2
         diff_limit = self._na / self._wl
-
         # return a circle of intensity 1 over the ideal passband of the
         # objective make sure data is complex
         return (kr < diff_limit).astype(complex)
 
-    def calc_defocus(self):
-        """Apply defocus to the base pupil"""
-        kr = self._kr
-        # pull the azimuthal angle
-        phi = self._phi
+    def _calc_defocus(self):
+        """Calculate the defocus to apply to the base pupil"""
         kz = self._kz
-        return np.exp(2 * np.pi * 1j * kz * self.zrange[:, np.newaxis, np.newaxis])
+        return np.exp(2 * np.pi * 1j * kz *
+                      self.zrange[:, np.newaxis, np.newaxis])
 
     def _gen_psf(self, pupil_base=None):
-        """A function that generates a point spread function over the desired
-        `zrange` from the given pupil
+        """An internal utility that generates the PSF
+        The `pupil_base` keyword is provided so that phase retrieval algorithms
+        can hook into this method.
 
-        It is assumed that the `pupil` has indices ordered as (y, x) to be
-        consistent with image data conventions
-
-        Parameters
-        ---
-        zrange
-
-        Returns
-        ---
-        3D PSF"""
+        NOTE: that the internal state is created with fftfreq, which creates
+        _unshifted_ frequences"""
         # generate internal state
         self._gen_kr()
         # generate the pupil
         if pupil_base is None:
             pupil_base = self._gen_pupil()
-        # generate the kr
+        # pull relevant internal state variables
         kr = self._kr
-        # pull the azimuthal angle
         phi = self._phi
         kmag = self._kmag
-        my_kz = self._kz
-        pupil = pupil_base * self.calc_defocus()
-
+        # apply the defocus to the base_pupil
+        pupil = pupil_base * self._calc_defocus()
+        # apply the vectorial corrections, if requested
         if self.vec_corr != "none":
-            # no need to calculate all of these
-            theta = np.arcsin((kr < kmag) * kr / kmag)  # Incident angle
+            # calculate theta, this is possible because we know that the
+            # OTF is only non-zero on a spherical shell
+            theta = np.arcsin((kr < kmag) * kr / kmag)
             # The authors claim that the following line is unecessary as this
-            # factor is already included in the definition of the pupil function
+            # factor is already included in the definition of the pupil
+            # function
             # pupil /= sqrt(cos(theta))
             plist = []
             if self.vec_corr == "z" or self.vec_corr == "total":
@@ -254,20 +311,23 @@ class HanserPSF(BasePSF):
                 plist.append(np.cos(theta) * np.sin(phi)**2 + np.cos(phi)**2)  # Pyy
             if self.vec_corr == "x" or self.vec_corr == "total":
                 plist.append(np.cos(theta) * np.cos(phi)**2 + np.sin(phi)**2)  # Pxx
-                plist.append((np.cos(theta)-1) * np.sin(phi) * np.cos(phi))  # Pxy
+                plist.append((np.cos(theta) - 1) * np.sin(phi) * np.cos(phi))  # Pxy
+            # apply the corrections to the base pupil
             pupils = pupil * np.array(plist)[:, np.newaxis]
         else:
+            # if no correction we still need one more axis for the following
+            # code to work generally
             pupils = pupil[np.newaxis]
-        self.pupil = pupil
-        PSFa = ifftshift(fftn(pupils, axes=(2, 3)), axes=(2, 3))
-
-        PSFi_sub = abs(PSFa)**2
-
-        PSFi = PSFi_sub.sum(axis=0)
-
-        self._PSFi = PSFi
+        # save the pupil for inspection, not necessary
+        self._pupil = pupil
+        # because the internal state is created with fftfreq, no initial shift
+        # is necessary.
+        PSFa = ifftshift(ifftn(pupils, axes=(2, 3)), axes=(2, 3))
+        # save the PSF internally
         self._PSFa = PSFa
 
+    # Because the _attribute_changed() method sets all the internal OTFs and PSFs
+    # None we can recalculate them only when needed
     @property
     def OTFa(self):
         if self._OTFa is None:
@@ -280,96 +340,106 @@ class HanserPSF(BasePSF):
             self._gen_psf()
         return self._PSFa
 
-    @property
-    def PSFi(self):
-        if self._PSFi is None:
-            self._gen_psf()
-        return self._PSFi
-
-    @property
-    def OTFi(self):
-        if self._OTFi is None:
-            self._OTFi = ifftshift(fftn(fftshift(self.PSFi)))
-        return self._OTFi
-
 
 class SheppardPSF(BasePSF):
-    """
-    A class defining the pupil function and its closely related methods.
+    """Based on the following work
 
-    Based on the following work
-
-    [(1) Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W.
-    Phase-Retrieved Pupil Functions in Wide-Field Fluorescence Microscopy.
-    Journal of Microscopy 2004, 216 (1), 32–48.](dx.doi.org/10.1111/j.0022-2720.2004.01393.x)
+    [(1) Arnison, M. R.; Sheppard, C. J. R. A 3D Vectorial Optical Transfer
+    Function Suitable for Arbitrary Pupil Functions. Optics Communications
+    2002, 211 (1–6), 53–63.](dx.doi.org/10.1016/S0030-4018(02)01857-6)
     """
 
-    def __init__(self, *args, **kwargs):
-        """See BasePSF for more details"""
+    def __init__(self, *args, dual=False, condition="sine", **kwargs):
+        """dual : bool
+            Simulate dual objectives
+        condition : str
+            Keyword indicating imaging condition
+                Valid values: "none", "sine", "herschel"
+        """
         super().__init__(*args, **kwargs)
-        self.coherent = False
-        self.condition = "sine"
+        self.dual = dual
+        self.condition = condition
+
+    # include parent documentation
+    __init__.__doc__ = BasePSF.__init__.__doc__ + __init__.__doc__
+
+    @property
+    def dual(self):
+        """Simulate opposing objectives?"""
+        return self._dual
+
+    @dual.setter
+    def dual(self, value):
+        if not isinstance(value, bool):
+            raise TypeError("`dual` must be a boolean")
+        self._dual = value
         self._attribute_changed()
 
-    def _attribute_changed(self):
-        """called whenever key attributes are changed"""
-        # update internals that depend on this
-        self._PSFi = None
-        self._PSFa = None
-        self._OTFi = None
-        self._OTFa = None
+    @property
+    def condition(self):
+        """Which imaging condition to simulate?"""
+        return self._condition
+
+    @condition.setter
+    def condition(self, value):
+        if value not in {"none", "sine", "herschel"}:
+            raise ValueError("{!r} is not a valid condition".format(value))
+        self._condition = value
+        self._attribute_changed()
 
     def _gen_kr(self):
-        # we"re generating complex data in k-space which means the total
-        # bandwidth is k_max, but the positive max is half that
+        """Internal utility function to generate internal state"""
+        # generate internal kspace coordinates
         k = fftfreq(self.size, self.res)
         kz = fftfreq(self.zsize, self.zres)
         k_tot = np.meshgrid(kz, k, k, indexing="ij")
+        # calculate r
         kr = norm(k_tot, axis=0)
+        # calculate the radius of the spherical shell in k-space
         self.kmag = kmag = self.ni / self.wl
+        # determine k-space pixel size
         dk, dkz = k[1] - k[0], kz[1] - kz[0]
+        # determine the min value for kz given the NA and wavelength
         kz_min = np.sqrt(kmag ** 2 - (self.na / self.wl) ** 2)
-        assert kz_min >= 0
+        # make sure we're not crazy
+        assert kz_min >= 0, "Something went horribly wrong"
+        # if the user gave us different z and x/y res we need to calculate
+        # the positional "error" in k-space to draw the spherical shell
         if dk != dkz:
             with np.errstate(invalid='ignore'):
-                dkr = norm(np.array(k_tot) * np.array((dkz, dk, dk)).reshape(3, 1, 1, 1), axis=0) / kr
+                dd = np.array((dkz, dk, dk)).reshape(3, 1, 1, 1)
+                dkr = norm(np.array(k_tot) * dd, axis=0) / kr
             # we know the origin is zero so replace it
             dkr[0, 0, 0] = 0.0
         else:
             dkr = dk
-        if self.coherent:
+        if self.dual:
+            # if we want dual objectives we need two spherical shells
             kzz = abs(k_tot[0])
         else:
             kzz = k_tot[0]
-        self.valid_points = np.logical_and(abs(kr - kmag) < dkr, kzz > kz_min + dkr)
+        # calculate the points on the spherical shell, save them and the
+        # corresponding kz, ky and kx coordinates
+        self.valid_points = np.logical_and(abs(kr - kmag) < dkr,
+                                           kzz > kz_min + dkr)
         self.kzz, self.kyy, self.kxx = [k[self.valid_points] for k in k_tot]
-        self.s = np.nan_to_num(np.sqrt(kmag ** 2 - self.kxx ** 2 - self.kyy ** 2))
 
     def _gen_otf(self):
-        """A function that generates a point spread function over the desired
-        `zrange` from the given pupil
-
-        It is assumed that the `pupil` has indices ordered as (y, x) to be
-        consistent with image data conventions
-
-        Parameters
-        ---
-        zrange
-
-        Returns
-        ---
-        3D PSF"""
+        """Internal utility function to generate the OTFs"""
+        # generate coordinate space
         self._gen_kr()
         kxx, kyy, kzz = self.kxx, self.kyy, self.kzz
+        # generate direction cosines
         m, n, s = np.array((kxx, kyy, kzz)) / norm((kxx, kyy, kzz), axis=0)
+        # apply a given imaging condition
         if self.condition == "sine":
             a = 1.0 / np.sqrt(s)
         elif self.condition == "herschel":
             a = 1.0 / s
         else:
             a = 1.0
+        # apply the vectorial corrections if requested
         if self.vec_corr != "none":
-            # no need to calculate all of these
             plist = []
             if self.vec_corr == "z" or self.vec_corr == "total":
                 plist.append(-m)  # Pzx
@@ -380,15 +450,17 @@ class SheppardPSF(BasePSF):
             if self.vec_corr == "x" or self.vec_corr == "total":
                 plist.append(1 - n ** 2 / (1 + s))  # Pxx
                 plist.append(-m * n / (1 + s))  # Pxy
-
+            # generate empty otf
             otf = np.zeros((len(plist), self.zsize, self.size, self.size))
+            # fill in the valid poins
             for o, p in zip(otf, plist):
                 o[self.valid_points] = p * a
         else:
             otf_sub = np.zeros((self.zsize, self.size, self.size))
             otf_sub[self.valid_points] = 1.0
             otf = otf_sub[np.newaxis]
-
+        # we're already calculating the OTF, so we just need to shift it into
+        # the right place.
         self._OTFa = ifftshift(otf, axes=(1, 2, 3))
 
     @property
@@ -403,23 +475,12 @@ class SheppardPSF(BasePSF):
             self._PSFa = easy_ifft(self.OTFa, axes=(1, 2, 3))
         return self._PSFa
 
-    @property
-    def PSFi(self):
-        if self._PSFi is None:
-            self._PSFi = (abs(self.PSFa)**2).sum(0)
-        return self._PSFi
-
-    @property
-    def OTFi(self):
-        if self._OTFi is None:
-            self._OTFi = easy_fft(self.PSFi)
-        return self._OTFi
-
 
 if __name__ == "__main__":
+    # import plotting
     from matplotlib import pyplot as plt
-    # comparison
-    args = (488, 0.85, 1.0, 140, 256)
+    # generate a comparison
+    args = (488, 0.85, 1.0, 140, 128)
     kwargs = dict(vec_corr="total")
     psf = [HanserPSF(*args, **kwargs), SheppardPSF(*args, **kwargs)]
     fig, axs = plt.subplots(2, 2, figsize=(12, 12))
