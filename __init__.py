@@ -108,12 +108,12 @@ class BasePSF(object):
         # this checks the nyquist limit for z, but it is not strictly
         # correct. This is the correct limit for the Sheppard method
         # but is overkill for the Hanser method.
-        max_val = 1 / (2 * self.ni / self.wl)
-        if value >= max_val:
-            raise ValueError(
-                "{!r} is too large try a number smaller than {!r}".format(
-                    value, max_val)
-            )
+        # max_val = 1 / (2 * self.ni / self.wl)
+        # if value >= max_val:
+        #     raise ValueError(
+        #         "{!r} is too large try a number smaller than {!r}".format(
+        #             value, max_val)
+        #     )
         self._zres = value
         self._attribute_changed()
 
@@ -287,13 +287,11 @@ class HanserPSF(BasePSF):
         # objective make sure data is complex
         return (kr < diff_limit).astype(complex)
 
-    def _calc_defocus(self, zrange=None):
+    def _calc_defocus(self):
         """Calculate the defocus to apply to the base pupil"""
-        if zrange is None:
-            zrange = self.zrange
         kz = self._kz
         return np.exp(2 * np.pi * 1j * kz *
-                      zrange[:, np.newaxis, np.newaxis])
+                      self.zrange[:, np.newaxis, np.newaxis])
 
     def _gen_psf(self, pupil_base=None):
         """An internal utility that generates the PSF

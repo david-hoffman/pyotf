@@ -1,0 +1,706 @@
+***** ***** ***** General ***** ***** ***** 
+Date :	8/24/2016 10:19:40 AM
+Acq Mode :	Z stack
+Version :	v 4.03314.Development
+
+***** ***** ***** 3D Tiling ***** ***** ***** 
+X :	0
+Y :	0
+Z :	0
+T :	10
+
+***** ***** ***** ALPAO ***** ***** ***** 
+0.107233, 0.104296, 0.042098, 0.082031, 0.075885, -0.007646, -0.058535, -0.047350, -0.043503, -0.040895, -0.047784, -0.010604, -0.022078, -0.003024, 0.024165, 0.019414, 0.017219, 0.019998, -0.004748, -0.010685, 0.031416, -0.026301, 0.017817, -0.013661, 0.006166, -0.002673, 0.001652, -0.006812, 0.004877, -0.004674, -0.019176, 0.016082, 0.001889, 0.003351, -0.001132, -0.001187, -0.005381, 0.000857, -0.014452, -0.007407, -0.007749, -0.003854, 0.015010, 0.037296, -0.031804, -0.016036, -0.020510, 0.004934, -0.008184, 0.001054, 0.003582, -0.011832, 0.001674, -0.007605, -0.018163, -0.019572, -0.000807, 0.013091, -0.023394, -0.000690, -0.002223, -0.018275, 0.000417, -0.024687, 0.036553, 0.103315, -0.047999, -0.002188, 0.006130, -0.002485, -0.008268, -0.022395, -0.022249, -0.010938, -0.040227, 0.078225, 0.001490, -0.016645, 0.001141, -0.003068, -0.016233, -0.005672, -0.003168, -0.016429, 0.009797, -0.013474, -0.024781, -0.028502, -0.000364, -0.014025, -0.019042, 0.001128, 0.067394, -0.019040, 0.004800, 0.020516, 0.052458
+
+
+***** ***** ***** Waveform ***** ***** ***** 
+Waveform type :	Linear
+
+X Galvo Offset, Interval (um), # of Pixels for Excitation (0) :	0	0	201
+
+Z Galvo Offset, Interval (um), # of Pixels for Excitation (0) :	0	0	21
+
+Z PZT Offset, Interval (um), # of Pixels for Excitation (0) :	0	0	21
+
+S PZT Offset, Interval (um), # of Pixels for Excitation (0) :	19	0.3	21
+
+# of stacks (0) :	1
+
+Excitation Filter, Laser, Power (%), Exp(ms) (0) :	N/A	560	20	40
+
+Cycle lasers :	per Z
+
+Z motion :	Sample piezo
+
+
+***** ***** *****   Camera  ***** ***** ***** 
+Model :	C11440-22C
+Serial :	2699
+Frame Transfer :	OFF
+Trigger :	External
+Exp(s) :	0.04000
+Cycle(s) :	0.04062
+Cycle(Hz) :	24.62 Hz
+Frame Mode :	Run Till Abort
+Readout Mode :	Image
+ROI :	Left=965 Top=961 Right=1092 Bot=1088 
+Binning :	X=1 Y=1 
+# of Pixels :	X=2048 Y=2048 
+VSSspeed :	-1.0000
+HSSspeed :	0.0000
+VSSAmplitude :	Normal
+Output Amplifier :	EM Amp
+Temp(C) :	0.00000
+AD Channel :	0
+EM Gain :	0
+HS Speed index :	0
+Preamp Gain :	0
+Bit depth :	0
+Baseline Clamp :	Yes
+Spool :	Enabled?=No File stem=Unknown type # buffs=10 Method=16-buit TIFF 
+# of Exps :	21 exp(s)
+Cropped :	On?=No # of pix=X=2048 Y=2048  Bin=X=1 Y=1  
+L ROI :	Left=965 Top=961 Right=0 Bot=1088 
+R ROI :	Left=0 Top=961 Right=1092 Bot=1088 
+FOV ROI :	Left=965 Top=961 Right=1092 Bot=1088 
+# of Imgs :	21 img(s)
+subROIs :	Unknown type
+
+***** ***** *****   Advanced Timing  ***** ***** ***** 
+Trigger Mode :	FPGA
+# exp per SLM enable :	0
+Delay SLM Enable during SLM to Cam synch? :	TRUE
+SLM enable (ms) :
+
+***** ***** *****   .ini File  ***** ***** ***** 
+[Microns to Volt calibrations]
+Galvo cmd X um/X Volt = 122
+Galvo cmd Y um/Y Volt = NaN
+Galvo cmd Z um/Z Volt = 122
+Zpiezo um/Zpiezo Volt = 3.8
+Galvo position  cmd V/pos V = 0.500000
+XTile um/V = 1
+SamplePiezo um/SamplePiezo Volt = 3.8
+Descanned X Galvo um/V = 123
+Descanned Y Galvo um/V = 123
+Z Galvo and Z Piezo point in the same direction? = FALSE
+X um/X Volt = 53
+Z um/Z Volt 0 deg = 100
+Z um/Z Volt 60 deg = 100
+Z um/Z Volt 120 deg = 100
+Galvo position cmd V/pos V = 0.5
+Descanned X Galvo um/V 0 deg = 280.014
+Descanned Y Galvo um/V 0 deg = 276.986
+Descanned X Galvo um/V 180 deg = 271.024
+Descanned Y Galvo um/V 180 deg = 278.095
+PI LISA um/V 60 deg = 1
+PI LISA um/V 120 deg = 1
+
+[SRS SIM900 Settings]
+Enable? = TRUE
+SRS SIM900 = "COM3"
+X Galvo Slot = 1
+Z Galvo Slot = -1
+Z Piezo Slot = -1
+X Tile Galvo Slot = -1
+Sample Piezo Slot = -1
+Descan X Slot = -1
+Descan Y Slot = -1
+Z Galvo Slot deg 0 = 2
+Z Galvo Slot deg 60 = 3
+Z Galvo Slot deg 120 = 4
+SHY Slot 0 = 5
+SHX Slot 0 = 6
+SHY Slot 180 = 7
+SHX Slot 180 = 8
+
+[Andor Camera Settings]
+Use External Trigger? = FALSE
+Andor Serial Number = 3634
+Andor 2 Serial Number = 3907
+Andor : Image Transform (None, Transpose, V Flip, H Flip, Diag Flip, Rot 90, Rot 180, Rot 270) = "None"
+Andor (Twin) : Image Transform (None, Transpose, V Flip, H Flip, Diag Flip, Rot 90, Rot 180, Rot 270) = "None"
+
+[Detection optics]
+Magnification = 74.41745
+Magnification at Tiling Slit = 1.5
+
+[AOTF Settings]
+Number of channels = 6
+Number of simulateous stacks (max number of excitations) = 6
+
+[AOM Settings]
+AOM Channel(s) = 
+
+[Pulse Blast Settings]
+Pulse blast type = None
+Pulse duration (ms) = 2000.000000
+Laser pulse power (mW) = 14.500000,0.000000,0.000000,0.000000,0.000000
+Laser pulse location (um) = 4.402608,15.000000,-15.000000
+
+[Z Galvo Offsets (um)]
+Channel 0 = 10.95
+Channel 1 = -0.7
+Channel 2 = 0
+Channel 3 = 0
+Channel 4 = 11.2
+Channel 5 = -12.7
+Channel 6 = 0
+Channel 7 = 0.000000
+
+[General]
+# of exp per SLM enable = 0.5
+Cam Trigger mode = "FPGA"
+Shack-Hartmann Camera type = "Orca2.8"
+Objective PZT Controller (E-665, E-625) = "E-625"
+Delay SLM Enable during SLM to Cam synch? = TRUE
+SPIM type = "AO Lightsheet"
+Secondary Camera type = "Disabled"
+CAM 1 Twin cam mode? = TRUE
+CAM 2 Twin cam mode? = TRUE
+CAM 3 Twin cam mode? = FALSE
+CAM 4 Twin cam mode? = FALSE
+
+[Pockel Settings]
+Pockel Channel(s) = "920"
+
+[Hamamatsu Camera Settings]
+Orca 2.8 SN = ""
+Orca 4.0 SN = "002700"
+Orca 4.0 2 SN = "002702"
+Use Synch readout mode? = TRUE
+Orca4.0 : Image Transform (None, Transpose, V Flip, H Flip, Diag Flip, Rot 90, Rot 180, Rot 270) = "None"
+Orca 4.0 SN (Twin Camera) = "002699"
+Orca4.0 (Twin) : Image Transform (None, Transpose, V Flip, H Flip, Diag Flip, Rot 90, Rot 180, Rot 270) = "None"
+Orca 4.0 2 SN (Twin Camera) = "002701"
+Orca4.0 2 : Image Transform (None, Transpose, V Flip, H Flip, Diag Flip, Rot 90, Rot 180, Rot 270) = "None"
+Orca4.0 2 (Twin) : Image Transform (None, Transpose, V Flip, H Flip, Diag Flip, Rot 90, Rot 180, Rot 270) = "None"
+
+[Tiling Galvo]
+Offset (V) = 0.000000
+Vertical shift per um (pix) = 0.0230
+
+[Sutter Filter Wheel]
+Enable? = FALSE
+COM Port = "COM10"
+Filter 0 = "NONE"
+Filter 1 = "NONE"
+Filter 2 = "525/50"
+Filter 3 = "561 SP"
+Filter 4 = "514/30"
+Filter 5 = "NONE"
+Filter 6 = "NONE"
+Filter 7 = "NONE"
+Filter 8 = "NONE"
+Filter 9 = "NONE"
+Wait for filter to be in place? = FALSE
+Shutter enabled? = FALSE
+
+[Diffractive Optic Element Settings]
+DOE installed? = FALSE
+# of beams = 10
+Beam spacing (um) = 3.000000
+
+[Sample stage]
+Angle between stage and bessel beam (deg) = 90
+
+[SLM Config]
+SLM type = "QXGA-3DM"
+Arm Cam Synch with SLM? = FALSE
+
+[Stage Settle]
+Add extra time = TRUE
+Added time (ms) = 5
+
+[SLM]
+Enable? = TRUE
+Running Order = 0
+4D Serial Number = "0175000241"
+
+[Link Tiling Galvo to AOTF]
+Enable = FALSE
+Tiling V for AOTF channel 0 = 0.000000
+Tiling V for AOTF channel 1 = 0.000000
+Tiling V for AOTF channel 2 = 0.000000
+Tiling V for AOTF channel 3 = 0.000000
+Tiling V for AOTF channel 4 = 0.000000
+Tiling V for AOTF channel 5 = 0.000000
+Tiling V for AOTF channel 6 = 0.000000
+Tiling V for AOTF channel 7 = 0.000000
+Tiling V for AOTF channel 8 = 0
+
+[Eye patch movement]
+Enabled? = FALSE
+
+[C-867]
+Enabled = FALSE
+X Controller = "PI C-867 Piezomotor Controller SN 0112072421"
+Y Controller = "PI C-867 Piezomotor Controller SN 0112067132"
+X max speed (mm/s) = 100.000000
+Controller Type (C-867.160 or C-867.260) = "C-867.260"
+X Reference switch (Positive limit, Reference, Negative limit) = "Positive limit"
+Y Reference switch (Positive limit, Reference, Negative limit) = "Positive limit"
+
+[FPGA AI Labels]
+AI 0 = "AI 0"
+AI 1 = "AI 1"
+AI 2 = "AI 2"
+AI 3 = "AI 3"
+AI 4 = "AI 4"
+AI 5 = "AI 5"
+AI 6 = "AI 6"
+AI 7 = "AI 7"
+
+[AOTF controller]
+Enabled = TRUE
+COM Port = "COM4"
+FPGA AOTF index 0 is connected to AOTF controller input = 1
+FPGA AOTF index 1 is connected to AOTF controller input = 2
+FPGA AOTF index 2 is connected to AOTF controller input = 3
+FPGA AOTF index 3 is connected to AOTF controller input = 4
+FPGA AOTF index 4 is connected to AOTF controller input = 5
+FPGA AOTF index 5 is connected to AOTF controller input = 6
+FPGA AOTF index 6 is connected to AOTF controller input = 7
+FPGA AOTF index 7 is connected to AOTF controller input = 8
+Modulate power using = "Digital lines"
+
+[C-843]
+Max speed (mm/s) = 0.100000
+Enabled = FALSE
+Stage 1 Name = "M-122.2DD_BESSEL_Z"
+Stage 1 Lower Limit (mm) = 9.300000
+Stage 1 Upper Limit (mm) = 10.000000
+
+[Autofocus]
+Grating period (um) = 0.44
+Grating Tolerance (fractional) = 0.2
+Depth of focus (um) = 1.5
+Depth of focus Tolerance (um) = 1
+Bessel width (um) = 1.2
+Bessel Tolerance (um) = 0.1
+Bead diameter (pixels) (-1 use all pixels in ROI) = -1
+Bead Gaussian filter enabled? = FALSE
+Minimum threshold (counts) = 0
+Variance is normalized? = FALSE
+Rescan if peak near (%) of range edge = 10
+Rescan overlap with orginial range (%) = 40
+Max number of rescans = 4
+
+[AlpAO deformable mirror]
+Enable? = TRUE
+Serial number (BXXYYY) = "BIL113"
+Number of mirrors = 97
+Selected path = "/C/SPIM2015/OSPM/Phase Retrieval Files/BIL113_phase_correction.csv"
+Flatten mscript = ""
+Delay line OSPM calib file = "/C/SPIM2015/OSPM/OSPM Support files/OSPMProject.ini/DelayLineALPAO_calibration.csv"
+Serial number 2 (BXXYYY) = "BIL114"
+Delay line OSPM tip calib file = "/C/SPIM2015/OSPM/AlpaoDM/pz2.csv"
+Delay line OSPM tilt calib file = "/C/SPIM2015/OSPM/AlpaoDM/pz3.csv"
+System correction file = "/C/SPIM2015/OSPM/Phase Retrieval Files/BIL113_phase_correction.csv"
+Zernike 2 = "/C/SPIM2015/OSPM/AlpaoDM/z2.csv"
+Zernike 3 = "/C/SPIM2015/OSPM/AlpaoDM/z3.csv"
+
+[Attocube]
+Enabled = FALSE
+Max XY speed (mm/s) = 2.000000
+Stage X Lower Limit (mm) = -3.000000
+Stage X Upper Limit (mm) = 3.000000
+Stage Y Lower Limit (mm) = -3.000000
+Stage Y Upper Limit (mm) = 3.000000
+Stage Z Lower Limit (mm) = -5.000000
+Stage Z Upper Limit (mm) = -3.000000
+Max Z speed (mm/s) = 1.000000
+
+[E-861]
+Enabled = FALSE
+Z Stage = "LPS stage"
+Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+
+[C-863]
+Enabled = FALSE
+Z Stage = "PI C-863 Mercury SN 0145500005"
+Reference switch (Positive limit, Reference, Negative limit) = "Negative limit"
+
+[G7]
+Path A (V) = 0.000000
+Path B (V) = -5.000000
+Path C (V) = -6.800000
+
+[G6]
+Correction path (V) = "-8.100000"
+Detection path (V) = "0.000000"
+
+[Descan X]
+Offset (um) = 0
+Amplitude (um) = 30
+Freq (Hz) = 37
+Shape (Triangle, Sine) = "Triangle"
+
+[Descan Y]
+Offset (um) = -1.7
+Amplitude (um) = 25
+Freq (Hz) = 500
+Shape (Triangle, Sine) = "Sine"
+
+[Matlab]
+Matlab <-> LabVIEW data exchange folder = "/D/Matlab data/Matlab_for_AOLS"
+
+[Cam 1]
+Enabled? = TRUE
+Type = "Orca4.0"
+FPGA Fire input line = "DIO 0"
+
+[Cam 2]
+Enabled? = TRUE
+Type = "Orca4.0 2"
+FPGA Fire input line = "DIO 5"
+
+[Cam 3]
+Enabled? = FALSE
+Type = "Andor 2"
+FPGA Fire input line = "DIO 6"
+
+[E-871]
+Enabled = TRUE
+RS232 Com Port = 0
+Baud = 115200
+X Controller = "X"
+X Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+Y Controller = "Y"
+Y Reference switch (Positive limit, Reference, Negative limit) = "Positive limit"
+Z Controller = "Z"
+Z Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+Z Lower Limit (mm) = -.5
+Max Z speed (mm/s) = 5
+Z Upper Limit (mm) = .5
+Y Lower Limit (mm) = 0
+Y Upper Limit (mm) = 51
+X Lower Limit (mm) = -1
+X Upper Limit (mm) = 1
+
+[LC]
+Enable? = FALSE
+COM Port = ""
+TNE pulse duration (ms) = 0
+TNE amplitude (U16 V) = 0
+Left-to-Right delay (us) = 0
+Right-to-Left delay (us) = 0
+Left Channel(s) = ""
+Right Channel(s) = ""
+
+[AOLS SLM]
+Image Path = "/D/Matlab data/Matlab_for_AOLS/SLM/Pattern.bmp"
+Monitor number = 3
+Horizontal offset = 3000
+Vertical offset = 0
+
+[Twin Cam Saving]
+Saving Camera A 405 = TRUE
+Saving Camera A 642 = TRUE
+Saving Camera A 488 = TRUE
+Saving Camera A 532 = TRUE
+Saving Camera A 560 = TRUE
+Saving Camera A 920 = TRUE
+Saving Camera B 405 = FALSE
+Saving Camera B 642 = FALSE
+Saving Camera B 488 = FALSE
+Saving Camera B 532 = FALSE
+Saving Camera B 560 = FALSE
+Saving Camera B 920 = FALSE
+Saving Camera A 445 = TRUE
+Saving Camera B 445 = FALSE
+Saving Camera A 514 = TRUE
+Saving Camera A 589 = TRUE
+Saving Camera B 514 = FALSE
+Saving Camera B 589 = FALSE
+
+[Dither Z]
+Offset (um) = 3.5
+Amplitude (um) = 25
+Freq (Hz) = 37
+Shape (Triangle, Sine) = "Triangle"
+
+[Dither X]
+Offset (um) = 1
+Amplitude (um) = 25
+Freq (Hz) = 500
+Shape (Triangle, Sine) = "Sine"
+
+[FLIR Filter Wheel]
+Enable? = FALSE
+Wait for filter to be in place? = FALSE
+COM Port = ""
+Filter 0 = ""
+Filter 1 = ""
+Filter 2 = ""
+Filter 3 = ""
+Filter 4 = ""
+Filter 5 = ""
+Filter 6 = ""
+Filter 7 = ""
+Filter 8 = ""
+Filter 9 = ""
+
+[Beam path]
+Single Scan = "A, Detection, RG? FALSE"
+Continuous Scan = "A, Detection, RG? FALSE"
+Z stack = "A, Detection, RG? FALSE"
+Z stack Continuous = "A, Detection, RG? FALSE"
+XZ PSF = "A, Detection, RG? FALSE"
+XZ PSF (SI excitation) = "A, Detection, RG? FALSE"
+Calibrate Tiling Galvo = "A, Detection, RG? FALSE"
+SI Scan = "A, Detection, RG? FALSE"
+SI Scan SLM = "A, Detection, RG? FALSE"
+SI Scan SLM comb = "A, Detection, RG? FALSE"
+Autofocus FFT = "A, Detection, RG? FALSE"
+Autofocus Bead = "A, Detection, RG? FALSE"
+Autofocus Contrast = "A, Detection, RG? FALSE"
+AF Variance Galvo = "A, Detection, RG? FALSE"
+AF Variance PZT = "A, Detection, RG? FALSE"
+Detection Correction = "C, Correction, RG? FALSE"
+Excitation Correction = "B, Detection, RG? FALSE"
+AF TP Find LLS = "A, Detection, RG? FALSE"
+AF TP Find DO FS = "A, Detection, RG? FALSE"
+AF TP Find DO FP = "C, Correction, RG? FALSE"
+Correction Scan = "A, Detection, RG? FALSE"
+OSPM Path Alignment = "A, Detection, RG? FALSE"
+Manual = "LS? FALSE,RG? FALSE"
+Dither Plate   0 = "LS? TRUE,RG? TRUE,EO 0 in? TRUE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? FALSE,DO SH 180 in? FALSE,SLM/P Mask toggle in? TRUE,Sample Preview in? FALSE,Pupil Preview in? FALSE"
+Dither Plate  60 = "LS? TRUE,RG? TRUE,EO 60 in? TRUE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? FALSE,DO SH 180 in? FALSE,SLM/P Mask toggle in? TRUE,Sample Preview in? FALSE,Pupil Preview in? FALSE"
+Dither Plate 120 = "LS? TRUE,RG? TRUE,EO 120 in? TRUE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? FALSE,DO SH 180 in? FALSE,SLM/P Mask toggle in? TRUE,Sample Preview in? FALSE,Pupil Preview in? FALSE"
+Dither SLM   0 = "LS? TRUE,RG? TRUE,EO 0 in? TRUE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? FALSE,DO SH 180 in? FALSE,SLM/P Mask toggle in? FALSE,Sample Preview in? FALSE,Pupil Preview in? FALSE"
+Dither SLM  60 = "LS? TRUE,RG? TRUE,EO 60 in? TRUE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? FALSE,DO SH 180 in? FALSE,SLM/P Mask toggle in? FALSE,Sample Preview in? FALSE,Pupil Preview in? FALSE"
+Dither SLM 120 = "LS? TRUE,RG? TRUE,EO 120 in? TRUE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? FALSE,DO SH 180 in? FALSE,SLM/P Mask toggle in? FALSE,Sample Preview in? FALSE,Pupil Preview in? FALSE"
+SIM Plate  0 &  60 = "LS? TRUE,RG? FALSE,EO 0 in? TRUE,EO 60 in? TRUE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? FALSE,DO SH 180 in? FALSE,SLM/P Mask toggle in? TRUE,Sample Preview in? FALSE,Pupil Preview in? FALSE"
+SIM Plate  0 & 120 = "LS? TRUE,RG? FALSE,EO 0 in? TRUE,EO 120 in? TRUE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? FALSE,DO SH 180 in? FALSE,SLM/P Mask toggle in? TRUE,Sample Preview in? FALSE,Pupil Preview in? FALSE"
+SIM Plate 60 & 120 = "LS? TRUE,RG? FALSE,EO 60 in? TRUE,EO 120 in? TRUE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? FALSE,DO SH 180 in? FALSE,SLM/P Mask toggle in? TRUE,Sample Preview in? FALSE,Pupil Preview in? FALSE"
+SIM SLM  0 &  60 = "LS? TRUE,RG? FALSE,EO 0 in? TRUE,EO 60 in? TRUE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? FALSE,DO SH 180 in? FALSE,SLM/P Mask toggle in? FALSE,Sample Preview in? FALSE,Pupil Preview in? FALSE"
+SIM SLM  0 & 120 = "LS? TRUE,RG? FALSE,EO 0 in? TRUE,EO 120 in? TRUE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? FALSE,DO SH 180 in? FALSE,SLM/P Mask toggle in? FALSE,Sample Preview in? FALSE,Pupil Preview in? FALSE"
+SIM SLM 60 & 120 = "LS? TRUE,RG? FALSE,EO 60 in? TRUE,EO 120 in? TRUE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? FALSE,DO SH 180 in? FALSE,SLM/P Mask toggle in? FALSE,Sample Preview in? FALSE,Pupil Preview in? FALSE"
+Preview Plate Sample = "LS? TRUE,RG? FALSE,SLM/P Mask toggle in? TRUE,Sample Preview in? TRUE,Pupil Preview in? FALSE"
+Preview Plate Pupil = "LS? TRUE,RG? FALSE,SLM/P Mask toggle in? TRUE,Sample Preview in? FALSE,Pupil Preview in? TRUE"
+Preview SLM Sample = "LS? TRUE,RG? FALSE,SLM/P Mask toggle in? FALSE,Sample Preview in? TRUE,Pupil Preview in? FALSE"
+Preview SLM Pupil = "LS? TRUE,RG? FALSE,SLM/P Mask toggle in? FALSE,Sample Preview in? FALSE,Pupil Preview in? TRUE"
+EPI = "LS? FALSE,RG? FALSE,DO EPI 0 in? TRUE,DO EPI 180 in? TRUE"
+2P AO Scan = "LS? TRUE,RG? FALSE,EO 0 in? FALSE,EO 60 in? FALSE,EO 120 in? FALSE,DO EPI 0 in? FALSE,DO EPI 180 in? FALSE,DO SH 0 in? TRUE,DO SH 180 in? TRUE"
+
+[SMC motors]
+Enable? = FALSE
+Chamber up position (mm) = 1.000000
+Chamber down position (mm) = 0.000000
+
+[CONEX motors]
+Enabled = FALSE
+Chamber Measurement position (mm) = 1
+Chamber Loading 1 position (mm) = 0
+Chamber Loading 2 position (mm) = 0
+X stage = "COM11"
+Y stage = ""
+Z stage = ""
+X stage ID = "LTA-HS_PN:B148811_UD:142511"
+Y stage ID = ""
+Z stage ID = ""
+X Max = 32.000000
+X Min = 0.000000
+Y Max = 12.000000
+Y Min = 0.000000
+Z Max = 12.000000
+Z Min = 0.000000
+
+[Z Galvo Slopes (Z Volts/X Volts)]
+Channel 0 = NaN
+Channel 1 = NaN
+Channel 2 = NaN
+Channel 3 = NaN
+Channel 4 = NaN
+Channel 5 = NaN
+Channel 6 = NaN
+
+[PI stage]
+XY max speed (mm/s) = 5
+
+[Cam 4]
+Enabled? = FALSE
+Type = "Disabled"
+FPGA Fire input line = "DIO 0"
+Pixel Size at focus (nm/pix) = 256
+
+[Flip Mirror]
+Enabled? = FALSE
+Serial Number = 37861628
+Switch positions? = TRUE
+
+[AF TP]
+Detection Objective Depth of focus (um) = 7.5
+Detection Objective Depth of focus Tolerance (um) = 4
+LLS width (um) = 7.5
+LLS width Tolerance (um) = 4
+Minimum threshold (counts) = 0
+DO FP to LLS distance (pix) = -7
+Fit Success amplitude threshold/RMS ratio = 2
+Second fit amplitude threshold/RMS ratio = 7
+AF Two-photon mode = "Brightest plane"
+DO FP adjustment (pix) = 39.5414
+
+[Detection Objective chromatic focal shift]
+Use value from = "Use the DO FP to LLS distance"
+User value (um) = 0
+
+[SH_Calc]
+Zernike_mode_act_basis path = "/C/SPIM2015/SPIM/SPIM LV8.6 VIs/Scan/Modules/Correction Scan/Matlab/Mats/Zernike_mode_act_basis_6all_55modes.mat"
+Center ref path = "/C/SPIM2015/SPIM/SPIM LV8.6 VIs/Scan/Modules/Correction Scan/Matlab/Mats/DSH_CenterRef_920-510_20160208_G.mat"
+Vector path = "/C/SPIM2015/SPIM/SPIM LV8.6 VIs/Scan/Modules/Correction Scan/Matlab/Mats/DSH_VectorRef_20160208_G2.mat"
+Calculate using = "LabVIEW"
+N_modes = 55
+Gain = 11.1111
+Photon_threshold = 50
+Peak_range = 5
+Sig = 1.5
+FFT filter = TRUE
+Excitation Center ref path = "/C/SPIM2015/SPIM/SPIM LV8.6 VIs/Scan/Modules/Correction Scan/Matlab/Mats/ESH_CenterRef_920-510_20160208_G.mat"
+Excitation Vector path = "/C/SPIM2015/SPIM/SPIM LV8.6 VIs/Scan/Modules/Correction Scan/Matlab/Mats/ESH_VectorSimu_Andor897_20150825.mat"
+Excitation LS path = "/C/SPIM2015/SPIM/SPIM LV8.6 VIs/Scan/Modules/Correction Scan/Matlab/SLM/LS.mat"
+sampling_factor = 1
+Mag = 137.14
+ALP.mat path = "/C/SPIM2015/SPIM/SPIM LV8.6 VIs/Scan/Modules/Correction Scan/Matlab/Acts/ALP.mat"
+
+[Notifications]
+Enable = TRUE
+Recipients (comma delimited) = "milkied10@janelia.hhmi.org\0D\0A"
+
+[SmarAct MCS]
+Enabled = TRUE
+Ref P-Mask X = "Positive limit"
+Ref P-Mask Y = "Positive limit"
+Ref Q/P Mask toggle = "Positive limit"
+Ref A-Mask Y = "Positive limit"
+Ref A-Mask X = "Positive limit"
+Ref Sample Preview = "Positive limit"
+Ref Pupil Preview = "Positive limit"
+Ref SLM/P Mask toggle = "Positive limit"
+Controller ID (usb:ix:0 means 1st found) = "usb:id:2851348317"
+Accel (um/s^2) 0 is off, -1 is unchanged P-Mask X = 0
+Accel (um/s^2) 0 is off, -1 is unchanged P-Mask Y = 0
+Accel (um/s^2) 0 is off, -1 is unchanged SLM/P Mask toggle = 0
+Accel (um/s^2) 0 is off, -1 is unchanged A-Mask Y = 0
+Accel (um/s^2) 0 is off, -1 is unchanged A-Mask X = 0
+Accel (um/s^2) 0 is off, -1 is unchanged Sample Preview = 0
+Accel (um/s^2) 0 is off, -1 is unchanged Pupil Preview = 0
+
+[Sample preview toggle]
+In  position (mm) = 0
+Out position (mm) = 25
+Preview position (mm) = 4
+
+[A/P-MASK toggle]
+P mask position (mm) = 40
+SLM position (mm) = 10
+
+[Pupil preview toggle]
+In  position (mm) = 0
+Out position (mm) = 0
+Preview position (mm) = 22.7
+
+[E-871 OSPM]
+Enabled = TRUE
+RS232 Com Port = 0
+Baud = 0
+Theta Controller = "Theta"
+Theta Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+EO 0 Controller = "EO_0"
+EO 0 Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+EO 60 Controller = "EO_60"
+EO 60 Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+EO 120 Controller = "EO_120"
+EO 120 Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+DO EPI 0 Controller = "DO_EPI_0"
+DO EPI 0 Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+DO EPI 180 Controller = "DO_EPI_180"
+DO EPI 180 Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+DO SH 0 Controller = "DO_SH_0"
+DO SH 0 Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+DO SH 180 Controller = "DO_SH_180"
+DO SH 180 Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+Delay 1 Controller = "DELAY1"
+Delay 1 Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+Delay 2 Controller = "DELAY2"
+Delay 2 Reference switch (Positive limit, Reference, Negative limit) = "Reference"
+
+[PI DO toggle]
+0 degree EPI position (mm) = 12.6
+0 degree EPI Out position (mm) = -16
+180 degree EPI position (mm) = 12.6
+180 degree EPI Out position (mm) = -16
+0 degree SH position (mm) = -8
+0 degree SH Out position (mm) = 13
+180 degree SH position (mm) = -8
+180 degree SH Out position (mm) = 13
+
+[PI EO toggle]
+0 degree Excitation position (mm) = 12.2
+0 degree Out position (mm) = -16
+60 degree Excitation position (mm) = 12.2
+60 degree Out position (mm) = -16
+120 degree Excitation position (mm) = 12.2
+120 degree Out position (mm) = -16
+
+[Delay line]
+Link enabled = TRUE
+Offset (Delay 2 mm) = 0
+Slope (Delay 1 mm / Delay 2 mm) = 0.951
+Compensate with ALPAO = FALSE
+Compensation Mirror = "0 deg"
+
+[Photobleach compensation]
+Enable? = FALSE
+Percentile = 70
+Slice = 70
+Image ROI (L,T, R, B) = ""
+Image ROI (L, T, R, B) = ""
+
+[OSPM Z Galvo Current position]
+Z 0 (I16 V) = 0
+Z 60 (I16 V) = 0
+Z 120 (I16V) = 0
+
+[Z Galvo OSPM]
+Z off (V) 0 = 3
+Z off (V) 60 = 3
+Z off (V) 120 = 3
+Z Offset (um) 0 = 0
+Z Offset (um) 60 = 0
+Z Offset (um) 120 = 0
+
+[Mask Legends]
+Phase Mask = "<Not A Path>"
+Annular Mask = "/C/SPIM2015/OSPM/Mask Legends/Annular Mask Legend 2016_04_01.csv"
+
+[SH 0 X]
+Offset (um) = 0
+Amplitude (um) = 0
+Freq (Hz) = 0
+Shape (Triangle, Sine) = "Sine"
+
+[SH 180 Y]
+Offset (um) = 0
+Amplitude (um) = 0
+Freq (Hz) = 0
+Shape (Triangle, Sine) = "Cosine"
+
+[SH 180 X]
+Offset (um) = 0
+Amplitude (um) = 0
+Freq (Hz) = 0
+Shape (Triangle, Sine) = "Sine"
+
+[SH 0  Y]
+Offset (um) = 0
+Amplitude (um) = 0
+Freq (Hz) = 0
+Shape (Triangle, Sine) = "Sine"
+
+[Two-photon power compensation]
+Enable compensation = FALSE
+Method = "Match top signal"
+TP power max (percent) = 100
+TP power min (percent) = 0
