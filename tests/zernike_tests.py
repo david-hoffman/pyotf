@@ -6,7 +6,7 @@ Test suite for zernike.py
 from nose.tools import *
 # import warnings
 # from skimage.external import tifffile as tif
-from simrecon.zernike import *
+from psfotf.zernike import *
 # import os
 import numpy as np
 # import unittest

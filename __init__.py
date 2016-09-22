@@ -9,13 +9,12 @@ https://en.wikipedia.org/wiki/Point_spread_function
 import numpy as np
 from numpy.linalg import norm
 try:
-    from pyfftw.interfaces.numpy_fft import (ifftshift, fftshift,
-                                             fftn, fftfreq)
+    from pyfftw.interfaces.numpy_fft import ifftshift, fftfreq
     import pyfftw
     # Turn on the cache for optimum performance
     pyfftw.interfaces.cache.enable()
 except ImportError:
-    from numpy.fft import ifftshift, fftshift, fftn, fftfreq
+    from numpy.fft import ifftshift, fftfreq
 from .utils import *
 
 
@@ -34,7 +33,7 @@ class BasePSF(object):
     zsize = NumericProperty(attr="_zsize", vartype=int, doc="z size")
 
     def __init__(self, wl, na, ni, res, size, zres=None, zsize=None,
-                 vec_corr="none"):
+                 vec_corr="none", condition="sine"):
         """Generate a PSF object
         To fully describe a PSF or OTF of an objective lens, assuming no
         abberation, we generally need a few parameters:
@@ -67,6 +66,12 @@ class BasePSF(object):
             keyword to indicate whether to include vectorial effects
                 Valid options are: "none", "x", "y", "z", "total"
                 Default is: "none"
+        condition : str
+            keyword to indicate whether to model the sine or herschel
+            conditions
+                Valid options are: "none", "sine", "herschel"
+                Default is: "sine"
+                Note: "none" is not a physical solution
         """
         self.wl = wl
         self.na = na
@@ -82,6 +87,7 @@ class BasePSF(object):
             zsize = size
         self.zsize = zsize
         self.vec_corr = vec_corr
+        self.condition = condition
 
     def _attribute_changed(self):
         """called whenever key attributes are changed
@@ -148,6 +154,18 @@ class BasePSF(object):
             )
 
     @property
+    def condition(self):
+        """Which imaging condition to simulate?"""
+        return self._condition
+
+    @condition.setter
+    def condition(self, value):
+        if value not in {"none", "sine", "herschel"}:
+            raise ValueError("{!r} is not a valid condition".format(value))
+        self._condition = value
+        self._attribute_changed()
+
+    @property
     def OTFa(self):
         """Amplitude OTF (coherent transfer function), complex array"""
         raise NotImplementedError
@@ -205,7 +223,7 @@ class HanserPSF(BasePSF):
 
     def _gen_zrange(self):
         """Internal utility to generate the zrange from zsize and zres"""
-        self.zrange = (np.arange(self.zsize) - self.zsize / 2) * self.zres
+        self.zrange = (np.arange(self.zsize) - (self.zsize - 1) / 2) * self.zres
 
     @BasePSF.zsize.setter
     def zsize(self, value):
@@ -269,11 +287,13 @@ class HanserPSF(BasePSF):
         # objective make sure data is complex
         return (kr < diff_limit).astype(complex)
 
-    def _calc_defocus(self):
+    def _calc_defocus(self, zrange=None):
         """Calculate the defocus to apply to the base pupil"""
+        if zrange is None:
+            zrange = self.zrange
         kz = self._kz
         return np.exp(2 * np.pi * 1j * kz *
-                      self.zrange[:, np.newaxis, np.newaxis])
+                      zrange[:, np.newaxis, np.newaxis])
 
     def _gen_psf(self, pupil_base=None):
         """An internal utility that generates the PSF
@@ -298,10 +318,16 @@ class HanserPSF(BasePSF):
             # calculate theta, this is possible because we know that the
             # OTF is only non-zero on a spherical shell
             theta = np.arcsin((kr < kmag) * kr / kmag)
-            # The authors claim that the following line is unecessary as this
-            # factor is already included in the definition of the pupil
-            # function
-            # pupil /= sqrt(cos(theta))
+            # The authors claim that the following code is unecessary as the
+            # sine condition is already taken into account in the definition
+            # of the pupil, but I call bullshit
+            if self.condition == "sine":
+                a = 1.0 / np.sqrt(np.cos(theta))
+            elif self.condition == "herschel":
+                a = 1.0 / np.cos(theta)
+            else:
+                a = 1.0
+            pupil *= a
             plist = []
             if self.vec_corr == "z" or self.vec_corr == "total":
                 plist.append(np.sin(theta) * np.cos(phi))  # Pzx
@@ -326,8 +352,8 @@ class HanserPSF(BasePSF):
         # save the PSF internally
         self._PSFa = PSFa
 
-    # Because the _attribute_changed() method sets all the internal OTFs and PSFs
-    # None we can recalculate them only when needed
+    # Because the _attribute_changed() method sets all the internal OTFs and
+    # PSFs None we can recalculate them only when needed
     @property
     def OTFa(self):
         if self._OTFa is None:
@@ -349,7 +375,7 @@ class SheppardPSF(BasePSF):
     2002, 211 (1–6), 53–63.](dx.doi.org/10.1016/S0030-4018(02)01857-6)
     """
 
-    def __init__(self, *args, dual=False, condition="sine", **kwargs):
+    def __init__(self, *args, dual=False, **kwargs):
         """dual : bool
             Simulate dual objectives
         condition : str
@@ -358,7 +384,6 @@ class SheppardPSF(BasePSF):
         """
         super().__init__(*args, **kwargs)
         self.dual = dual
-        self.condition = condition
 
     # include parent documentation
     __init__.__doc__ = BasePSF.__init__.__doc__ + __init__.__doc__
@@ -373,18 +398,6 @@ class SheppardPSF(BasePSF):
         if not isinstance(value, bool):
             raise TypeError("`dual` must be a boolean")
         self._dual = value
-        self._attribute_changed()
-
-    @property
-    def condition(self):
-        """Which imaging condition to simulate?"""
-        return self._condition
-
-    @condition.setter
-    def condition(self, value):
-        if value not in {"none", "sine", "herschel"}:
-            raise ValueError("{!r} is not a valid condition".format(value))
-        self._condition = value
         self._attribute_changed()
 
     def _gen_kr(self):
@@ -446,9 +459,9 @@ class SheppardPSF(BasePSF):
                 plist.append(-n)  # Pzy
             if self.vec_corr == "y" or self.vec_corr == "total":
                 plist.append(-n * m / (1 + s))  # Pyx
-                plist.append(1 - m ** 2 / (1 + s))  # Pyy
+                plist.append(1 - n ** 2 / (1 + s))  # Pyy
             if self.vec_corr == "x" or self.vec_corr == "total":
-                plist.append(1 - n ** 2 / (1 + s))  # Pxx
+                plist.append(1 - m ** 2 / (1 + s))  # Pxx
                 plist.append(-m * n / (1 + s))  # Pxy
             # generate empty otf
             otf = np.zeros((len(plist), self.zsize, self.size, self.size))
