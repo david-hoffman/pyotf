@@ -300,11 +300,15 @@ class HanserPSF(BasePSF):
 
         NOTE: that the internal state is created with fftfreq, which creates
         _unshifted_ frequences"""
-        # generate internal state
+        # clear internal state
+        self._attribute_changed()
+        # generate internal coordinates
         self._gen_kr()
         # generate the pupil
         if pupil_base is None:
             pupil_base = self._gen_pupil()
+        else:
+            assert pupil_base.ndim == 2, "`pupil_base` is wrong shape"
         # pull relevant internal state variables
         kr = self._kr
         phi = self._phi
@@ -343,7 +347,7 @@ class HanserPSF(BasePSF):
             # code to work generally
             pupils = pupil[np.newaxis]
         # save the pupil for inspection, not necessary
-        self._pupil = pupil
+        # self._pupils = pupils
         # because the internal state is created with fftfreq, no initial shift
         # is necessary.
         PSFa = ifftshift(ifftn(pupils, axes=(2, 3)), axes=(2, 3))
