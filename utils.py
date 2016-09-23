@@ -76,3 +76,40 @@ class NumericProperty(property):
                     # call update code
                     obj._attribute_changed()
         super().__init__(fget, fset, fdel, doc)
+
+
+def center_data(data):
+    """Utility to center the data
+
+    Parameters
+    ----------
+    data : ndarray
+        Array of data points
+
+    Returns
+    -------
+    centered_data : ndarray same shape as data
+        data with max value at the central location of the array
+    """
+    # copy data
+    centered_data = data.copy()
+    # extract shape and max location
+    data_shape = data.shape
+    max_loc = np.unravel_index(data.argmax(), data_shape)
+    # iterate through dimensions and roll data to the right place
+    for i, (x0, nx) in enumerate(zip(max_loc, data_shape)):
+        centered_data = np.roll(centered_data, (nx + 1) // 2 - x0, i)
+    return centered_data
+
+
+def remove_bg(data, multiplier=1.5):
+    """Utility that measures mode of data and subtracts it"""
+    mode = np.bincount(data.ravel()).argmax()
+    return data - multiplier * mode
+
+
+def psqrt(data):
+    """Take the positive square root, negative values will be set to zero."""
+    sdata = np.zeros_like(data, float)
+    sdata[data > 0] = np.sqrt(data[data > 0])
+    return sdata
