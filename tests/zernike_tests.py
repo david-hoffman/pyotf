@@ -4,12 +4,8 @@ Test suite for zernike.py
 """
 
 from nose.tools import *
-# import warnings
-# from skimage.external import tifffile as tif
 from psfotf.zernike import *
-# import os
 import numpy as np
-# import unittest
 
 
 def test_degrees_input():
