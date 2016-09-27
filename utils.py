@@ -1,5 +1,8 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Utility functions for the pyOTF module"""
+# utils.py
+# Utility functions for the pyOTF module
+# Copyright (c) 2016, David Hoffman
 import numpy as np
 try:
     from pyfftw.interfaces.numpy_fft import (ifftshift, fftshift,

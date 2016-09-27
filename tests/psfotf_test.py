@@ -1,9 +1,9 @@
 from nose.tools import *
 import unittest
-from psfotf import *
+from pyOTF import *
 
 
-class TestPupil(unittest.TestCase):
+class TestHanserPSF(unittest.TestCase):
     """Test HanserPSF"""
 
     def setUp(self):
@@ -23,3 +23,14 @@ class TestPupil(unittest.TestCase):
         model.size = 512
         model.zrange = 0
         assert_tuple_equal(model.PSFi.shape, (1, 512, 512))
+
+
+class TestSheppardPSF(unittest.TestCase):
+    """Test sheppard PSF"""
+
+    def setUp(self):
+        self.model = SheppardPSF(500, 0.85, 1.0, 140, 200)
+
+    def test_zres(self):
+        """Make sure zres is set properly"""
+        self.model.zres = 100

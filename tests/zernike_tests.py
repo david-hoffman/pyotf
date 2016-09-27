@@ -4,7 +4,7 @@ Test suite for zernike.py
 """
 
 from nose.tools import *
-from psfotf.zernike import *
+from pyOTF.zernike import *
 import numpy as np
 
 
@@ -79,3 +79,12 @@ def test_zernike_errors():
     noll = np.ones((2, 2, 2))
     assert_raises(ValueError, zernike, 0, 0, noll)
     assert_raises(ValueError, zernike, 0, 0, noll, noll)
+
+
+def test_zernike_zero():
+    """Make sure same result is obtained for integer and float"""
+    n = np.random.randint(100)
+    m = np.random.randint(-100, 100)
+    r = 0
+    theta = np.rand(1) * 2 * np.pi - np.pi
+    assert_true(np.isfinite(zernike(r, theta, n, m)).all())
