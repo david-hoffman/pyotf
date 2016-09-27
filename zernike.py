@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# zernike.py
 """
 A module defining the zernike polynomials and associated functions to convert
 between radial and azimuthal degree pairs and Noll's indices.
@@ -7,6 +9,8 @@ Running this file as a script will output a graph of the first 15 zernike
 polynomials on the unit disk.
 
 https://en.wikipedia.org/wiki/Zernike_polynomials
+
+Copyright (c) 2016, David Hoffman
 """
 
 import numpy as np
@@ -164,10 +168,13 @@ def _radial_zernike(r, n, m):
         rad_zern[valid_points] = 1
         return rad_zern
     rprime = r[valid_points]
-    rn = rprime ** n
-    bincoef = binom(n, (n + m) // 2)
-    hyper = hyp2f1(-(n + m) // 2, -(n - m) // 2, -n, rprime**(-2))
-    rad_zern[valid_points] = bincoef * rn * hyper
+    # fix zero problem, inelegant but works
+    rprime[rprime == 0.0] = np.finfo(rprime.dtype).eps
+    coef1 = (n + m) // 2
+    coef2 = (n - m) // 2
+    bincoef = binom(n, coef1)
+    hyper = hyp2f1(-coef1, -coef2, -n, rprime**(-2))
+    rad_zern[valid_points] = bincoef * rprime**n * hyper
     return rad_zern
 
 
@@ -192,7 +199,7 @@ def _zernike(r, theta, n, m, norm=True):
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
     # make coordinates
-    x = np.linspace(-1, 1, 512)
+    x = np.linspace(-1, 1, 513)
     xx, yy = np.meshgrid(x, x)  # xy indexing is default
     r, theta = cart2pol(yy, xx)
     # set up plot
@@ -200,7 +207,7 @@ if __name__ == "__main__":
     # fill out plot
     for ax, (k, v) in zip(axs.ravel(), noll2name.items()):
         zern = zernike(r, theta, k, norm=False)
-        ax.matshow(zern, vmin=-1, vmax=1, cmap="coolwarm")
+        ax.matshow(zern, vmin=-1, vmax=1, cmap="seismic")
         ax.set_title(v + r", $Z_{{{}}}^{{{}}}$".format(*noll2degrees(k)))
         ax.axis("off")
     fig.tight_layout()
