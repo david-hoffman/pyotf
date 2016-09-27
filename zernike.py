@@ -52,7 +52,8 @@ noll2name = {
     15: "Oblique quadrafoil"
 }
 
-name2noll = {v:k for k, v in noll2name.items()}
+name2noll = {v: k for k, v in noll2name.items()}
+
 
 def noll2degrees(noll):
     """Convert from Noll's indices to radial degree and azimuthal degree"""
@@ -193,7 +194,7 @@ def _zernike(r, theta, n, m, norm=False):
         zern *= np.cos(m * theta)
     # calculate the normalization factor
     if norm:
-        zern /= np.linalg.norm(zern.ravel())
+        raise NotImplementedError
     return zern
 
 
