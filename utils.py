@@ -12,6 +12,7 @@ try:
     pyfftw.interfaces.cache.enable()
 except ImportError:
     from numpy.fft import ifftshift, fftshift, fftn, ifftn
+from dphutils import fft_pad, slice_maker
 
 
 def easy_fft(data, axes=None):
@@ -116,3 +117,22 @@ def psqrt(data):
     sdata = np.zeros_like(data, float)
     sdata[data > 0] = np.sqrt(data[data > 0])
     return sdata
+
+
+def prep_data_for_PR(data, xysize=None, multiplier=1.0):
+    """A utility to prepare data for phase retrieval
+
+    Will pad or crop to xysize"""
+    nz, ny, nx = data.shape
+    data_without_bg = remove_bg(data, multiplier)
+    if xysize is None:
+        xysize = max(ny, nx)
+    if xysize == ny == nx:
+        pad_data = data_without_bg
+    elif xysize >= max(ny, nx):
+        pad_data = fft_pad(data_without_bg, (nz, xysize, xysize),
+                           mode="constant")
+    else:
+        my_slice = slice_maker((ny + 1) // 2, (nx + 1) // 2, xysize)
+        return center_data(data_without_bg)[[Ellipsis] + my_slice]
+    return center_data(pad_data)
