@@ -1,9 +1,13 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# __init__.py
 """
 A module to simulate optical transfer functions and point spread functions
 
 https://en.wikipedia.org/wiki/Optical_transfer_function
 https://en.wikipedia.org/wiki/Point_spread_function
+
+Copyright (c) 2016, David Hoffman
 """
 
 import numpy as np
@@ -91,7 +95,7 @@ class BasePSF(object):
 
     def _attribute_changed(self):
         """called whenever key attributes are changed
-        Sets internal state variable to None so that when the
+        Sets internal state variables to None so that when the
         user asks for them they are recalculated"""
         self._PSFi = None
         self._PSFa = None
@@ -105,15 +109,9 @@ class BasePSF(object):
 
     @zres.setter
     def zres(self, value):
-        # this checks the nyquist limit for z, but it is not strictly
-        # correct. This is the correct limit for the Sheppard method
-        # but is overkill for the Hanser method.
-        # max_val = 1 / (2 * self.ni / self.wl)
-        # if value >= max_val:
-        #     raise ValueError(
-        #         "{!r} is too large try a number smaller than {!r}".format(
-        #             value, max_val)
-        #     )
+        # make sure z is positive
+        if not value > 0:
+            raise ValueError("zres must be positive")
         self._zres = value
         self._attribute_changed()
 
@@ -401,6 +399,17 @@ class SheppardPSF(BasePSF):
             raise TypeError("`dual` must be a boolean")
         self._dual = value
         self._attribute_changed()
+
+    @BasePSF.zres.setter
+    def zres(self, value):
+        # this checks the nyquist limit for z
+        max_val = 1 / (2 * self.ni / self.wl)
+        if value >= max_val:
+            raise ValueError(
+                "{!r} is too large try a number smaller than {!r}".format(
+                    value, max_val)
+            )
+        BasePSF.zres.fset(self, value)
 
     def _gen_kr(self):
         """Internal utility function to generate internal state"""
