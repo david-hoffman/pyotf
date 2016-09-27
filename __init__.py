@@ -266,13 +266,7 @@ class HanserPSF(BasePSF):
         self._kmag = self.ni / self.wl
         # because the OTF only exists on a spherical shell we can calculate
         # a kz value for any pair of kx and ky values
-        # conversion to complex is necessary to avoid errors in the sqrt
-        # TODO: switch this to check for positive points, then sqrt
-        # kz2 = self._kmag**2 - self._kr**2
-        # kz = np.zeros_like(kz2)
-        # kz[kz2 > 0] = np.sqrt(kz2[kz2 > 0])
-        self._kz = np.real(
-            np.sqrt((self._kmag**2 - self._kr**2).astype(complex)))
+        self._kz = psqrt(self._kmag**2 - self._kr**2)
 
     def _gen_pupil(self):
         """Generate an ideal pupil"""
