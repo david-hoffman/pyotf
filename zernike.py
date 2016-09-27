@@ -52,6 +52,7 @@ noll2name = {
     15: "Oblique quadrafoil"
 }
 
+name2noll = {v:k for k, v in noll2name.items()}
 
 def noll2degrees(noll):
     """Convert from Noll's indices to radial degree and azimuthal degree"""
@@ -178,7 +179,7 @@ def _radial_zernike(r, n, m):
     return rad_zern
 
 
-def _zernike(r, theta, n, m, norm=True):
+def _zernike(r, theta, n, m, norm=False):
     """The actual function that calculates the full zernike polynomial"""
     # if m and n aren't seperated by two then return zeros
     if (m - n) % 2:
