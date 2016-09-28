@@ -119,7 +119,7 @@ def psqrt(data):
     return sdata
 
 
-def prep_data_for_PR(data, xysize=None, multiplier=1.0):
+def prep_data_for_PR(data, xysize=None, multiplier=1.5):
     """A utility to prepare data for phase retrieval
 
     Will pad or crop to xysize"""

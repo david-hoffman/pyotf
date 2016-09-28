@@ -48,21 +48,17 @@ class ZernikeDecomposition(object):
         return fig, axs
 
     def plot_named_coefs(self):
-        fig, axs = plt.subplots(2, 1, sharex=True, figsize=(6, 6))
+        fig, ax = plt.subplots(1, 1, sharex=True, figsize=(6, 6))
         ordered_names = [noll2name[i + 1] for i in range(len(noll2name))]
         x = np.arange(len(ordered_names)) + 1
-        mcoefs = self.mcoefs[:len(ordered_names)]
-        pcoefs = self.pcoefs[:len(ordered_names)]
-        for ax, data in zip(axs, (mcoefs, pcoefs)):
-            ax.bar(x, data, align="center", tick_label=ordered_names)
-            ax.axis("tight")
-            ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
-        for ax, t in zip(axs, ("Magnitude Coefficients",
-                               "Phase Coefficients")):
-            ax.set_title(t)
+        data = self.pcoefs[:len(ordered_names)]
+        ax.bar(x, data, align="center", tick_label=ordered_names)
+        ax.axis("tight")
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+        ax.set_ylabel("Phase Coefficient (a.u.)")
         ax.set_xlabel("Noll's Number")
         fig.tight_layout()
-        return fig, axs
+        return fig, ax
 
     def _recon(self, coefs, s=Ellipsis):
         """reconstruct mag or phase"""
@@ -152,6 +148,7 @@ class PhaseRetrievalResult(object):
                                "Relative Change in Pupil")):
             ax.set_title(t)
         fig.tight_layout()
+        return fig, axs
 
     @property
     def complex_pupil(self):

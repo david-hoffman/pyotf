@@ -201,7 +201,7 @@ def _zernike(r, theta, n, m, norm=False):
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
     # make coordinates
-    x = np.linspace(-1, 1, 513)
+    x = np.linspace(-1, 1, 1025)
     xx, yy = np.meshgrid(x, x)  # xy indexing is default
     r, theta = cart2pol(yy, xx)
     # set up plot
