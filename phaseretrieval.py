@@ -21,7 +21,7 @@ except ImportError:
 
 from numpy.linalg import lstsq
 from .utils import *
-from . import HanserPSF
+from .otf import HanserPSF
 from .zernike import *
 from skimage.restoration import unwrap_phase
 from matplotlib import pyplot as plt

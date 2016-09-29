@@ -1,6 +1,6 @@
 from nose.tools import *
 import unittest
-from pyOTF import *
+from pyOTF.otf import *
 
 
 class TestHanserPSF(unittest.TestCase):

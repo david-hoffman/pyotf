@@ -86,5 +86,5 @@ def test_zernike_zero():
     n = np.random.randint(100)
     m = np.random.randint(-100, 100)
     r = 0
-    theta = np.rand(1) * 2 * np.pi - np.pi
+    theta = np.random.rand(1) * 2 * np.pi - np.pi
     assert_true(np.isfinite(zernike(r, theta, n, m)).all())
