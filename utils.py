@@ -43,21 +43,30 @@ def cart2pol(y, x):
 
 
 class NumericProperty(property):
-    """A property that must be numeric.
-
-    Parameters
-    ----------
-    attr : str
-        The name of the backing attribute.
-    vartype : type
-        The type to validate, defaults to `int`
-    doc : str
-        Docstring for the parameter
-
-    """
+    """Define a property that must be numeric"""
 
     def __init__(self, fget=None, fset=None, fdel=None, doc=None,
                  attr=None, vartype=None):
+        """A property that must be numeric.
+
+        Parameters
+        ----------
+        fget : callable or None
+            Callable function to get the parameter
+            Must have signature fget(self)
+        fset : callable or None
+            Callable function to set the parameter
+            Must have signature fset(self, value)
+        fdel : callable or None
+            Callable function to delete the parameter
+            Must have signature fdel(self)
+        doc : str
+            Docstring for the parameter
+        attr : str
+            The name of the backing attribute.
+        vartype : type
+            The type to validate, defaults to `int`
+        """
         if attr is not None and vartype is not None:
             self.attr = attr
             self.vartype = vartype
@@ -107,14 +116,16 @@ def center_data(data):
 
 
 def remove_bg(data, multiplier=1.5):
-    """Utility that measures mode of data and subtracts it"""
+    """Utility that measures mode of data and subtracts a multiplier of it"""
     mode = np.bincount(data.ravel()).argmax()
     return data - multiplier * mode
 
 
 def psqrt(data):
     """Take the positive square root, negative values will be set to zero."""
+    # make zero array
     sdata = np.zeros_like(data, float)
+    # fill only sqrt of positive values
     sdata[data > 0] = np.sqrt(data[data > 0])
     return sdata
 
@@ -122,9 +133,12 @@ def psqrt(data):
 def prep_data_for_PR(data, xysize=None, multiplier=1.5):
     """A utility to prepare data for phase retrieval
 
-    Will pad or crop to xysize"""
+    Will pad or crop to xysize and remove mode times multiplier"""
+    # pull shape
     nz, ny, nx = data.shape
+    # remove background
     data_without_bg = remove_bg(data, multiplier)
+    # figure out padding or cropping
     if xysize is None:
         xysize = max(ny, nx)
     if xysize == ny == nx:
@@ -133,6 +147,8 @@ def prep_data_for_PR(data, xysize=None, multiplier=1.5):
         pad_data = fft_pad(data_without_bg, (nz, xysize, xysize),
                            mode="constant")
     else:
+        # if need to crop, crop and center and return
         my_slice = slice_maker((ny + 1) // 2, (nx + 1) // 2, xysize)
         return center_data(data_without_bg)[[Ellipsis] + my_slice]
+    # return centered data
     return center_data(pad_data)

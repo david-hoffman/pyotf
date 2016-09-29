@@ -4,6 +4,9 @@
 """
 A module to simulate optical transfer functions and point spread functions
 
+If this file is run as a script (python -m pyOTF.__init__) it will compare
+the HanserPSF to the SheppardPSF in a plot.
+
 https://en.wikipedia.org/wiki/Optical_transfer_function
 https://en.wikipedia.org/wiki/Point_spread_function
 
@@ -24,7 +27,17 @@ from .utils import *
 
 class BasePSF(object):
     """A base class for objects that can calculate OTF's and PSF's.
-    It is not intended to be used alone"""
+    It is not intended to be used alone
+
+    To fully describe a PSF or OTF of an objective lens, assuming no
+    abberation, we generally need a few parameters:
+    - The wavelength of operation (assume monochromatic light)
+    - the numerical aperature of the objective
+    - the index of refraction of the medium
+
+    For numerical calculations we'll also want to know the x/y resolution
+    and number of points. Note that it is assumed that z is the optical
+    axis of the objective lens"""
 
     # Define all the numeric properties of the base class
     wl = NumericProperty(attr="_wl", vartype=(float, int),
@@ -39,15 +52,6 @@ class BasePSF(object):
     def __init__(self, wl, na, ni, res, size, zres=None, zsize=None,
                  vec_corr="none", condition="sine"):
         """Generate a PSF object
-        To fully describe a PSF or OTF of an objective lens, assuming no
-        abberation, we generally need a few parameters:
-        - The wavelength of operation (assume monochromatic light)
-        - the numerical aperature of the objective
-        - the index of refraction of the medium
-
-        For numerical calculations we'll also want to know the x/y resolution
-        and number of points. Note that it is assumed that z is the optical
-        axis of the objective lens
 
         Parameters
         ----------
@@ -94,7 +98,7 @@ class BasePSF(object):
         self.condition = condition
 
     def _attribute_changed(self):
-        """called whenever key attributes are changed
+        """Called whenever key attributes are changed
         Sets internal state variables to None so that when the
         user asks for them they are recalculated"""
         self._PSFi = None
@@ -202,7 +206,6 @@ class HanserPSF(BasePSF):
     [(2) Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W.
     Phase Retrieval for High-Numerical-Aperture Optical Systems.
     Optics Letters 2003, 28 (10), 801.](dx.doi.org/10.1364/OL.28.000801)
-
     """
 
     def __init__(self, *args, zrange=None, **kwargs):
@@ -287,8 +290,10 @@ class HanserPSF(BasePSF):
 
     def _gen_psf(self, pupil_base=None):
         """An internal utility that generates the PSF
-        The `pupil_base` keyword is provided so that phase retrieval algorithms
-        can hook into this method.
+        Kwargs
+        ------
+        pupil_base : ndarray
+            provided so that phase retrieval algorithms can hook into this method.
 
         NOTE: that the internal state is created with fftfreq, which creates
         _unshifted_ frequences"""
@@ -301,6 +306,7 @@ class HanserPSF(BasePSF):
             pupil_base = self._gen_pupil()
         else:
             assert pupil_base.ndim == 2, "`pupil_base` is wrong shape"
+            # Maybe we should do fftshift here so user doesn't have too
         # pull relevant internal state variables
         kr = self._kr
         phi = self._phi
@@ -319,8 +325,10 @@ class HanserPSF(BasePSF):
                 a = 1.0 / np.sqrt(np.cos(theta))
             elif self.condition == "herschel":
                 a = 1.0 / np.cos(theta)
-            else:
+            elif self.condition == "none":
                 a = 1.0
+            else:
+                raise RuntimeError("You should never see this")
             pupil *= a
             plist = []
             if self.vec_corr == "z" or self.vec_corr == "total":

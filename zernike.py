@@ -17,7 +17,7 @@ import numpy as np
 from scipy.special import binom, hyp2f1
 from .utils import cart2pol
 
-# forward mapping of Noll indices
+# forward mapping of Noll indices https://oeis.org/A176988
 noll_mapping = np.array([
     1, 3, 2, 5, 4, 6, 9, 7, 8, 10, 15, 13, 11, 12, 14, 21, 19, 17, 16,
     18, 20, 27, 25, 23, 22, 24, 26, 28, 35, 33, 31, 29, 30, 32, 34,
@@ -90,7 +90,7 @@ def degrees2noll(n, m):
 
 
 def zernike(r, theta, *args, **kwargs):
-    """Calculates the Zernike polynomial on the unit disk or the requested
+    """Calculates the Zernike polynomial on the unit disk for the requested
     orders
 
     Parameters
