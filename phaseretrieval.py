@@ -191,10 +191,10 @@ class PhaseRetrievalResult(object):
         nz, ny, nx = psf.shape
         assert ny == nx, "Something is very wrong"
         if size is not None:
-            if nx > size:
+            if nx < size:
                 # if size is too small, pad it out.
                 psf = fft_pad(psf, (nz, size, size), mode="constant")
-            elif nx < size:
+            elif nx > size:
                 # if size is too big, crop it
                 lb = size // 2
                 hb = size - lb
