@@ -276,7 +276,6 @@ class ZernikeDecomposition(object):
         ax.axis("tight")
         ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
         ax.set_ylabel("Phase Coefficient")
-        ax.set_xlabel("Noll's Number")
         fig.tight_layout()
         # return figure handles
         return fig, ax
