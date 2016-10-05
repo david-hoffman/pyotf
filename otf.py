@@ -59,6 +59,8 @@ class BasePSF(object):
             Emission wavelength of the simulation
         na : numeric
             Numerical aperature of the simulation
+        ni : numeric
+            index of refraction for the media
         res : numeric
             x/y resolution of the simulation, must have same units as wl
         size : int
@@ -293,7 +295,8 @@ class HanserPSF(BasePSF):
         Kwargs
         ------
         pupil_base : ndarray
-            provided so that phase retrieval algorithms can hook into this method.
+            provided so that phase retrieval algorithms can hook into this
+            method.
 
         NOTE: that the internal state is created with fftfreq, which creates
         _unshifted_ frequences"""
@@ -313,23 +316,23 @@ class HanserPSF(BasePSF):
         kmag = self._kmag
         # apply the defocus to the base_pupil
         pupil = pupil_base * self._calc_defocus()
+        # calculate theta, this is possible because we know that the
+        # OTF is only non-zero on a spherical shell
+        theta = np.arcsin((kr < kmag) * kr / kmag)
+        # The authors claim that the following code is unecessary as the
+        # sine condition is already taken into account in the definition
+        # of the pupil, but I call bullshit
+        if self.condition == "sine":
+            a = 1.0 / np.sqrt(np.cos(theta))
+        elif self.condition == "herschel":
+            a = 1.0 / np.cos(theta)
+        elif self.condition == "none":
+            a = 1.0
+        else:
+            raise RuntimeError("You should never see this")
+        pupil *= a
         # apply the vectorial corrections, if requested
         if self.vec_corr != "none":
-            # calculate theta, this is possible because we know that the
-            # OTF is only non-zero on a spherical shell
-            theta = np.arcsin((kr < kmag) * kr / kmag)
-            # The authors claim that the following code is unecessary as the
-            # sine condition is already taken into account in the definition
-            # of the pupil, but I call bullshit
-            if self.condition == "sine":
-                a = 1.0 / np.sqrt(np.cos(theta))
-            elif self.condition == "herschel":
-                a = 1.0 / np.cos(theta)
-            elif self.condition == "none":
-                a = 1.0
-            else:
-                raise RuntimeError("You should never see this")
-            pupil *= a
             plist = []
             if self.vec_corr == "z" or self.vec_corr == "total":
                 plist.append(np.sin(theta) * np.cos(phi))  # Pzx
@@ -450,6 +453,11 @@ class SheppardPSF(BasePSF):
                                            kzz > kz_min + dkr)
         self.kzz, self.kyy, self.kxx = [k[self.valid_points] for k in k_tot]
 
+    def _gen_radsym_otf(self):
+        """Generate a radially symmetric OTF first and then interpolate to
+        requested size"""
+        raise NotImplementedError
+
     def _gen_otf(self):
         """Internal utility function to generate the OTFs"""
         # generate coordinate space
@@ -462,8 +470,10 @@ class SheppardPSF(BasePSF):
             a = 1.0 / np.sqrt(s)
         elif self.condition == "herschel":
             a = 1.0 / s
-        else:
+        elif self.condition == "none":
             a = 1.0
+        else:
+            raise RuntimeError("You should never see this")
         # apply the vectorial corrections if requested
         if self.vec_corr != "none":
             plist = []
@@ -482,6 +492,12 @@ class SheppardPSF(BasePSF):
             for o, p in zip(otf, plist):
                 o[self.valid_points] = p * a
         else:
+            # TODO: we can actually do a LOT better here.
+            # if the vectorial correction is None then we can
+            # calculate a 2D (kz, kr) OTF and interpolate it out to
+            # the full 3D size.
+            # otf_sub = self._gen_radsym_otf()
+            # otf = otf_sub[np.newaxis]
             otf_sub = np.zeros((self.zsize, self.size, self.size))
             otf_sub[self.valid_points] = 1.0
             otf = otf_sub[np.newaxis]
@@ -506,8 +522,8 @@ if __name__ == "__main__":
     # import plotting
     from matplotlib import pyplot as plt
     # generate a comparison
-    args = (488, 0.85, 1.0, 140, 128)
-    kwargs = dict(vec_corr="total")
+    args = (488, 0.85, 1.0, 140, 256, 240, 128)
+    kwargs = dict(vec_corr="none", condition="none")
     psf = [HanserPSF(*args, **kwargs), SheppardPSF(*args, **kwargs)]
     fig, axs = plt.subplots(2, 2, figsize=(12, 12))
     for p, ax_sub in zip(psf, axs):
@@ -515,10 +531,15 @@ if __name__ == "__main__":
         ax_yx, ax_zx = ax_sub
         otf = abs(p.OTFi)
         otf /= otf.max()
+        otf /= otf.mean()
         otf = np.log(otf + np.finfo(float).eps)
-        ax_yx.matshow(otf[otf.shape[0] // 2], vmin=-6, cmap="viridis")
+        ax_yx.matshow(otf[otf.shape[0] // 2], vmin=-5, vmax=5, cmap="inferno")
         ax_yx.set_title("{} $k_y k_x$ plane".format(p.__class__.__name__))
-        ax_zx.matshow(otf[..., otf.shape[1] // 2], vmin=-6, cmap="viridis")
+        ax_zx.matshow(otf[..., otf.shape[1] // 2], vmin=-5, vmax=5,
+                      cmap="inferno")
         ax_zx.set_title("{} $k_z k_x$ plane".format(p.__class__.__name__))
     fig.tight_layout()
     plt.show()
+    # NOTE: the results are _very_ close on a qualitative scale, but they
+    # do not match exactly as theory says they should (they're
+    # mathematically identical to one another)

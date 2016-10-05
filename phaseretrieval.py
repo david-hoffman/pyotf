@@ -217,15 +217,15 @@ class PhaseRetrievalResult(object):
 
     def plot_convergence(self):
         """Diagnostic plots of the convergence criteria"""
-        fig, axs = plt.subplots(3, 1, figsize=(6, 6), sharex=True)
-        for ax, data in zip(axs, (self.mse, self.mse_diff, self.pupil_diff)):
-            with np.errstate(invalid="ignore"):
+        with np.errstate(invalid="ignore"):
+            fig, axs = plt.subplots(3, 1, figsize=(6, 6), sharex=True)
+            for ax, data in zip(axs, (self.mse, self.mse_diff, self.pupil_diff)):
                 ax.semilogy(data)
-        for ax, t in zip(axs, ("Mean Squared Error",
-                               "Relative Change in MSE",
-                               "Relative Change in Pupil")):
-            ax.set_title(t)
-        fig.tight_layout()
+            for ax, t in zip(axs, ("Mean Squared Error",
+                                   "Relative Change in MSE",
+                                   "Relative Change in Pupil")):
+                ax.set_title(t)
+            fig.tight_layout()
         return fig, axs
 
     @property
