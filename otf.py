@@ -133,7 +133,7 @@ class BasePSF(object):
         max_val = 1 / (2 * self.na / self.wl) / 2
         if value >= max_val:
             raise ValueError(
-                ("{!r} is larger than the Nyquist Limit,",
+                ("{!r} is larger than the Nyquist Limit,"
                  " try a number smaller than {!r}").format(
                     value, max_val)
             )
@@ -428,6 +428,8 @@ class SheppardPSF(BasePSF):
         self.kmag = kmag = self.ni / self.wl
         # determine k-space pixel size
         dk, dkz = k[1] - k[0], kz[1] - kz[0]
+        # save output for user
+        self.dk, self.dkz = dk, dkz
         # determine the min value for kz given the NA and wavelength
         kz_min = np.sqrt(kmag ** 2 - (self.na / self.wl) ** 2)
         # make sure we're not crazy
