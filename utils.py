@@ -117,6 +117,8 @@ def center_data(data):
 
 def remove_bg(data, multiplier=1.5):
     """Utility that measures mode of data and subtracts a multiplier of it"""
+    # should add bit for floats, that will find the mode using the hist function
+    # bincounts with num bins specified
     mode = np.bincount(data.ravel()).argmax()
     return data - multiplier * mode
 
