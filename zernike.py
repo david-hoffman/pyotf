@@ -9,12 +9,13 @@ Running this file as a script will output a graph of the first 15 zernike
 polynomials on the unit disk.
 
 https://en.wikipedia.org/wiki/Zernike_polynomials
+http://mathworld.wolfram.com/ZernikePolynomial.html
 
 Copyright (c) 2016, David Hoffman
 """
 
 import numpy as np
-from scipy.special import binom, hyp2f1
+from scipy.special import binom, eval_jacobi
 from .utils import cart2pol
 
 # forward mapping of Noll indices https://oeis.org/A176988
@@ -149,20 +150,25 @@ def zernike(r, theta, *args, **kwargs):
         raise ValueError(
             "{} is an invalid number of arguments".format(len(args)))
     # make sure r and theta are arrays
-    r = np.asarray(r)
-    theta = np.asarray(theta)
+    r = np.asarray(r, dtype=float)
+    theta = np.asarray(theta, dtype=float)
     if r.ndim > 2:
         raise ValueError(
             "Input rho and theta cannot have more than two dimensions")
     # make sure that n and m are iterable
     n, m = n.ravel(), m.ravel()
+    # make sure that n is always greater or equal to m
+    if not (n >= abs(m)).all():
+        raise ValueError("n must always be greater or equal to m")
     # return column of zernike polynomials
     return np.array([_zernike(r, theta, nn, mm, **kwargs)
                      for nn, mm in zip(n, m)]).squeeze()
 
 
 def _radial_zernike(r, n, m):
-    """The radial part of the zernike polynomial"""
+    """The radial part of the zernike polynomial
+
+    Formula from http://mathworld.wolfram.com/ZernikePolynomial.html"""
     rad_zern = np.zeros_like(r)
     # zernike polynomials are only valid for r <= 1
     valid_points = r <= 1.0
@@ -170,23 +176,28 @@ def _radial_zernike(r, n, m):
         rad_zern[valid_points] = 1
         return rad_zern
     rprime = r[valid_points]
-    # fix zero problem, inelegant but works
-    rprime[rprime == 0.0] = np.finfo(rprime.dtype).eps
+    # for the radial part m is always positive
+    m = abs(m)
+    # calculate the coefs
     coef1 = (n + m) // 2
     coef2 = (n - m) // 2
-    bincoef = binom(n, coef1)
-    hyper = hyp2f1(-coef1, -coef2, -n, rprime**(-2))
-    rad_zern[valid_points] = bincoef * rprime**n * hyper
+    jacobi = eval_jacobi(coef2, m, 0, 1 - 2 * rprime**2)
+    rad_zern[valid_points] = (-1)**coef1 * rprime**m * jacobi
     return rad_zern
 
 
 def _zernike(r, theta, n, m, norm=False):
     """The actual function that calculates the full zernike polynomial"""
-    # if m and n aren't seperated by two then return zeros
-    if (m - n) % 2:
+    # remember if m is negative
+    mneg = m < 0
+    # going forward m is positive (Radial zernikes are only defined for
+    # positive m)
+    m = abs(m)
+    # if m and n aren't seperated by multiple of two then return zeros
+    if (n - m) % 2:
         return np.zeros_like(r)
     zern = _radial_zernike(r, n, m)
-    if m < 0:
+    if mneg:
         # odd zernike
         zern *= np.sin(m * theta)
     else:
