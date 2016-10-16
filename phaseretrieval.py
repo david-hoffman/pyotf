@@ -93,8 +93,9 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8,
         else:
             mse_diff[i] = np.nan
             pupil_diff[i] = np.nan
-        # check tolerances
-        if pupil_diff[i] < pupil_tol or mse_diff[i] < mse_tol:
+        # check tolerances, how much has the pupil changed, how much has the mse changed
+        # and what's the absolute mse
+        if pupil_diff[i] < pupil_tol or mse_diff[i] < mse_tol or mse[i] < mse_tol:
             break
         # update old_mse
         old_mse = new_mse
