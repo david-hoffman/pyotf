@@ -37,6 +37,10 @@ def test_indices():
                 "{} != {}".format(test_noll, test_noll2))
 
 
+def test_n_lt_m():
+    """n must always be greater than or equal to m"""
+    assert_raises(ValueError, zernike, 0.5, 0.0, 4, 5)
+
 def test_forward_mapping():
     """Make sure that the mapping from degrees to Noll's indices is correct"""
     # from https://en.wikipedia.org/wiki/Zernike_polynomials
@@ -83,8 +87,29 @@ def test_zernike_errors():
 
 def test_zernike_zero():
     """Make sure same result is obtained for integer and float"""
-    n = np.random.randint(100)
-    m = np.random.randint(-100, 100)
-    r = 0
-    theta = np.random.rand(1) * 2 * np.pi - np.pi
-    assert_true(np.isfinite(zernike(r, theta, n, m)).all())
+    n, m = choose_random_nm()
+    r = 0.5
+    theta = np.random.rand() * 2 * np.pi - np.pi
+    assert_true(np.isfinite(zernike(r, theta, n, m)).all(), "r, theta, n, m = {}, {}, {}, {}".format(r, theta, n, m))
+
+
+def test_zernike_edges():
+    """Make sure same result is obtained at 0 and 0.0 and 1 and 1.0"""
+    n, m = choose_random_nm()
+    theta = np.random.rand() * 2 * np.pi - np.pi
+    assert_equal(zernike(1.0, theta, n, m), zernike(1, theta, n, m), "theta, n, m = {}, {}, {}".format(theta, n, m))
+    assert_equal(zernike(0.0, theta, n, m), zernike(0, theta, n, m), "theta, n, m = {}, {}, {}".format(theta, n, m))
+
+
+def choose_random_nm():
+    m = 2
+    n = 1
+    while (m - n) % 2:
+        n = np.random.randint(100)
+        if n:
+            m = np.random.randint(-n, n)
+        else:
+            m = 0
+    assert n >= abs(m)
+    assert not (m - n) % 2, "m = {}, n = {}".format(m, n)
+    return n, m
