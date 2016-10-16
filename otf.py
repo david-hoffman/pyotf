@@ -149,13 +149,14 @@ class BasePSF(object):
 
     @vec_corr.setter
     def vec_corr(self, value):
-        if value in {"none", "x", "y", "z", "total"}:
-            self._vec_corr = value
-            self._attribute_changed()
-        else:
+        valid_values = {"none", "x", "y", "z", "total"}
+        if value not in valid_values:
             raise ValueError(
-                "{!r} is not a valid vector correction".format(value)
+                ("Vector correction must be one of "
+                 ("{!r}, " * len(valid_values)).format(value))
             )
+        self._vec_corr = value
+        self._attribute_changed()
 
     @property
     def condition(self):
@@ -164,8 +165,12 @@ class BasePSF(object):
 
     @condition.setter
     def condition(self, value):
-        if value not in {"none", "sine", "herschel"}:
-            raise ValueError("{!r} is not a valid condition".format(value))
+        valid_values = {"none", "sine", "herschel"}
+        if value not in valid_values:
+            raise ValueError(
+                ("Condition must be one of "
+                 ("{!r}, " * len(valid_values)).format(value))
+            )
         self._condition = value
         self._attribute_changed()
 
@@ -489,7 +494,8 @@ class SheppardPSF(BasePSF):
                 plist.append(1 - m ** 2 / (1 + s))  # Pxx
                 plist.append(-m * n / (1 + s))  # Pxy
             # generate empty otf
-            otf = np.zeros((len(plist), self.zsize, self.size, self.size))
+            otf = np.zeros((len(plist), self.zsize, self.size, self.size),
+                           dtype="D")
             # fill in the valid poins
             for o, p in zip(otf, plist):
                 o[self.valid_points] = p * a
@@ -500,7 +506,7 @@ class SheppardPSF(BasePSF):
             # the full 3D size.
             # otf_sub = self._gen_radsym_otf()
             # otf = otf_sub[np.newaxis]
-            otf_sub = np.zeros((self.zsize, self.size, self.size))
+            otf_sub = np.zeros((self.zsize, self.size, self.size), dtype="D")
             otf_sub[self.valid_points] = 1.0
             otf = otf_sub[np.newaxis]
         # we're already calculating the OTF, so we just need to shift it into
