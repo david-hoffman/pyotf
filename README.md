@@ -20,7 +20,7 @@ The package is made up of four component modules:
 
 ### `otf.py`
 
-![Comparison of HanserPSF and SheppardPSF Outputs](./fixtures/otf.png, "Output of python -m pyOTF.otf")
+![Comparison of HanserPSF and SheppardPSF Outputs](https://raw.githubusercontent.com/david-hoffman/pyOTF/master/fixtures/otf.png, "Output of python -m pyOTF.otf")
 
 Two models of optical imaging systems are available in this module one described by [Hanser et al][1] and one described by [Arnison and Sheppard][2]. They are, in fact, mathematically equivalent but each have their strengths and weaknesses.
 
@@ -30,7 +30,7 @@ The phase retrieval algorithm implemented in this module is described by [Hanser
 
 ### `zernike.py`
 
-![First 15 zernike Polynomials plotted on the unit disk](./fixtures/zernike.png, "Output of python -m pyOTF.zernike")
+![First 15 zernike Polynomials plotted on the unit disk](https://raw.githubusercontent.com/david-hoffman/pyOTF/master/fixtures/zernike.png, "Output of python -m pyOTF.zernike")
 
 [Zernike Polynomials](https://en.wikipedia.org/wiki/Zernike_polynomials) are orthonormal functions defined over the unit disk. Being orthonormal any function defined on a unit disk has a unique decomposition into Zernike polynomials. In this package, the Zernike polynomials are used to quantify the abberation of the phase and magnitude of the retrieved back pupil of the optical system. To do so one can call the `fit_to_zernikes` method of a `PhaseRetrievalResult` object, which will fit a specified number of Zernike modes to the back pupil's retrieved phase and magnitude, each independently, and return a `ZernikeDecomposition` object. The `ZernikeDecomposition` that is returned is also saved as an attribute of the `PhaseRetreivalResult` object on which the `fit_to_zernikes` method was called, for convenience. `ZernikeDecomposition` objects have plotting methods so that the user can inspect the decomposition. `ZernikeDecomposition` objects also have methods for reconstructing the phase, magnitude or complete complex pupil which can be fed back into `HanserPSF` to generate an abberated, but noise free, PSF. The method for doing this simply is currently a member of the `PhaseRetreivalResult` class but will probably be moved to the `ZernikeDecomposition` class later.
 
