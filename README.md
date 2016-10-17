@@ -48,8 +48,8 @@ Most of the contents of `utils` won't be useful to the average user save one fun
 
 3. [Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W. Phase Retrieval for High-Numerical-Aperture Optical Systems. Optics Letters 2003, 28 (10), 801.][3]
 
-[1]: dx.doi.org/10.1364/OL.28.000801, "Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W. Phase Retrieval for High-Numerical-Aperture Optical Systems.Optics Letters 2003, 28 (10), 801."
+[1]: http://dx.doi.org/10.1364/OL.28.000801, "Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W. Phase Retrieval for High-Numerical-Aperture Optical Systems.Optics Letters 2003, 28 (10), 801."
 
-[2]: dx.doi.org/10.1016/S0030-4018(02)01857-6 "Arnison, M. R.; Sheppard, C. J. R. A 3D Vectorial Optical Transfer Function Suitable for Arbitrary Pupil Functions. Optics Communications 2002, 211 (1–6), 53–63."
+[2]: http://dx.doi.org/10.1016/S0030-4018(02)01857-6 "Arnison, M. R.; Sheppard, C. J. R. A 3D Vectorial Optical Transfer Function Suitable for Arbitrary Pupil Functions. Optics Communications 2002, 211 (1–6), 53–63."
 
-[3]: dx.doi.org/10.1364/OL.28.000801 "Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W. Phase Retrieval for High-Numerical-Aperture Optical Systems. Optics Letters 2003, 28 (10), 801."
+[3]: http://dx.doi.org/10.1364/OL.28.000801 "Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W. Phase Retrieval for High-Numerical-Aperture Optical Systems. Optics Letters 2003, 28 (10), 801."
