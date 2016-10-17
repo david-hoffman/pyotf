@@ -308,7 +308,9 @@ class ZernikeDecomposition(object):
 
     def complex_pupil(self, smag=Ellipsis, sphase=Ellipsis, *args, **kwargs):
         """Reconstruct the complex pupil from the specified slice"""
-        return self.mag(*args, s=smag, **kwargs) * np.exp(1j * self.phase(*args, s=sphase, **kwargs))
+        mag = self.mag(*args, s=smag, **kwargs)
+        phase = self.phase(*args, s=sphase, **kwargs)
+        return mag * np.exp(1j * phase)
 
 
 def _calc_mse(data1, data2):

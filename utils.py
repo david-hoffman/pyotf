@@ -117,8 +117,8 @@ def center_data(data):
 
 def remove_bg(data, multiplier=1.5):
     """Utility that measures mode of data and subtracts a multiplier of it"""
-    # should add bit for floats, that will find the mode using the hist function
-    # bincounts with num bins specified
+    # should add bit for floats, that will find the mode using the hist
+    # function bincounts with num bins specified
     mode = np.bincount(data.ravel()).argmax()
     return data - multiplier * mode
 
@@ -135,7 +135,22 @@ def psqrt(data):
 def prep_data_for_PR(data, xysize=None, multiplier=1.5):
     """A utility to prepare data for phase retrieval
 
-    Will pad or crop to xysize and remove mode times multiplier"""
+    Will pad or crop to xysize and remove mode times multiplier
+
+    Parameters
+    ----------
+    data : ndarray
+        The PSF data to prepare for phase retrieval
+    xysize : int
+        Size to pad or crop `data` to along the y, x dimensions
+    multiplier : float
+        The amount to by which to multiply the mode before subtracting
+
+    Returns
+    -------
+    prepped_data : ndarray
+        The data that has been prepped for phase retrieval.
+    """
     # pull shape
     nz, ny, nx = data.shape
     # remove background

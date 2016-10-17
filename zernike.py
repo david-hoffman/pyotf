@@ -15,7 +15,7 @@ Copyright (c) 2016, David Hoffman
 """
 
 import numpy as np
-from scipy.special import binom, eval_jacobi
+from scipy.special import eval_jacobi
 from .utils import cart2pol
 
 # forward mapping of Noll indices https://oeis.org/A176988
@@ -152,6 +152,9 @@ def zernike(r, theta, *args, **kwargs):
     # make sure r and theta are arrays
     r = np.asarray(r, dtype=float)
     theta = np.asarray(theta, dtype=float)
+    # make sure that r is always greater than 0
+    if not (r >= 0).all():
+        raise ValueError("r must always be greater or equal to 0")
     if r.ndim > 2:
         raise ValueError(
             "Input rho and theta cannot have more than two dimensions")

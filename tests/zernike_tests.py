@@ -41,6 +41,7 @@ def test_n_lt_m():
     """n must always be greater than or equal to m"""
     assert_raises(ValueError, zernike, 0.5, 0.0, 4, 5)
 
+
 def test_forward_mapping():
     """Make sure that the mapping from degrees to Noll's indices is correct"""
     # from https://en.wikipedia.org/wiki/Zernike_polynomials
@@ -81,8 +82,14 @@ def test_zernike_return_shape():
 def test_zernike_errors():
     """Make sure zernike doesn't accept bad input."""
     noll = np.ones((2, 2, 2))
+    # check noll dims
     assert_raises(ValueError, zernike, 0, 0, noll)
+    # check that n and m must have dimension of 1
     assert_raises(ValueError, zernike, 0, 0, noll, noll)
+    # check that r can't be negative
+    assert_raises(ValueError, zernike, -1, 0, 0, 1)
+    # check that r only has 2 dims
+    assert_raises(ValueError, zernike, np.ones((10, 10, 2)), 0, 0, 1)
 
 
 def test_zernike_zero():
@@ -90,26 +97,46 @@ def test_zernike_zero():
     n, m = choose_random_nm()
     r = 0.5
     theta = np.random.rand() * 2 * np.pi - np.pi
-    assert_true(np.isfinite(zernike(r, theta, n, m)).all(), "r, theta, n, m = {}, {}, {}, {}".format(r, theta, n, m))
+    assert_true(np.isfinite(zernike(r, theta, n, m)).all(),
+                "r, theta, n, m = {}, {}, {}, {}".format(r, theta, n, m))
 
 
 def test_zernike_edges():
     """Make sure same result is obtained at 0 and 0.0 and 1 and 1.0"""
     n, m = choose_random_nm()
     theta = np.random.rand() * 2 * np.pi - np.pi
-    assert_equal(zernike(1.0, theta, n, m), zernike(1, theta, n, m), "theta, n, m = {}, {}, {}".format(theta, n, m))
-    assert_equal(zernike(0.0, theta, n, m), zernike(0, theta, n, m), "theta, n, m = {}, {}, {}".format(theta, n, m))
+    assert_equal(zernike(1.0, theta, n, m), zernike(1, theta, n, m),
+                 "theta, n, m = {}, {}, {}".format(theta, n, m))
+    assert_equal(zernike(0.0, theta, n, m), zernike(0, theta, n, m),
+                 "theta, n, m = {}, {}, {}".format(theta, n, m))
 
 
-def choose_random_nm():
-    m = 2
-    n = 1
-    while (m - n) % 2:
+def test_odd_nm():
+    """Make sure that n and m seperated by odd numbers gives zeros"""
+    n, m = choose_random_nm(True)
+    theta = np.random.rand(100) * 2 * np.pi - np.pi
+    # we'll check outside the normal range too, when r
+    r = np.random.rand(100) * 2
+    assert_true((zernike(r, theta, n, m) == 0).all(),
+                "theta, n, m = {}, {}, {}".format(theta, n, m))
+
+
+def choose_random_nm(odd=False):
+    """Small utility function to choose random n and m, optional argument specifies
+    whether n and m are seperated by a factor of 2 or not"""
+    m = np.nan
+    n = np.nan
+    # make sure m and n are seperated by a factor of 2 otherwise
+    # we'll get all zeros
+    while (m - n + odd) % 2:
+        # choose random positive n
         n = np.random.randint(100)
         if n:
-            m = np.random.randint(-n, n)
+            # if n is greater than zero choose random m such that
+            # n >= m
+            m = np.random.randint(-n, n + 1)
         else:
             m = 0
-    assert n >= abs(m)
-    assert not (m - n) % 2, "m = {}, n = {}".format(m, n)
+    assert n >= abs(m), "Somethings very wrong {} not >= {}".format(n, m)
+    assert not (m - n + odd) % 2, "m = {}, n = {}".format(m, n)
     return n, m
