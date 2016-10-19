@@ -48,9 +48,9 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
 
     def test_phase_and_mag(self):
         """Make sure phase retrieval returns same phase and magnitude"""
-        np.testing.assert_allclose(ifftshift(self.pupil_mag),
+        np.testing.assert_allclose(fftshift(self.pupil_mag),
                                    self.PR_result.mag, err_msg="Mag failed")
-        np.testing.assert_allclose(ifftshift(self.pupil_phase),
+        np.testing.assert_allclose(fftshift(self.pupil_phase),
                                    self.PR_result.phase, err_msg="Phase failed")
 
     def test_zernike_modes(self):

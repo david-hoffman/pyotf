@@ -16,12 +16,12 @@ Copyright (c) 2016, David Hoffman
 import numpy as np
 from numpy.linalg import norm
 try:
-    from pyfftw.interfaces.numpy_fft import ifftshift, fftfreq
+    from pyfftw.interfaces.numpy_fft import fftshift, fftfreq
     import pyfftw
     # Turn on the cache for optimum performance
     pyfftw.interfaces.cache.enable()
 except ImportError:
-    from numpy.fft import ifftshift, fftfreq
+    from numpy.fft import fftshift, fftfreq
 from .utils import *
 
 
@@ -314,7 +314,7 @@ class HanserPSF(BasePSF):
             pupil_base = self._gen_pupil()
         else:
             assert pupil_base.ndim == 2, "`pupil_base` is wrong shape"
-            # Maybe we should do fftshift here so user doesn't have too
+            # Maybe we should do ifftshift here so user doesn't have too
         # pull relevant internal state variables
         kr = self._kr
         phi = self._phi
@@ -358,7 +358,7 @@ class HanserPSF(BasePSF):
         # self._pupils = pupils
         # because the internal state is created with fftfreq, no initial shift
         # is necessary.
-        PSFa = ifftshift(ifftn(pupils, axes=(2, 3)), axes=(2, 3))
+        PSFa = fftshift(ifftn(pupils, axes=(2, 3)), axes=(2, 3))
         # save the PSF internally
         self._PSFa = PSFa
 
@@ -511,7 +511,7 @@ class SheppardPSF(BasePSF):
             otf = otf_sub[np.newaxis]
         # we're already calculating the OTF, so we just need to shift it into
         # the right place.
-        self._OTFa = ifftshift(otf, axes=(1, 2, 3))
+        self._OTFa = fftshift(otf, axes=(1, 2, 3))
 
     @property
     def OTFa(self):

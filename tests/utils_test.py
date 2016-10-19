@@ -22,7 +22,7 @@ def test_center_data():
     random_index = tuple((np.random.randint(i), ) for i in shape)
     data[random_index] = 1
     data_centered = center_data(data)
-    assert_true(np.fft.fftshift(data_centered)[((0, ), ) * ndims])
+    assert_true(np.fft.ifftshift(data_centered)[((0, ), ) * ndims])
 
 
 def test_psqrt():

@@ -5,21 +5,21 @@
 # Copyright (c) 2016, David Hoffman
 import numpy as np
 try:
-    from pyfftw.interfaces.numpy_fft import (ifftshift, fftshift,
+    from pyfftw.interfaces.numpy_fft import (fftshift, ifftshift,
                                              fftn, ifftn)
     import pyfftw
     # Turn on the cache for optimum performance
     pyfftw.interfaces.cache.enable()
 except ImportError:
-    from numpy.fft import ifftshift, fftshift, fftn, ifftn
+    from numpy.fft import fftshift, ifftshift, fftn, ifftn
 from dphutils import fft_pad, slice_maker
 
 
 def easy_fft(data, axes=None):
     """utility method that includes fft shifting"""
-    return ifftshift(
+    return fftshift(
         fftn(
-            fftshift(
+            ifftshift(
                 data, axes=axes
             ), axes=axes
         ), axes=axes)
@@ -27,9 +27,9 @@ def easy_fft(data, axes=None):
 
 def easy_ifft(data, axes=None):
     """utility method that includes fft shifting"""
-    return fftshift(
+    return ifftshift(
         ifftn(
-            ifftshift(
+            fftshift(
                 data, axes=axes
             ), axes=axes
         ), axes=axes)
@@ -111,7 +111,7 @@ def center_data(data):
     max_loc = np.unravel_index(data.argmax(), data_shape)
     # iterate through dimensions and roll data to the right place
     for i, (x0, nx) in enumerate(zip(max_loc, data_shape)):
-        centered_data = np.roll(centered_data, (nx + 1) // 2 - x0, i)
+        centered_data = np.roll(centered_data, nx // 2 - x0, i)
     return centered_data
 
 

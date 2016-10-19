@@ -12,12 +12,12 @@ Copyright (c) 2016, David Hoffman
 import copy
 import numpy as np
 try:
-    from pyfftw.interfaces.numpy_fft import ifftshift, fftshift, fftn
+    from pyfftw.interfaces.numpy_fft import fftshift, ifftshift, fftn
     import pyfftw
     # Turn on the cache for optimum performance
     pyfftw.interfaces.cache.enable()
 except ImportError:
-    from numpy.fft import ifftshift, fftshift, fftn
+    from numpy.fft import fftshift, ifftshift, fftn
 
 from numpy.linalg import lstsq
 from .utils import *
@@ -106,7 +106,7 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8,
         # replace magnitude with experimentally measured mag
         new_psf = mag * np.exp(1j * phase)
         # generate the new pupils
-        new_pupils = fftn(fftshift(new_psf, axes=(1, 2)), axes=(1, 2))
+        new_pupils = fftn(ifftshift(new_psf, axes=(1, 2)), axes=(1, 2))
         # undo defocus and take the mean
         new_pupils /= model._calc_defocus()
         new_pupil = new_pupils.mean(0) * mask
@@ -117,11 +117,11 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8,
     mse_diff = mse_diff[:i + 1]
     pupil_diff = pupil_diff[:i + 1]
     # shift mask
-    mask = ifftshift(mask)
+    mask = fftshift(mask)
     # shift phase then unwrap and mask
-    phase = unwrap_phase(ifftshift(np.angle(old_pupil))) * mask
+    phase = unwrap_phase(fftshift(np.angle(old_pupil))) * mask
     # shift magnitude
-    magnitude = ifftshift(abs(old_pupil)) * mask
+    magnitude = fftshift(abs(old_pupil)) * mask
     return PhaseRetrievalResult(magnitude, phase, mse, pupil_diff, mse_diff,
                                 model)
 
@@ -160,7 +160,7 @@ class PhaseRetrievalResult(object):
         # calculate coordinate system
         model._gen_kr()
         r, theta = model._kr, model._phi
-        self.r, self.theta = ifftshift(r), ifftshift(theta)
+        self.r, self.theta = fftshift(r), fftshift(theta)
         # pull specific model parameters
         self.na, self.wl = model.na, model.wl
 
