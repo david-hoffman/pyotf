@@ -32,7 +32,7 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8,
     """Retrieve the phase across the objective's back pupil from an
     experimentally measured PSF.
 
-    Follows: [(1) Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.;
+    Follows: [Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.;
     Sedat, J. W. Phase Retrieval for High-Numerical-Aperture Optical Systems.
     Optics Letters 2003, 28 (10), 801.](dx.doi.org/10.1364/OL.28.000801)
 
@@ -53,6 +53,11 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8,
     phase_only : bool
         True means only the phase of the back pupil is retrieved while the
         amplitude is not.
+
+    Returns
+    -------
+    PR_result : PhaseRetrievalResult
+        An object that contains the phase retrieval result
     """
     # make sure data is square
     assert data.shape[1] == data.shape[2], "Data is not square in x/y"
