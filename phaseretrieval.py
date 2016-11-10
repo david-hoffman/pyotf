@@ -191,7 +191,7 @@ class PhaseRetrievalResult(object):
         if zrange is not None:
             model.zrange = zrange
         # generate the PSF from the reconstructed phase
-        model._gen_psf(self.zd_result.complex_pupil(sphase=sphase))
+        model._gen_psf(ifftshift(self.zd_result.complex_pupil(sphase=sphase)))
         # reshpae PSF if needed in x/y dimensions
         psf = model.PSFi
         nz, ny, nx = psf.shape

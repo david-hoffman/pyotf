@@ -130,6 +130,9 @@ class BasePSF(object):
     def res(self, value):
         # max_val is the nyquist limit, for an accurate simulation
         # the pixel size must be smaller than this number
+        # thinking in terms of the convolution that is implicitly
+        # performed when generating the OTFi we also don't want
+        # any wrapping effects.
         max_val = 1 / (2 * self.na / self.wl) / 2
         if value >= max_val:
             raise ValueError(
@@ -415,6 +418,8 @@ class SheppardPSF(BasePSF):
         # this checks the nyquist limit for z
         max_val = 1 / (2 * self.ni / self.wl)
         if value >= max_val:
+            # this will cause a fftconvolution error when calculating the
+            # intensity OTF
             raise ValueError(
                 "{!r} is too large try a number smaller than {!r}".format(
                     value, max_val)
