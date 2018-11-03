@@ -26,6 +26,10 @@ from .zernike import *
 from skimage.restoration import unwrap_phase
 from matplotlib import pyplot as plt
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8,
                    mse_tol=1e-8, phase_only=False):
@@ -100,6 +104,7 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8,
             pupil_diff[i] = np.nan
         # check tolerances, how much has the pupil changed, how much has the mse changed
         # and what's the absolute mse
+        logger.info("Iteration {}, mse_diff = {:.2g}, pupil_diff = {:.2g}".format(i, mse_diff[i], pupil_diff[i]))
         if pupil_diff[i] < pupil_tol or mse_diff[i] < mse_tol or mse[i] < mse_tol:
             break
         # update old_mse
@@ -118,17 +123,18 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8,
         # if phase only discard magnitude info
         if phase_only:
             new_pupil = np.exp(1j * np.angle(new_pupil)) * mask
+    else:
+        logger.warn("Reach max iterations without convergence")
     mse = mse[:i + 1]
     mse_diff = mse_diff[:i + 1]
     pupil_diff = pupil_diff[:i + 1]
     # shift mask
     mask = fftshift(mask)
     # shift phase then unwrap and mask
-    phase = unwrap_phase(fftshift(np.angle(old_pupil))) * mask
+    phase = unwrap_phase(fftshift(np.angle(new_pupil))) * mask
     # shift magnitude
-    magnitude = fftshift(abs(old_pupil)) * mask
-    return PhaseRetrievalResult(magnitude, phase, mse, pupil_diff, mse_diff,
-                                model)
+    magnitude = fftshift(abs(new_pupil)) * mask
+    return PhaseRetrievalResult(magnitude, phase, mse, pupil_diff, mse_diff, model)
 
 
 class PhaseRetrievalResult(object):
@@ -179,6 +185,7 @@ class PhaseRetrievalResult(object):
         mag_coefs = _fit_to_zerns(self.mag, zerns, r)
         phase_coefs = _fit_to_zerns(self.phase, zerns, r)
         self.zd_result = ZernikeDecomposition(mag_coefs, phase_coefs, zerns)
+        return self.zd_result
 
     def generate_psf(self, sphase=slice(4, None, None), size=None, zsize=None,
                      zrange=None):
@@ -209,10 +216,15 @@ class PhaseRetrievalResult(object):
         # return data
         return psf
 
-    def plot(self):
+    def plot(self, axs=None):
         """Plot the retrieved results"""
-        fig, (ax_phase, ax_mag) = plt.subplots(1, 2, figsize=(12, 5))
-        phase_img = ax_phase.matshow(self.phase, cmap="seismic")
+        if axs is None:
+            fig, (ax_phase, ax_mag) = plt.subplots(1, 2, figsize=(12, 5))
+        else:
+            (ax_phase, ax_mag) = axs
+            fig = ax_phase.get_figure()
+
+        phase_img = ax_phase.matshow(self.phase, cmap="seismic", vmin=-np.pi, vmax=np.pi)
         plt.colorbar(phase_img, ax=ax_phase)
         mag_img = ax_mag.matshow(self.mag, cmap="inferno")
         plt.colorbar(mag_img, ax=ax_mag)
@@ -363,8 +375,7 @@ if __name__ == "__main__":
     import time
     from skimage.external import tifffile as tif
     # read in data from fixtures
-    data = tif.imread(os.path.split(__file__)[0] +
-                      "/fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif")
+    data = tif.imread(os.path.split(__file__)[0] + "/fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif")
     # prep data
     data_prepped = prep_data_for_PR(data, 512)
     # set up model params

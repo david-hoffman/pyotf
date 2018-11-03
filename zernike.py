@@ -59,7 +59,7 @@ name2noll = {v: k for k, v in noll2name.items()}
 def noll2degrees(noll):
     """Convert from Noll's indices to radial degree and azimuthal degree"""
     noll = np.asarray(noll)
-    if not np.issubdtype(noll.dtype, int):
+    if not np.issubdtype(noll.dtype, np.signedinteger):
         raise ValueError("input is not integer, input = {}".format(noll))
     if not (noll > 0).all():
         raise ValueError(

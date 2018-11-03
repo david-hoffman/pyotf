@@ -22,7 +22,7 @@ try:
     pyfftw.interfaces.cache.enable()
 except ImportError:
     from numpy.fft import fftshift, fftfreq
-from .utils import *
+from pyOTF.utils import *
 
 
 class BasePSF(object):
@@ -590,7 +590,7 @@ class SheppardPSF2D(SheppardPSF):
         else:
             raise RuntimeError("You should never see this")
         # apply the vectorial corrections if requested
-        if False:#self.vec_corr != "none":
+        if self.vec_corr != "none":
             plist = []
             if self.vec_corr == "z" or self.vec_corr == "total":
                 plist.append(-m)  # Pzx
@@ -620,7 +620,7 @@ class SheppardPSF2D(SheppardPSF):
         # we're already calculating the OTF, so we just need to shift it into
         # the right place.
         self._OTFa = fftshift(otf, axes=(1, 2))
-        
+
     @property
     def PSFa(self):
         if self._PSFa is None:
@@ -635,21 +635,25 @@ if __name__ == "__main__":
     args = (488, 0.85, 1.0, 140, 256, 240, 128)
     kwargs = dict(vec_corr="none", condition="none")
     psf = [HanserPSF(*args, **kwargs), SheppardPSF(*args, **kwargs)]
-    fig, axs = plt.subplots(2, 2, figsize=(12, 12))
-    for p, ax_sub in zip(psf, axs):
-        # make coordinates
-        ax_yx, ax_zx = ax_sub
-        otf = abs(p.OTFi)
-        otf /= otf.max()
-        otf /= otf.mean()
-        otf = np.log(otf + np.finfo(float).eps)
-        ax_yx.matshow(otf[otf.shape[0] // 2], vmin=-5, vmax=5, cmap="inferno")
-        ax_yx.set_title("{} $k_y k_x$ plane".format(p.__class__.__name__))
-        ax_zx.matshow(otf[..., otf.shape[1] // 2], vmin=-5, vmax=5,
-                      cmap="inferno")
-        ax_zx.set_title("{} $k_z k_x$ plane".format(p.__class__.__name__))
-    fig.tight_layout()
-    plt.show()
+    with plt.style.context("dark_background"):
+        fig, axs = plt.subplots(2, 2, figsize=(9, 6), gridspec_kw=dict(width_ratios=(1, 2)))
+        for p, ax_sub in zip(psf, axs):
+            # make coordinates
+            ax_yx, ax_zx = ax_sub
+            otf = abs(p.OTFi)
+            otf /= otf.max()
+            otf /= otf.mean()
+            otf = np.log(otf + np.finfo(float).eps)
+            ax_yx.matshow(otf[otf.shape[0] // 2], vmin=-5, vmax=5, cmap="inferno")
+            ax_yx.set_title("{} $k_y k_x$ plane".format(p.__class__.__name__))
+            ax_zx.matshow(otf[..., otf.shape[1] // 2], vmin=-5, vmax=5,
+                          cmap="inferno")
+            ax_zx.set_title("{} $k_z k_x$ plane".format(p.__class__.__name__))
+            for ax in ax_sub:
+                ax.xaxis.set_major_locator(plt.NullLocator())
+                ax.yaxis.set_major_locator(plt.NullLocator())
+        fig.tight_layout()
+        plt.show()
     # NOTE: the results are _very_ close on a qualitative scale, but they
     # do not match exactly as theory says they should (they're
     # mathematically identical to one another)
