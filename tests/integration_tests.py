@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# integration_tests.py
+"""
+Small test suite
+
+Copyright David Hoffman, 2018
+"""
+
 from nose.tools import *
 import unittest
 from pyOTF.otf import *
