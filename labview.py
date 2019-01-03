@@ -72,7 +72,7 @@ if __name__ == "__main__":
     # retrieve the phase
     pr_start = time.time()
     print("Starting phase retrieval with data of size {}".format(data.shape))
-    phase = labview(data, **params, pupil_tol=1e-6)
+    phase = labview(data[6:-5], **params, pupil_tol=1e-6)
     print("It took {} seconds to retrieve the pupil function".format(
         time.time() - pr_start))
     # plot
