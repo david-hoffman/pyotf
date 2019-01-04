@@ -8,7 +8,7 @@ The majority of this package's documentation is included in the source code and 
 
 ## Installation
 
-The software is very much in alpha phase and installation is simply cloning the repository and adding the folder to your python path. 
+The software is very much in alpha phase and installation is simply cloning the repository and adding the folder to your python path. (also at the moment requires [dphutils package](https://github.com/david-hoffman/dphutils))
 
 ## Components
 
@@ -45,6 +45,10 @@ The phase retrieval algorithm implemented in this module is described by [Hanser
 ### utils.py
 
 Most of the contents of `utils` won't be useful to the average user save one function: `prep_data_for_PR(data, xysize=None, multiplier=1.5)`. `prep_data_for_PR` can, as its name suggests, be used to quickly prep PSF image data for phase retrieval using the `retrieve_phase` function of the `phase_retrieval` module.
+
+## LabVIEW API
+
+An example of inputing a 3D stack and running this python function from LabVIEW (>2018) is given in `\labview\Test Phase Retrieval.vi`
 
 ## Use cases
 
