@@ -9,6 +9,7 @@ Copyright (c) 2018, David Hoffman
 
 from pyOTF.phaseretrieval import retrieve_phase
 from pyOTF.utils import prep_data_for_PR
+import numpy as np
 
 
 def labview(data, wl, na, ni, res, zres, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, phase_only=False):
@@ -40,13 +41,18 @@ def labview(data, wl, na, ni, res, zres, max_iters=200, pupil_tol=1e-8, mse_tol=
         amplitude is not.
     """
 
-    params = dict(wl=wl, na=na, ni=ni, res=res, zres=zres)
+    #Convert from LabVIEW data types to Python types
+    data = np.asarray(data) # LabView converts arrays to lists.  This will convert back to arrays.
+    params = dict(wl=wl, na=na, ni=ni, res=res, zres=zres) # LabView clusters appear as tuples.  This creates the dict.
 
+    #Preprocess data (background removal, filtering, etc...)
     data_prepped = prep_data_for_PR(data)
 
+    #Phase retrieval
     pr_result = retrieve_phase(data_prepped, params, max_iters, pupil_tol, mse_tol, phase_only)
 
-    return pr_result.phase
+
+    return pr_result.phase.tolist() # LabVIEW wants lists instead of arrays.  This will convert back to lists.
 
 
 if __name__ == "__main__":
@@ -73,6 +79,7 @@ if __name__ == "__main__":
     pr_start = time.time()
     print("Starting phase retrieval with data of size {}".format(data.shape))
     phase = labview(data[6:-5], **params, pupil_tol=1e-6)
+    phase = np.asarray(phase)
     print("It took {} seconds to retrieve the pupil function".format(
         time.time() - pr_start))
     # plot
