@@ -75,10 +75,10 @@ def degrees2noll(n, m):
     """Convert from radial and azimuthal degrees to Noll's index"""
     n, m = np.asarray(n), np.asarray(m)
     # check inputs
-    if not np.issubdtype(n.dtype, int):
+    if not np.issubdtype(n.dtype, np.signedinteger):
         raise ValueError(
             "Radial degree is not integer, input = {}".format(n))
-    if not np.issubdtype(m.dtype, int):
+    if not np.issubdtype(m.dtype, np.signedinteger):
         raise ValueError(
             "Azimuthal degree is not integer, input = {}".format(m))
     if ((n - m) % 2).any():

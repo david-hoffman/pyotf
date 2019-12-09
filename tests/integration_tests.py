@@ -20,6 +20,8 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
 
     def setUp(self):
         """Set up the test"""
+        # random but no
+        np.random.seed(12345)
         # model kwargs
         self.model_kwargs = dict(
             wl=525,
@@ -27,7 +29,7 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
             ni=1.0,
             res=140,
             size=64,
-            zrange=[-1000, 0, 1000, 3000],
+            zrange=[-1000, -500, 0, 250, 1000, 3000],
             vec_corr="none",
             condition="none"
         )
@@ -41,7 +43,7 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
         # diffraction limit)
         r = kr * model.wl / model.na
         zerns = zernike(r, theta, np.arange(5, 16))
-        # make fack phase and magnitude coefs
+        # make fake phase and magnitude coefs
         self.pcoefs = np.random.rand(zerns.shape[0])
         self.mcoefs = np.random.rand(zerns.shape[0])
         self.pupil_phase = (zerns * self.pcoefs[:, np.newaxis, np.newaxis]).sum(0)
@@ -55,10 +57,15 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
                                    max_iters=200, pupil_tol=0,
                                    mse_tol=0, phase_only=False)
 
-    def test_phase_and_mag(self):
+    def test_mag(self):
         """Make sure phase retrieval returns same phase and magnitude"""
         np.testing.assert_allclose(fftshift(self.pupil_mag),
                                    self.PR_result.mag, err_msg="Mag failed")
+
+    def test_phase(self):
+        """Make sure phase retrieval returns same phase and magnitude"""
+        # doesn't seem to be fitting the piston part correctly, not sure why
+        # or if it matters
         np.testing.assert_allclose(fftshift(self.pupil_phase),
                                    self.PR_result.phase, err_msg="Phase failed")
 

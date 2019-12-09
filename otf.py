@@ -24,6 +24,9 @@ except ImportError:
     from numpy.fft import fftshift, fftfreq
 from pyOTF.utils import *
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class BasePSF(object):
     """A base class for objects that can calculate OTF's and PSF's.
@@ -416,6 +419,8 @@ class SheppardPSF(BasePSF):
     @BasePSF.zres.setter
     def zres(self, value):
         # this checks the nyquist limit for z
+        # remember that because we create a spherical shell for
+        # The amplitude OTF not nyquist for the final intensity OTF ...
         max_val = 1 / (2 * self.ni / self.wl)
         if value >= max_val:
             # this will cause a fftconvolution error when calculating the

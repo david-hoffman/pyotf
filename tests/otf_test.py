@@ -11,10 +11,10 @@ class BasePSFCase(object):
     def test_dtypes(self):
         """Make sure dtypes make sense"""
         model = self.model
-        assert np.issubdtype(model.PSFi.dtype, float), "PSFi should be a float but is a {}".format(model.PSFi.dtype)
-        assert np.issubdtype(model.PSFa.dtype, complex), "PSFa should be complex but is a {}".format(model.PSFa.dtype)
-        assert np.issubdtype(model.OTFi.dtype, complex), "OTFi should be complex but is a {}".format(model.OTFi.dtype)
-        assert np.issubdtype(model.OTFa.dtype, complex), "OTFa should be complex but is a {}".format(model.OTFa.dtype)
+        assert np.issubdtype(model.PSFi.dtype, np.floating), "PSFi should be a float but is a {}".format(model.PSFi.dtype)
+        assert np.issubdtype(model.PSFa.dtype, np.complexfloating), "PSFa should be complex but is a {}".format(model.PSFa.dtype)
+        assert np.issubdtype(model.OTFi.dtype, np.complexfloating), "OTFi should be complex but is a {}".format(model.OTFi.dtype)
+        assert np.issubdtype(model.OTFa.dtype, np.complexfloating), "OTFa should be complex but is a {}".format(model.OTFa.dtype)
 
     def test_PSFi_positive(self):
         """The intensity PSF should always be positive"""

@@ -359,7 +359,7 @@ def _fit_to_zerns(data, zerns, r, **kwargs):
     data2fit = data[valid_points]
     zerns2fit = zerns[:, valid_points].T
     # fit the points
-    coefs, _, _, _ = lstsq(zerns2fit, data2fit, **kwargs)
+    coefs, _, _, _ = lstsq(zerns2fit, data2fit, rcond=None, **kwargs)
     # return the coefficients
     return coefs
 
