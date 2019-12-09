@@ -16,13 +16,13 @@ Copyright (c) 2016, David Hoffman
 import numpy as np
 from numpy.linalg import norm
 try:
-    from pyfftw.interfaces.numpy_fft import fftshift, fftfreq
+    from pyfftw.interfaces.numpy_fft import fftshift, fftfreq, ifftn
     import pyfftw
     # Turn on the cache for optimum performance
     pyfftw.interfaces.cache.enable()
 except ImportError:
-    from numpy.fft import fftshift, fftfreq
-from pyOTF.utils import *
+    from numpy.fft import fftshift, fftfreq, ifftn
+from pyOTF.utils import NumericProperty, easy_fft, easy_ifft, cart2pol, psqrt
 
 import logging
 logger = logging.getLogger(__name__)

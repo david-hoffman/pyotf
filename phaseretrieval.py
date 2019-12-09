@@ -20,9 +20,9 @@ except ImportError:
     from numpy.fft import fftshift, ifftshift, fftn
 
 from numpy.linalg import lstsq
-from .utils import *
+from .utils import psqrt
 from .otf import HanserPSF
-from .zernike import *
+from .zernike import zernike
 from skimage.restoration import unwrap_phase
 from matplotlib import pyplot as plt
 
