@@ -4,10 +4,11 @@
 # Utility functions for the pyOTF module
 # Copyright (c) 2016, David Hoffman
 import numpy as np
+
 try:
-    from pyfftw.interfaces.numpy_fft import (fftshift, ifftshift,
-                                             fftn, ifftn)
+    from pyfftw.interfaces.numpy_fft import fftshift, ifftshift, fftn, ifftn
     import pyfftw
+
     # Turn on the cache for optimum performance
     pyfftw.interfaces.cache.enable()
 except ImportError:
@@ -17,22 +18,12 @@ from dphutils import fft_pad, slice_maker
 
 def easy_fft(data, axes=None):
     """utility method that includes fft shifting"""
-    return fftshift(
-        fftn(
-            ifftshift(
-                data, axes=axes
-            ), axes=axes
-        ), axes=axes)
+    return fftshift(fftn(ifftshift(data, axes=axes), axes=axes), axes=axes)
 
 
 def easy_ifft(data, axes=None):
     """utility method that includes fft shifting"""
-    return ifftshift(
-        ifftn(
-            fftshift(
-                data, axes=axes
-            ), axes=axes
-        ), axes=axes)
+    return ifftshift(ifftn(fftshift(data, axes=axes), axes=axes), axes=axes)
 
 
 def cart2pol(y, x):
@@ -45,8 +36,7 @@ def cart2pol(y, x):
 class NumericProperty(property):
     """Define a property that must be numeric"""
 
-    def __init__(self, fget=None, fset=None, fdel=None, doc=None,
-                 attr=None, vartype=None):
+    def __init__(self, fget=None, fset=None, fdel=None, doc=None, attr=None, vartype=None):
         """A property that must be numeric.
 
         Parameters
@@ -77,17 +67,15 @@ class NumericProperty(property):
             def fset(obj, value):
                 if not isinstance(value, self.vartype):
                     raise TypeError(
-                        "{} must be an {}, var = {!r}".format(
-                            self.attr, self.vartype, value)
+                        "{} must be an {}, var = {!r}".format(self.attr, self.vartype, value)
                     )
                 if value <= 0:
-                    raise ValueError(
-                        "{} must be larger than 0".format(self.attr)
-                    )
+                    raise ValueError("{} must be larger than 0".format(self.attr))
                 if getattr(obj, self.attr, None) != value:
                     setattr(obj, self.attr, value)
                     # call update code
                     obj._attribute_changed()
+
         super().__init__(fget, fset, fdel, doc)
 
 
@@ -161,8 +149,7 @@ def prep_data_for_PR(data, xysize=None, multiplier=1.5):
     if xysize == ny == nx:
         pad_data = data_without_bg
     elif xysize >= max(ny, nx):
-        pad_data = fft_pad(data_without_bg, (nz, xysize, xysize),
-                           mode="constant")
+        pad_data = fft_pad(data_without_bg, (nz, xysize, xysize), mode="constant")
     else:
         # if need to crop, crop and center and return
         my_slice = slice_maker(((ny + 1) // 2, (nx + 1) // 2), xysize)

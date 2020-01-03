@@ -19,16 +19,130 @@ from scipy.special import eval_jacobi
 from .utils import cart2pol
 
 # forward mapping of Noll indices https://oeis.org/A176988
-noll_mapping = np.array([
-    1, 3, 2, 5, 4, 6, 9, 7, 8, 10, 15, 13, 11, 12, 14, 21, 19, 17, 16,
-    18, 20, 27, 25, 23, 22, 24, 26, 28, 35, 33, 31, 29, 30, 32, 34,
-    36, 45, 43, 41, 39, 37, 38, 40, 42, 44, 55, 53, 51, 49, 47, 46,
-    48, 50, 52, 54, 65, 63, 61, 59, 57, 56, 58, 60, 62, 64, 66, 77,
-    75, 73, 71, 69, 67, 68, 70, 72, 74, 76, 78, 91, 89, 87, 85, 83,
-    81, 79, 80, 82, 84, 86, 88, 90, 105, 103, 101, 99, 97, 95, 93,
-    92, 94, 96, 98, 100, 102, 104, 119, 117, 115, 113, 111, 109,
-    107, 106, 108, 110, 112, 114, 116, 118, 120
-])
+noll_mapping = np.array(
+    [
+        1,
+        3,
+        2,
+        5,
+        4,
+        6,
+        9,
+        7,
+        8,
+        10,
+        15,
+        13,
+        11,
+        12,
+        14,
+        21,
+        19,
+        17,
+        16,
+        18,
+        20,
+        27,
+        25,
+        23,
+        22,
+        24,
+        26,
+        28,
+        35,
+        33,
+        31,
+        29,
+        30,
+        32,
+        34,
+        36,
+        45,
+        43,
+        41,
+        39,
+        37,
+        38,
+        40,
+        42,
+        44,
+        55,
+        53,
+        51,
+        49,
+        47,
+        46,
+        48,
+        50,
+        52,
+        54,
+        65,
+        63,
+        61,
+        59,
+        57,
+        56,
+        58,
+        60,
+        62,
+        64,
+        66,
+        77,
+        75,
+        73,
+        71,
+        69,
+        67,
+        68,
+        70,
+        72,
+        74,
+        76,
+        78,
+        91,
+        89,
+        87,
+        85,
+        83,
+        81,
+        79,
+        80,
+        82,
+        84,
+        86,
+        88,
+        90,
+        105,
+        103,
+        101,
+        99,
+        97,
+        95,
+        93,
+        92,
+        94,
+        96,
+        98,
+        100,
+        102,
+        104,
+        119,
+        117,
+        115,
+        113,
+        111,
+        109,
+        107,
+        106,
+        108,
+        110,
+        112,
+        114,
+        116,
+        118,
+        120,
+    ]
+)
 
 # reverse mapping of noll indices
 noll_inverse = noll_mapping.argsort()
@@ -50,7 +164,7 @@ noll2name = {
     12: "Vertical secondary astigmatism",
     13: "Oblique secondary astigmatism",
     14: "Vertical quadrafoil",
-    15: "Oblique quadrafoil"
+    15: "Oblique quadrafoil",
 }
 
 name2noll = {v: k for k, v in noll2name.items()}
@@ -62,8 +176,7 @@ def noll2degrees(noll):
     if not np.issubdtype(noll.dtype, np.signedinteger):
         raise ValueError("input is not integer, input = {}".format(noll))
     if not (noll > 0).all():
-        raise ValueError(
-            "Noll indices must be greater than 0, input = {}".format(noll))
+        raise ValueError("Noll indices must be greater than 0, input = {}".format(noll))
     # need to subtract 1 from the Noll's indices because they start at 1.
     p = noll_inverse[noll - 1]
     n = np.ceil((-3 + np.sqrt(9 + 8 * p)) / 2)
@@ -76,14 +189,11 @@ def degrees2noll(n, m):
     n, m = np.asarray(n), np.asarray(m)
     # check inputs
     if not np.issubdtype(n.dtype, np.signedinteger):
-        raise ValueError(
-            "Radial degree is not integer, input = {}".format(n))
+        raise ValueError("Radial degree is not integer, input = {}".format(n))
     if not np.issubdtype(m.dtype, np.signedinteger):
-        raise ValueError(
-            "Azimuthal degree is not integer, input = {}".format(m))
+        raise ValueError("Azimuthal degree is not integer, input = {}".format(m))
     if ((n - m) % 2).any():
-        raise ValueError(
-            "The difference between radial and azimuthal degree isn't mod 2")
+        raise ValueError("The difference between radial and azimuthal degree isn't mod 2")
     # do the mapping
     p = (m + n * (n + 2)) / 2
     noll = noll_mapping[p.astype(int)]
@@ -144,11 +254,9 @@ def zernike(r, theta, *args, **kwargs):
         if m.ndim > 1:
             raise ValueError("Azimuthal degree has the wrong shape")
         if n.shape != m.shape:
-            raise ValueError(
-                "Radial and Azimuthal degrees have different shapes")
+            raise ValueError("Radial and Azimuthal degrees have different shapes")
     else:
-        raise ValueError(
-            "{} is an invalid number of arguments".format(len(args)))
+        raise ValueError("{} is an invalid number of arguments".format(len(args)))
     # make sure r and theta are arrays
     r = np.asarray(r, dtype=float)
     theta = np.asarray(theta, dtype=float)
@@ -156,16 +264,14 @@ def zernike(r, theta, *args, **kwargs):
     if not (r >= 0).all():
         raise ValueError("r must always be greater or equal to 0")
     if r.ndim > 2:
-        raise ValueError(
-            "Input rho and theta cannot have more than two dimensions")
+        raise ValueError("Input rho and theta cannot have more than two dimensions")
     # make sure that n and m are iterable
     n, m = n.ravel(), m.ravel()
     # make sure that n is always greater or equal to m
     if not (n >= abs(m)).all():
         raise ValueError("n must always be greater or equal to m")
     # return column of zernike polynomials
-    return np.array([_zernike(r, theta, nn, mm, **kwargs)
-                     for nn, mm in zip(n, m)]).squeeze()
+    return np.array([_zernike(r, theta, nn, mm, **kwargs) for nn, mm in zip(n, m)]).squeeze()
 
 
 def _radial_zernike(r, n, m):
@@ -184,8 +290,8 @@ def _radial_zernike(r, n, m):
     # calculate the coefs
     coef1 = (n + m) // 2
     coef2 = (n - m) // 2
-    jacobi = eval_jacobi(coef2, m, 0, 1 - 2 * rprime**2)
-    rad_zern[valid_points] = (-1)**coef1 * rprime**m * jacobi
+    jacobi = eval_jacobi(coef2, m, 0, 1 - 2 * rprime ** 2)
+    rad_zern[valid_points] = (-1) ** coef1 * rprime ** m * jacobi
     return rad_zern
 
 
@@ -214,6 +320,7 @@ def _zernike(r, theta, n, m, norm=False):
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
+
     # make coordinates
     x = np.linspace(-1, 1, 1025)
     xx, yy = np.meshgrid(x, x)  # xy indexing is default

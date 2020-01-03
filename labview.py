@@ -12,7 +12,9 @@ from pyOTF.utils import prep_data_for_PR
 import numpy as np
 
 
-def labview(data, wl, na, ni, res, zres, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, phase_only=False):
+def labview(
+    data, wl, na, ni, res, zres, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, phase_only=False
+):
     """Generate a PSF object
 
     Parameters
@@ -41,18 +43,21 @@ def labview(data, wl, na, ni, res, zres, max_iters=200, pupil_tol=1e-8, mse_tol=
         amplitude is not.
     """
 
-    #Convert from LabVIEW data types to Python types
-    data = np.asarray(data) # LabView converts arrays to lists.  This will convert back to arrays.
-    params = dict(wl=wl, na=na, ni=ni, res=res, zres=zres) # LabView clusters appear as tuples.  This creates the dict.
+    # Convert from LabVIEW data types to Python types
+    data = np.asarray(data)  # LabView converts arrays to lists.  This will convert back to arrays.
+    params = dict(
+        wl=wl, na=na, ni=ni, res=res, zres=zres
+    )  # LabView clusters appear as tuples.  This creates the dict.
 
-    #Preprocess data (background removal, filtering, etc...)
+    # Preprocess data (background removal, filtering, etc...)
     data_prepped = prep_data_for_PR(data)
 
-    #Phase retrieval
+    # Phase retrieval
     pr_result = retrieve_phase(data_prepped, params, max_iters, pupil_tol, mse_tol, phase_only)
 
-
-    return pr_result.phase.tolist() # LabVIEW wants lists instead of arrays.  This will convert back to lists.
+    return (
+        pr_result.phase.tolist()
+    )  # LabVIEW wants lists instead of arrays.  This will convert back to lists.
 
 
 if __name__ == "__main__":
@@ -66,22 +71,17 @@ if __name__ == "__main__":
     logging.basicConfig()
     logging.getLogger().setLevel(logging.INFO)
     # read in data from fixtures
-    data = tif.imread(os.path.split(__file__)[0] + "/fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif")
-    # set up model params
-    params = dict(
-        wl=520,
-        na=0.85,
-        ni=1.0,
-        res=130,
-        zres=300
+    data = tif.imread(
+        os.path.split(__file__)[0] + "/fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif"
     )
+    # set up model params
+    params = dict(wl=520, na=0.85, ni=1.0, res=130, zres=300)
     # retrieve the phase
     pr_start = time.time()
     print("Starting phase retrieval with data of size {}".format(data.shape))
     phase = labview(data[6:-5], **params, pupil_tol=1e-6)
     phase = np.asarray(phase)
-    print("It took {} seconds to retrieve the pupil function".format(
-        time.time() - pr_start))
+    print("It took {} seconds to retrieve the pupil function".format(time.time() - pr_start))
     # plot
     max_val = abs(phase).max()
     plt.matshow(phase, cmap="seismic", vmin=-max_val, vmax=max_val)

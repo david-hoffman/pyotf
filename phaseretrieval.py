@@ -11,9 +11,11 @@ Copyright (c) 2016, David Hoffman
 """
 import copy
 import numpy as np
+
 try:
     from pyfftw.interfaces.numpy_fft import fftshift, ifftshift, fftn
     import pyfftw
+
     # Turn on the cache for optimum performance
     pyfftw.interfaces.cache.enable()
 except ImportError:
@@ -31,8 +33,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8,
-                   mse_tol=1e-8, phase_only=False):
+def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, phase_only=False):
     """Retrieve the phase across the objective's back pupil from an
     experimentally measured PSF.
 
@@ -67,12 +68,9 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8,
     assert data.shape[1] == data.shape[2], "Data is not square in x/y"
     assert data.ndim == 3, "Data doesn't have enough dims"
     # make sure the user hasn't screwed up the params
-    params.update(dict(
-        vec_corr="none",
-        condition="none",
-        zsize=data.shape[0],
-        size=data.shape[-1]
-    ))
+    params.update(
+        dict(vec_corr="none", condition="none", zsize=data.shape[0], size=data.shape[-1])
+    )
     # assume that data prep has been handled outside function
     # The field magnitude is the square root of the intensity
     mag = psqrt(data)
@@ -98,13 +96,17 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8,
             # calculate the difference in mse to test for convergence
             mse_diff[i] = abs(old_mse - new_mse) / old_mse
             # calculate the difference in pupil
-            pupil_diff[i] = (abs(old_pupil - new_pupil)**2).mean() / (abs(old_pupil)**2).mean()
+            pupil_diff[i] = (abs(old_pupil - new_pupil) ** 2).mean() / (abs(old_pupil) ** 2).mean()
         else:
             mse_diff[i] = np.nan
             pupil_diff[i] = np.nan
         # check tolerances, how much has the pupil changed, how much has the mse changed
         # and what's the absolute mse
-        logger.info("Iteration {}, mse_diff = {:.2g}, pupil_diff = {:.2g}".format(i, mse_diff[i], pupil_diff[i]))
+        logger.info(
+            "Iteration {}, mse_diff = {:.2g}, pupil_diff = {:.2g}".format(
+                i, mse_diff[i], pupil_diff[i]
+            )
+        )
         if pupil_diff[i] < pupil_tol or mse_diff[i] < mse_tol or mse[i] < mse_tol:
             break
         # update old_mse
@@ -125,9 +127,9 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8,
             new_pupil = np.exp(1j * np.angle(new_pupil)) * mask
     else:
         logger.warn("Reach max iterations without convergence")
-    mse = mse[:i + 1]
-    mse_diff = mse_diff[:i + 1]
-    pupil_diff = pupil_diff[:i + 1]
+    mse = mse[: i + 1]
+    mse_diff = mse_diff[: i + 1]
+    pupil_diff = pupil_diff[: i + 1]
     # shift mask
     mask = fftshift(mask)
     # shift phase then unwrap and mask
@@ -187,8 +189,7 @@ class PhaseRetrievalResult(object):
         self.zd_result = ZernikeDecomposition(mag_coefs, phase_coefs, zerns)
         return self.zd_result
 
-    def generate_psf(self, sphase=slice(4, None, None), size=None, zsize=None,
-                     zrange=None):
+    def generate_psf(self, sphase=slice(4, None, None), size=None, zsize=None, zrange=None):
         """Make a perfect PSF"""
         # make a copy of the internal model
         model = copy.copy(self.model)
@@ -239,9 +240,9 @@ class PhaseRetrievalResult(object):
             fig, axs = plt.subplots(3, 1, figsize=(6, 6), sharex=True)
             for ax, data in zip(axs, (self.mse, self.mse_diff, self.pupil_diff)):
                 ax.semilogy(data)
-            for ax, t in zip(axs, ("Mean Squared Error",
-                                   "Relative Change in MSE",
-                                   "Relative Change in Pupil")):
+            for ax, t in zip(
+                axs, ("Mean Squared Error", "Relative Change in MSE", "Relative Change in Pupil")
+            ):
                 ax.set_title(t)
             fig.tight_layout()
         return fig, axs
@@ -287,7 +288,7 @@ class ZernikeDecomposition(object):
         # make an x range for the bar plot
         x = np.arange(len(ordered_names)) + 1
         # pull the data
-        data = self.pcoefs[:len(ordered_names)]
+        data = self.pcoefs[: len(ordered_names)]
         # make the bar plot
         ax.bar(x, data, align="center", tick_label=ordered_names)
         # set up axes
@@ -304,8 +305,7 @@ class ZernikeDecomposition(object):
         for ax, data in zip(axs, (self.mcoefs, self.pcoefs)):
             ax.bar(np.arange(data.size) + 1, data)
             ax.axis("tight")
-        for ax, t in zip(axs, ("Magnitude Coefficients",
-                               "Phase Coefficients")):
+        for ax, t in zip(axs, ("Magnitude Coefficients", "Phase Coefficients")):
             ax.set_title(t)
         ax.set_xlabel("Noll's Number")
         fig.tight_layout()
@@ -355,7 +355,7 @@ def _fit_to_zerns(data, zerns, r, **kwargs):
         data
     """
     # find the points to fit
-    valid_points = (r <= 1)
+    valid_points = r <= 1
     data2fit = data[valid_points]
     zerns2fit = zerns[:, valid_points].T
     # fit the points
@@ -374,24 +374,20 @@ if __name__ == "__main__":
     import os
     import time
     from skimage.external import tifffile as tif
+
     # read in data from fixtures
-    data = tif.imread(os.path.split(__file__)[0] + "/fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif")
+    data = tif.imread(
+        os.path.split(__file__)[0] + "/fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif"
+    )
     # prep data
     data_prepped = prep_data_for_PR(data, 512)
     # set up model params
-    params = dict(
-        wl=520,
-        na=0.85,
-        ni=1.0,
-        res=130,
-        zres=300
-    )
+    params = dict(wl=520, na=0.85, ni=1.0, res=130, zres=300)
     # retrieve the phase
     pr_start = time.time()
     print("Starting phase retrieval")
     pr_result = retrieve_phase(data_prepped, params)
-    print("It took {} seconds to retrieve the pupil function".format(
-        time.time() - pr_start))
+    print("It took {} seconds to retrieve the pupil function".format(time.time() - pr_start))
     # plot
     pr_result.plot()
     pr_result.plot_convergence()
@@ -399,8 +395,7 @@ if __name__ == "__main__":
     zd_start = time.time()
     print("Starting zernike decomposition")
     pr_result.fit_to_zernikes(120)
-    print("It took {} seconds to fit 120 Zernikes".format(
-        time.time() - zd_start))
+    print("It took {} seconds to fit 120 Zernikes".format(time.time() - zd_start))
     # plot
     pr_result.zd_result.plot_named_coefs()
     pr_result.zd_result.plot_coefs()

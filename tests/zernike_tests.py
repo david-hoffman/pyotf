@@ -33,8 +33,7 @@ def test_indices():
     test_noll = np.random.randint(1, 36, 10)
     test_n, test_m = noll2degrees(test_noll)
     test_noll2 = degrees2noll(test_n, test_m)
-    assert_true((test_noll == test_noll2).all(),
-                "{} != {}".format(test_noll, test_noll2))
+    assert_true((test_noll == test_noll2).all(), "{} != {}".format(test_noll, test_noll2))
 
 
 def test_n_lt_m():
@@ -45,8 +44,9 @@ def test_n_lt_m():
 def test_forward_mapping():
     """Make sure that the mapping from degrees to Noll's indices is correct"""
     # from https://en.wikipedia.org/wiki/Zernike_polynomials
-    degrees = np.array(((0, 0), (1, 1), (1, -1), (2, 0), (2, -2), (2, 2),
-                        (3, -1), (3, 1), (3, -3), (3, 3)))
+    degrees = np.array(
+        ((0, 0), (1, 1), (1, -1), (2, 0), (2, -2), (2, 2), (3, -1), (3, 1), (3, -3), (3, 3))
+    )
     j = np.array((1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
     n, m = degrees.T
     assert_true((degrees2noll(n, m) == j).all())
@@ -55,8 +55,9 @@ def test_forward_mapping():
 def test_reverse_mapping():
     """Make sure that the mapping from Noll's indices to degrees is correct"""
     # from https://en.wikipedia.org/wiki/Zernike_polynomials
-    degrees = np.array(((0, 0), (1, 1), (1, -1), (2, 0), (2, -2), (2, 2),
-                        (3, -1), (3, 1), (3, -3), (3, 3)))
+    degrees = np.array(
+        ((0, 0), (1, 1), (1, -1), (2, 0), (2, -2), (2, 2), (3, -1), (3, 1), (3, -3), (3, 3))
+    )
     j = np.array((1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
     n, m = degrees.T
     n_test, m_test = noll2degrees(j)
@@ -97,18 +98,26 @@ def test_zernike_zero():
     n, m = choose_random_nm()
     r = 0.5
     theta = np.random.rand() * 2 * np.pi - np.pi
-    assert_true(np.isfinite(zernike(r, theta, n, m)).all(),
-                "r, theta, n, m = {}, {}, {}, {}".format(r, theta, n, m))
+    assert_true(
+        np.isfinite(zernike(r, theta, n, m)).all(),
+        "r, theta, n, m = {}, {}, {}, {}".format(r, theta, n, m),
+    )
 
 
 def test_zernike_edges():
     """Make sure same result is obtained at 0 and 0.0 and 1 and 1.0"""
     n, m = choose_random_nm()
     theta = np.random.rand() * 2 * np.pi - np.pi
-    assert_equal(zernike(1.0, theta, n, m), zernike(1, theta, n, m),
-                 "theta, n, m = {}, {}, {}".format(theta, n, m))
-    assert_equal(zernike(0.0, theta, n, m), zernike(0, theta, n, m),
-                 "theta, n, m = {}, {}, {}".format(theta, n, m))
+    assert_equal(
+        zernike(1.0, theta, n, m),
+        zernike(1, theta, n, m),
+        "theta, n, m = {}, {}, {}".format(theta, n, m),
+    )
+    assert_equal(
+        zernike(0.0, theta, n, m),
+        zernike(0, theta, n, m),
+        "theta, n, m = {}, {}, {}".format(theta, n, m),
+    )
 
 
 def test_odd_nm():
@@ -117,8 +126,9 @@ def test_odd_nm():
     theta = np.random.rand(100) * 2 * np.pi - np.pi
     # we'll check outside the normal range too, when r
     r = np.random.rand(100) * 2
-    assert_true((zernike(r, theta, n, m) == 0).all(),
-                "theta, n, m = {}, {}, {}".format(theta, n, m))
+    assert_true(
+        (zernike(r, theta, n, m) == 0).all(), "theta, n, m = {}, {}, {}".format(theta, n, m)
+    )
 
 
 def choose_random_nm(odd=False):

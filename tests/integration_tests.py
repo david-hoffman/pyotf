@@ -31,7 +31,7 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
             size=64,
             zrange=[-1000, -500, 0, 250, 1000, 3000],
             vec_corr="none",
-            condition="none"
+            condition="none",
         )
         # make the model
         model = HanserPSF(**self.model_kwargs)
@@ -53,29 +53,33 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
         model._gen_psf(self.pupil_mag * np.exp(1j * self.pupil_phase) * model._gen_pupil())
         self.PSFi = model.PSFi
         # we have to converge really close for this to work.
-        self.PR_result = retrieve_phase(self.PSFi, self.model_kwargs,
-                                   max_iters=200, pupil_tol=0,
-                                   mse_tol=0, phase_only=False)
+        self.PR_result = retrieve_phase(
+            self.PSFi, self.model_kwargs, max_iters=200, pupil_tol=0, mse_tol=0, phase_only=False
+        )
 
     def test_mag(self):
         """Make sure phase retrieval returns same phase and magnitude"""
-        np.testing.assert_allclose(fftshift(self.pupil_mag),
-                                   self.PR_result.mag, err_msg="Mag failed")
+        np.testing.assert_allclose(
+            fftshift(self.pupil_mag), self.PR_result.mag, err_msg="Mag failed"
+        )
 
     def test_phase(self):
         """Make sure phase retrieval returns same phase and magnitude"""
         # doesn't seem to be fitting the piston part correctly, not sure why
         # or if it matters
-        np.testing.assert_allclose(fftshift(self.pupil_phase),
-                                   self.PR_result.phase, err_msg="Phase failed")
+        np.testing.assert_allclose(
+            fftshift(self.pupil_phase), self.PR_result.phase, err_msg="Phase failed"
+        )
 
     def test_zernike_modes(self):
         """Make sure the fitted zernike modes agree"""
         self.PR_result.fit_to_zernikes(15)
-        np.testing.assert_allclose(self.PR_result.zd_result.pcoefs[4:],
-                                   self.pcoefs, err_msg="Phase coefs failed")
-        np.testing.assert_allclose(self.PR_result.zd_result.mcoefs[4:],
-                                   self.mcoefs, err_msg="Mag coefs failed")
+        np.testing.assert_allclose(
+            self.PR_result.zd_result.pcoefs[4:], self.pcoefs, err_msg="Phase coefs failed"
+        )
+        np.testing.assert_allclose(
+            self.PR_result.zd_result.mcoefs[4:], self.mcoefs, err_msg="Mag coefs failed"
+        )
 
     def test_psf_mse(self):
         """Does the phase retrieved PSF converge to the fake PSF"""

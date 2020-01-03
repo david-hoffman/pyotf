@@ -19,10 +19,10 @@ def test_center_data():
     shape = np.random.randint(1, 512, ndims)
     print(np.prod(shape))
     data = np.zeros(shape)
-    random_index = tuple((np.random.randint(i), ) for i in shape)
+    random_index = tuple((np.random.randint(i),) for i in shape)
     data[random_index] = 1
     data_centered = center_data(data)
-    assert_true(np.fft.ifftshift(data_centered)[((0, ), ) * ndims])
+    assert_true(np.fft.ifftshift(data_centered)[((0,),) * ndims])
 
 
 def test_psqrt():
@@ -34,8 +34,7 @@ def test_psqrt():
     more_than_zero = np.logical_not(less_than_zero)
     print(ps_data[more_than_zero])
     print(np.sqrt(data[more_than_zero]))
-    assert_true(np.allclose(ps_data[more_than_zero],
-                            np.sqrt(data[more_than_zero])))
+    assert_true(np.allclose(ps_data[more_than_zero], np.sqrt(data[more_than_zero])))
 
 
 def test_cart2pol():

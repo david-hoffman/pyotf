@@ -15,9 +15,11 @@ Copyright (c) 2016, David Hoffman
 
 import numpy as np
 from numpy.linalg import norm
+
 try:
     from pyfftw.interfaces.numpy_fft import fftshift, fftfreq, ifftn
     import pyfftw
+
     # Turn on the cache for optimum performance
     pyfftw.interfaces.cache.enable()
 except ImportError:
@@ -25,6 +27,7 @@ except ImportError:
 from pyOTF.utils import NumericProperty, easy_fft, easy_ifft, cart2pol, psqrt
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -43,17 +46,15 @@ class BasePSF(object):
     axis of the objective lens"""
 
     # Define all the numeric properties of the base class
-    wl = NumericProperty(attr="_wl", vartype=(float, int),
-                         doc="Wavelength of emission, in nm")
-    na = NumericProperty(attr="_na", vartype=(float, int),
-                         doc="Numerical Aperature")
-    ni = NumericProperty(attr="_ni", vartype=(float, int),
-                         doc="Refractive index")
+    wl = NumericProperty(attr="_wl", vartype=(float, int), doc="Wavelength of emission, in nm")
+    na = NumericProperty(attr="_na", vartype=(float, int), doc="Numerical Aperature")
+    ni = NumericProperty(attr="_ni", vartype=(float, int), doc="Refractive index")
     size = NumericProperty(attr="_size", vartype=int, doc="x/y size")
     zsize = NumericProperty(attr="_zsize", vartype=int, doc="z size")
 
-    def __init__(self, wl, na, ni, res, size, zres=None, zsize=None,
-                 vec_corr="none", condition="sine"):
+    def __init__(
+        self, wl, na, ni, res, size, zres=None, zsize=None, vec_corr="none", condition="sine"
+    ):
         """Generate a PSF object
 
         Parameters
@@ -139,9 +140,9 @@ class BasePSF(object):
         max_val = 1 / (2 * self.na / self.wl) / 2
         if value >= max_val:
             raise ValueError(
-                ("{!r} is larger than the Nyquist Limit,"
-                 " try a number smaller than {!r}").format(
-                    value, max_val)
+                (
+                    "{!r} is larger than the Nyquist Limit," " try a number smaller than {!r}"
+                ).format(value, max_val)
             )
         self._res = value
         self._attribute_changed()
@@ -158,8 +159,7 @@ class BasePSF(object):
         valid_values = {"none", "x", "y", "z", "total"}
         if value not in valid_values:
             raise ValueError(
-                ("Vector correction must be one of "
-                 ("{!r}, " * len(valid_values)).format(value))
+                ("Vector correction must be one of "("{!r}, " * len(valid_values)).format(value))
             )
         self._vec_corr = value
         self._attribute_changed()
@@ -174,8 +174,7 @@ class BasePSF(object):
         valid_values = {"none", "sine", "herschel"}
         if value not in valid_values:
             raise ValueError(
-                ("Condition must be one of "
-                 ("{!r}, " * len(valid_values)).format(value))
+                ("Condition must be one of "("{!r}, " * len(valid_values)).format(value))
             )
         self._condition = value
         self._attribute_changed()
@@ -197,7 +196,7 @@ class BasePSF(object):
             # the intensity PSFs are the absolute value of the coherent PSF
             # because our imaging is _incoherent_ the result is simply the sum
             # of the intensities for each vectorial component.
-            self._PSFi = (abs(self.PSFa)**2).sum(axis=0)
+            self._PSFi = (abs(self.PSFa) ** 2).sum(axis=0)
         return self._PSFi
 
     @property
@@ -269,7 +268,7 @@ class HanserPSF(BasePSF):
         # check if passed value is scalar
         if not self._zrange.shape:
             # convert to array for later multiplications
-            self._zrange.shape = (1, )
+            self._zrange.shape = (1,)
         self._attribute_changed()
 
     def _gen_kr(self):
@@ -282,7 +281,7 @@ class HanserPSF(BasePSF):
         self._kmag = self.ni / self.wl
         # because the OTF only exists on a spherical shell we can calculate
         # a kz value for any pair of kx and ky values
-        self._kz = psqrt(self._kmag**2 - self._kr**2)
+        self._kz = psqrt(self._kmag ** 2 - self._kr ** 2)
 
     def _gen_pupil(self):
         """Generate an ideal pupil"""
@@ -298,8 +297,7 @@ class HanserPSF(BasePSF):
     def _calc_defocus(self):
         """Calculate the defocus to apply to the base pupil"""
         kz = self._kz
-        return np.exp(2 * np.pi * 1j * kz *
-                      self.zrange[:, np.newaxis, np.newaxis])
+        return np.exp(2 * np.pi * 1j * kz * self.zrange[:, np.newaxis, np.newaxis])
 
     def _gen_psf(self, pupil_base=None):
         """An internal utility that generates the PSF
@@ -350,9 +348,9 @@ class HanserPSF(BasePSF):
                 plist.append(np.sin(theta) * np.sin(phi))  # Pzy
             if self.vec_corr == "y" or self.vec_corr == "total":
                 plist.append((np.cos(theta) - 1) * np.sin(phi) * np.cos(phi))  # Pyx
-                plist.append(np.cos(theta) * np.sin(phi)**2 + np.cos(phi)**2)  # Pyy
+                plist.append(np.cos(theta) * np.sin(phi) ** 2 + np.cos(phi) ** 2)  # Pyy
             if self.vec_corr == "x" or self.vec_corr == "total":
-                plist.append(np.cos(theta) * np.cos(phi)**2 + np.sin(phi)**2)  # Pxx
+                plist.append(np.cos(theta) * np.cos(phi) ** 2 + np.sin(phi) ** 2)  # Pxx
                 plist.append((np.cos(theta) - 1) * np.sin(phi) * np.cos(phi))  # Pxy
             # apply the corrections to the base pupil
             pupils = pupil * np.array(plist)[:, np.newaxis]
@@ -426,8 +424,7 @@ class SheppardPSF(BasePSF):
             # this will cause a fftconvolution error when calculating the
             # intensity OTF
             raise ValueError(
-                "{!r} is too large try a number smaller than {!r}".format(
-                    value, max_val)
+                "{!r} is too large try a number smaller than {!r}".format(value, max_val)
             )
         BasePSF.zres.fset(self, value)
 
@@ -452,7 +449,7 @@ class SheppardPSF(BasePSF):
         # if the user gave us different z and x/y res we need to calculate
         # the positional "error" in k-space to draw the spherical shell
         if dk != dkz:
-            with np.errstate(invalid='ignore'):
+            with np.errstate(invalid="ignore"):
                 dd = np.array((dkz, dk, dk)).reshape(3, 1, 1, 1)
                 dkr = norm(np.array(k_tot) * dd, axis=0) / kr
             # we know the origin is zero so replace it
@@ -466,8 +463,7 @@ class SheppardPSF(BasePSF):
             kzz = k_tot[0]
         # calculate the points on the spherical shell, save them and the
         # corresponding kz, ky and kx coordinates
-        self.valid_points = np.logical_and(abs(kr - kmag) < dkr,
-                                           kzz > kz_min + dkr)
+        self.valid_points = np.logical_and(abs(kr - kmag) < dkr, kzz > kz_min + dkr)
         self.kzz, self.kyy, self.kxx = [k[self.valid_points] for k in k_tot]
 
     def _gen_radsym_otf(self):
@@ -504,8 +500,7 @@ class SheppardPSF(BasePSF):
                 plist.append(1 - m ** 2 / (1 + s))  # Pxx
                 plist.append(-m * n / (1 + s))  # Pxy
             # generate empty otf
-            otf = np.zeros((len(plist), self.zsize, self.size, self.size),
-                           dtype="D")
+            otf = np.zeros((len(plist), self.zsize, self.size, self.size), dtype="D")
             # fill in the valid poins
             for o, p in zip(otf, plist):
                 o[self.valid_points] = p * a
@@ -560,7 +555,7 @@ class SheppardPSF2D(SheppardPSF):
         # if the user gave us different z and x/y res we need to calculate
         # the positional "error" in k-space to draw the spherical shell
         if dk != dkz:
-            with np.errstate(invalid='ignore'):
+            with np.errstate(invalid="ignore"):
                 dd = np.array((dkz, dk)).reshape(2, 1, 1)
                 dkr = norm(np.array(k_tot) * dd, axis=0) / kr
             # we know the origin is zero so replace it
@@ -574,8 +569,7 @@ class SheppardPSF2D(SheppardPSF):
             kzz = k_tot[0]
         # calculate the points on the spherical shell, save them and the
         # corresponding kz, ky and kx coordinates
-        self.valid_points = np.logical_and(abs(kr - kmag) < dkr,
-                                           kzz > kz_min + dkr)
+        self.valid_points = np.logical_and(abs(kr - kmag) < dkr, kzz > kz_min + dkr)
         self.kzz, self.krr = [k[self.valid_points] for k in k_tot]
 
     def _gen_otf(self):
@@ -607,8 +601,7 @@ class SheppardPSF2D(SheppardPSF):
                 plist.append(1 - m ** 2 / (1 + s))  # Pxx
                 plist.append(-m * n / (1 + s))  # Pxy
             # generate empty otf
-            otf = np.zeros((len(plist), self.zsize, self.size, self.size),
-                           dtype="D")
+            otf = np.zeros((len(plist), self.zsize, self.size, self.size), dtype="D")
             # fill in the valid poins
             for o, p in zip(otf, plist):
                 o[self.valid_points] = p * a
@@ -636,6 +629,7 @@ class SheppardPSF2D(SheppardPSF):
 if __name__ == "__main__":
     # import plotting
     from matplotlib import pyplot as plt
+
     # generate a comparison
     args = (488, 0.85, 1.0, 140, 256, 240, 128)
     kwargs = dict(vec_corr="none", condition="none")
@@ -651,8 +645,7 @@ if __name__ == "__main__":
             otf = np.log(otf + np.finfo(float).eps)
             ax_yx.matshow(otf[otf.shape[0] // 2], vmin=-5, vmax=5, cmap="inferno")
             ax_yx.set_title("{} $k_y k_x$ plane".format(p.__class__.__name__))
-            ax_zx.matshow(otf[..., otf.shape[1] // 2], vmin=-5, vmax=5,
-                          cmap="inferno")
+            ax_zx.matshow(otf[..., otf.shape[1] // 2], vmin=-5, vmax=5, cmap="inferno")
             ax_zx.set_title("{} $k_z k_x$ plane".format(p.__class__.__name__))
             for ax in ax_sub:
                 ax.xaxis.set_major_locator(plt.NullLocator())
