@@ -1,19 +1,144 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # utils.py
-# Utility functions for the pyOTF module
+# Utility functions for the py_otf module
 # Copyright (c) 2016, David Hoffman
 import numpy as np
 
-try:
-    from pyfftw.interfaces.numpy_fft import fftshift, ifftshift, fftn, ifftn
-    import pyfftw
+from numpy.fft import fftshift, ifftshift, fftn, ifftn
 
-    # Turn on the cache for optimum performance
-    pyfftw.interfaces.cache.enable()
-except ImportError:
-    from numpy.fft import fftshift, ifftshift, fftn, ifftn
-from dphutils import fft_pad, slice_maker
+
+def _calc_crop(s1, s2):
+    """Calc the cropping from the padding"""
+    a1 = abs(s1) if s1 < 0 else None
+    a2 = s2 if s2 < 0 else None
+    return slice(a1, a2, None)
+
+
+def _calc_pad(oldnum, newnum):
+    """ Calculate the proper padding for fft_pad
+
+    We have three cases:
+    old number even new number even
+    >>> _calc_pad(10, 16)
+    (3, 3)
+
+    old number odd new number even
+    >>> _calc_pad(11, 16)
+    (3, 2)
+
+    old number odd new number odd
+    >>> _calc_pad(11, 17)
+    (3, 3)
+
+    old number even new number odd
+    >>> _calc_pad(10, 17)
+    (4, 3)
+
+    same numbers
+    >>> _calc_pad(17, 17)
+    (0, 0)
+
+    from larger to smaller.
+    >>> _calc_pad(17, 10)
+    (-4, -3)
+    """
+    # how much do we need to add?
+    width = newnum - oldnum
+    # calculate one side, smaller
+    pad_s = width // 2
+    # calculate the other, bigger
+    pad_b = width - pad_s
+    pad1, pad2 = pad_b, pad_s
+    return pad1, pad2
+
+
+def _padding_slices(oldshape, newshape):
+    """This function takes the old shape and the new shape and calculates
+    the required padding or cropping.newshape
+
+    Can be used to generate the slices needed to undo fft_pad above"""
+    # generate pad widths from new shape
+    padding = tuple(
+        _calc_pad(o, n) if n is not None else _calc_pad(o, o) for o, n in zip(oldshape, newshape)
+    )
+    # Make a crop list, if any of the padding is negative
+    slices = tuple(_calc_crop(s1, s2) for s1, s2 in padding)
+    # leave 0 pad width where it was cropped
+    padding = [(max(s1, 0), max(s2, 0)) for s1, s2 in padding]
+    return padding, slices
+
+
+def fft_pad(array, newshape=None, mode="median", **kwargs):
+    """Pad an array to prep it for fft"""
+    # pull the old shape
+    oldshape = array.shape
+    if newshape is None:
+        # update each dimension to a 5-smooth hamming number
+        newshape = tuple(sig.fftpack.helper.next_fast_len(n) for n in oldshape)
+    else:
+        if isinstance(newshape, int):
+            newshape = tuple(newshape for n in oldshape)
+        else:
+            newshape = tuple(newshape)
+    # generate padding and slices
+    padding, slices = _padding_slices(oldshape, newshape)
+    return np.pad(array[slices], padding, mode=mode, **kwargs)
+
+
+def slice_maker(xs, ws):
+    """
+    A utility function to generate slices for later use.
+
+    Parameters
+    ----------
+    y0 : int
+        center y position of the slice
+    x0 : int
+        center x position of the slice
+    width : int
+        Width of the slice
+
+    Returns
+    -------
+    slices : list
+        A list of slice objects, the first one is for the y dimension and
+        and the second is for the x dimension.
+
+    Notes
+    -----
+    The method will automatically coerce slices into acceptable bounds.
+
+    Examples
+    --------
+    >>> slice_maker((30,20),10)
+    [slice(25, 35, None), slice(15, 25, None)]
+    >>> slice_maker((30,20),25)
+    [slice(18, 43, None), slice(8, 33, None)]
+    """
+    # normalize inputs
+    xs = np.asarray(xs)
+    ws = np.asarray(_normalize_sequence(ws, len(xs)))
+    if not np.isrealobj((xs, ws)):
+        raise TypeError("`slice_maker` only accepts real input")
+    if np.any(ws < 0):
+        raise ValueError("width cannot be negative, width = {}".format(ws))
+    # ensure integers
+    xs = np.rint(xs).astype(int)
+    ws = np.rint(ws).astype(int)
+    # use _calc_pad
+    toreturn = []
+    for x, w in zip(xs, ws):
+        half2, half1 = _calc_pad(0, w)
+        xstart = x - half1
+        xend = x + half2
+        assert xstart <= xend, "xstart > xend"
+        if xend <= 0:
+            xstart, xend = 0, 0
+        # the max calls are to make slice_maker play nice with edges.
+        toreturn.append(slice(max(0, xstart), xend))
+    # return a list of slices
+    return tuple(toreturn)
 
 
 def easy_fft(data, axes=None):

@@ -12,14 +12,8 @@ Copyright (c) 2016, David Hoffman
 import copy
 import numpy as np
 
-try:
-    from pyfftw.interfaces.numpy_fft import fftshift, ifftshift, fftn
-    import pyfftw
 
-    # Turn on the cache for optimum performance
-    pyfftw.interfaces.cache.enable()
-except ImportError:
-    from numpy.fft import fftshift, ifftshift, fftn
+from numpy.fft import fftshift, ifftshift, fftn
 
 from numpy.linalg import lstsq
 from .utils import psqrt
