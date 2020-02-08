@@ -9,8 +9,8 @@ Copyright David Hoffman, 2018
 
 from nose.tools import *
 import unittest
-from pyOTF.otf import *
-from pyOTF.phaseretrieval import *
+from py_otf.otf import *
+from py_otf.phaseretrieval import *
 import numpy as np
 
 

@@ -1,7 +1,7 @@
 import numpy as np
 from nose.tools import *
 import unittest
-from pyOTF.otf import *
+from py_otf.otf import *
 
 
 class BasePSFCase(object):

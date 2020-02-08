@@ -4,7 +4,7 @@ Tests for utility functions
 
 import numpy as np
 from nose.tools import *
-from pyOTF.utils import *
+from py_otf.utils import *
 
 
 def test_remove_bg_unsigned():
