@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # utils.py
-# Utility functions for the py_otf module
-# Copyright (c) 2016, David Hoffman
-import numpy as np
+"""
+Utility functions for the py_otf module
+Copyright (c) 2016, David Hoffman
+"""
 
+import numpy as np
 from numpy.fft import fftshift, ifftshift, fftn, ifftn
 
 

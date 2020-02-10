@@ -9,17 +9,18 @@ Optics Letters 2003, 28 (10), 801.](dx.doi.org/10.1364/OL.28.000801)
 
 Copyright (c) 2016, David Hoffman
 """
+
 import copy
+
 import numpy as np
-
-
+from numpy.linalg import lstsq
 from numpy.fft import fftshift, ifftshift, fftn
 
-from numpy.linalg import lstsq
 from .utils import psqrt
 from .otf import HanserPSF
-from .zernike import zernike
+from .zernike import zernike, noll2name
 from skimage.restoration import unwrap_phase
+
 from matplotlib import pyplot as plt
 
 import logging
@@ -365,13 +366,14 @@ def _recon_from_zerns(coefs, zerns):
 
 if __name__ == "__main__":
     # phase retrieve a pupil
-    import os
+    from pathlib import Path
     import time
     from skimage.external import tifffile as tif
+    from .utils import prep_data_for_PR
 
     # read in data from fixtures
     data = tif.imread(
-        os.path.split(__file__)[0] + "/fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif"
+        str(Path(__file__).parent.parent / "fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif")
     )
     # prep data
     data_prepped = prep_data_for_PR(data, 512)

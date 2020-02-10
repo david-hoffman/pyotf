@@ -15,8 +15,8 @@ Copyright (c) 2016, David Hoffman
 
 import numpy as np
 from numpy.linalg import norm
-
 from numpy.fft import fftshift, fftfreq, ifftn
+
 from py_otf.utils import NumericProperty, easy_fft, easy_ifft, cart2pol, psqrt
 
 import logging
