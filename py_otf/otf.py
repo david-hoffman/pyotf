@@ -151,9 +151,7 @@ class BasePSF(object):
     def vec_corr(self, value):
         valid_values = {"none", "x", "y", "z", "total"}
         if value not in valid_values:
-            raise ValueError(
-                ("Vector correction must be one of "("{!r}, " * len(valid_values)).format(value))
-            )
+            raise ValueError("Vector correction must be one of {}".format(", ".join(valid_values)))
         self._vec_corr = value
         self._attribute_changed()
 
