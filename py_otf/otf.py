@@ -166,9 +166,7 @@ class BasePSF(object):
     def condition(self, value):
         valid_values = {"none", "sine", "herschel"}
         if value not in valid_values:
-            raise ValueError(
-                ("Condition must be one of "("{!r}, " * len(valid_values)).format(value))
-            )
+            raise ValueError(("Condition must be one of {}").format(", ".join(valid_values)))
         self._condition = value
         self._attribute_changed()
 
