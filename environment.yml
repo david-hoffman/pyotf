@@ -1,0 +1,8 @@
+name: py-otf
+dependencies:
+  - python
+  - numpy
+  - scipy
+  - numpy
+  - scikit-image
+  - matplotlib
