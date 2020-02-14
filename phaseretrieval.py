@@ -24,7 +24,7 @@ except ImportError:
 from numpy.linalg import lstsq
 from .utils import psqrt
 from .otf import HanserPSF
-from .zernike import zernike
+from .zernike import zernike, noll2name
 from skimage.restoration import unwrap_phase
 from matplotlib import pyplot as plt
 
@@ -189,7 +189,7 @@ class PhaseRetrievalResult(object):
         self.zd_result = ZernikeDecomposition(mag_coefs, phase_coefs, zerns)
         return self.zd_result
 
-    def generate_psf(self, sphase=slice(4, None, None), size=None, zsize=None, zrange=None):
+    def _generate_psf(self, complex_pupil, size=None, zsize=None, zrange=None):
         """Make a perfect PSF"""
         # make a copy of the internal model
         model = copy.copy(self.model)
@@ -199,7 +199,7 @@ class PhaseRetrievalResult(object):
         if zrange is not None:
             model.zrange = zrange
         # generate the PSF from the reconstructed phase
-        model._gen_psf(ifftshift(self.zd_result.complex_pupil(sphase=sphase)))
+        model._gen_psf(ifftshift(complex_pupil))
         # reshpae PSF if needed in x/y dimensions
         psf = model.PSFi
         nz, ny, nx = psf.shape
@@ -216,6 +216,14 @@ class PhaseRetrievalResult(object):
                 psf = psf[:, myslice, myslice]
         # return data
         return psf
+
+    def generate_zd_psf(self, sphase=slice(4, None, None), size=None, zsize=None, zrange=None):
+        """Generate a PSF from the zernike decomposition (if available)"""
+        return self._generate_psf(self.zd_result.complex_pupil(sphase=sphase), size, zsize, zrange)
+
+    def generate_psf(self, size=None, zsize=None, zrange=None):
+        """Generate a PSF from the retrieved phase"""
+        return self._generate_psf(self.complex_pupil, size, zsize, zrange)
 
     def plot(self, axs=None):
         """Plot the retrieved results"""
