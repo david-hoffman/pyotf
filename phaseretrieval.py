@@ -126,7 +126,7 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, ph
         if phase_only:
             new_pupil = np.exp(1j * np.angle(new_pupil)) * mask
     else:
-        logger.warn("Reach max iterations without convergence")
+        logger.warning("Reach max iterations without convergence")
     mse = mse[: i + 1]
     mse_diff = mse_diff[: i + 1]
     pupil_diff = pupil_diff[: i + 1]
@@ -227,20 +227,7 @@ class PhaseRetrievalResult(object):
 
     def plot(self, axs=None):
         """Plot the retrieved results"""
-        if axs is None:
-            fig, (ax_phase, ax_mag) = plt.subplots(1, 2, figsize=(12, 5))
-        else:
-            (ax_phase, ax_mag) = axs
-            fig = ax_phase.get_figure()
-
-        phase_img = ax_phase.matshow(self.phase, cmap="seismic", vmin=-np.pi, vmax=np.pi)
-        plt.colorbar(phase_img, ax=ax_phase)
-        mag_img = ax_mag.matshow(self.mag, cmap="inferno")
-        plt.colorbar(mag_img, ax=ax_mag)
-        ax_phase.set_title("Pupil Phase")
-        ax_mag.set_title("Pupil Magnitude")
-        fig.tight_layout()
-        return fig, (ax_phase, ax_mag)
+        return _plot_complex_pupil(self.mag, self.phase, axs)
 
     def plot_convergence(self):
         """Diagnostic plots of the convergence criteria"""
@@ -337,6 +324,30 @@ class ZernikeDecomposition(object):
         phase = self.phase(*args, s=sphase, **kwargs)
         return mag * np.exp(1j * phase)
 
+    def plot(self, smag=Ellipsis, sphase=Ellipsis, axs=None, *args, **kwargs):
+        mag = self.mag(*args, s=smag, **kwargs)
+        phase = self.phase(*args, s=sphase, **kwargs)
+        return _plot_complex_pupil(mag, phase, axs)
+
+
+
+def _plot_complex_pupil(mag, phase, axs=None):
+    """Plot the retrieved results"""
+    if axs is None:
+        fig, (ax_phase, ax_mag) = plt.subplots(1, 2, figsize=(12, 5))
+    else:
+        (ax_phase, ax_mag) = axs
+        fig = ax_phase.get_figure()
+
+    phase_img = ax_phase.matshow(phase, cmap="seismic", vmin=-np.pi, vmax=np.pi)
+    plt.colorbar(phase_img, ax=ax_phase)
+    mag_img = ax_mag.matshow(mag, cmap="inferno")
+    plt.colorbar(mag_img, ax=ax_mag)
+    ax_phase.set_title("Pupil Phase")
+    ax_mag.set_title("Pupil Magnitude")
+    fig.tight_layout()
+    return fig, (ax_phase, ax_mag)
+
 
 def _calc_mse(data1, data2):
     """utility to calculate mean square error"""
@@ -382,6 +393,7 @@ if __name__ == "__main__":
     import os
     import time
     from skimage.external import tifffile as tif
+    from .utils import prep_data_for_PR
 
     # read in data from fixtures
     data = tif.imread(
