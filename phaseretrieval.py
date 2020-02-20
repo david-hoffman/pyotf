@@ -407,7 +407,7 @@ if __name__ == "__main__":
     pr_start = time.time()
     print("Starting phase retrieval")
     pr_result = retrieve_phase(data_prepped, params)
-    print("It took {} seconds to retrieve the pupil function".format(time.time() - pr_start))
+    print("It took {:.1f} seconds to retrieve the pupil function".format(time.time() - pr_start))
     # plot
     pr_result.plot()
     pr_result.plot_convergence()
@@ -415,7 +415,7 @@ if __name__ == "__main__":
     zd_start = time.time()
     print("Starting zernike decomposition")
     pr_result.fit_to_zernikes(120)
-    print("It took {} seconds to fit 120 Zernikes".format(time.time() - zd_start))
+    print("It took {:.1f} seconds to fit 120 Zernikes".format(time.time() - zd_start))
     # plot
     pr_result.zd_result.plot_named_coefs()
     pr_result.zd_result.plot_coefs()
