@@ -8,7 +8,7 @@ The majority of this package's documentation is included in the source code and 
 
 ## Installation
 
-The software is very much in alpha phase and installation is simply cloning the repository and adding the folder to your python path. (also at the moment requires [dphutils package](https://github.com/david-hoffman/dphutils))
+![Conda Badge](https://anaconda.org/david-hoffman/pyotf/badges/installer/conda.svg)
 
 ## Components
 
