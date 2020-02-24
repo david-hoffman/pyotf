@@ -27,12 +27,8 @@ requirements:
     - scikit-image
     - matplotlib
 
-#test:
-#  imports:
-#    - pyotf
-
 about:
   home: {{ setupdata.get('url') }}
-  license: {{ setupdata.get('license') }}
+  license: Apache License Version 2.0
   license_file: LICENSE.md
   summary: {{ setupdata.get('description') }}
