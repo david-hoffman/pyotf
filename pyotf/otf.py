@@ -4,7 +4,7 @@
 """
 A module to simulate optical transfer functions and point spread functions
 
-If this file is run as a script (python -m py_otf.otf) it will compare
+If this file is run as a script (python -m pyotf.otf) it will compare
 the HanserPSF to the SheppardPSF in a plot.
 
 https://en.wikipedia.org/wiki/Optical_transfer_function
@@ -17,7 +17,7 @@ import numpy as np
 from numpy.linalg import norm
 from numpy.fft import fftshift, fftfreq, ifftn
 
-from py_otf.utils import NumericProperty, easy_fft, easy_ifft, cart2pol, psqrt
+from pyotf.utils import NumericProperty, easy_fft, easy_ifft, cart2pol, psqrt
 
 import logging
 

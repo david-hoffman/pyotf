@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # utils.py
 """
-Utility functions for the py_otf module
+Utility functions for the pyotf module
 Copyright (c) 2016, David Hoffman
 """
 

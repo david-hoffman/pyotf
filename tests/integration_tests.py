@@ -9,8 +9,8 @@ Copyright David Hoffman, 2018
 
 from nose.tools import *
 import unittest
-from py_otf.otf import *
-from py_otf.phaseretrieval import *
+from pyotf.otf import *
+from pyotf.phaseretrieval import *
 import numpy as np
 
 
@@ -58,13 +58,13 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
         )
 
     def test_mag(self):
-        """Make sure phase retrieval returns same phase and magnitude"""
+        """Make sure phase retrieval returns same magnitude"""
         np.testing.assert_allclose(
             fftshift(self.pupil_mag), self.PR_result.mag, err_msg="Mag failed"
         )
 
     def test_phase(self):
-        """Make sure phase retrieval returns same phase and magnitude"""
+        """Make sure phase retrieval returns same phase"""
         # doesn't seem to be fitting the piston part correctly, not sure why
         # or if it matters
         np.testing.assert_allclose(

@@ -4,7 +4,7 @@ Test suite for zernike.py
 """
 
 from nose.tools import *
-from py_otf.zernike import *
+from pyotf.zernike import *
 import numpy as np
 
 
