@@ -24,6 +24,7 @@ setuptools.setup(
     cmdclass=versioneer.get_cmdclass(),
     author="David Hoffman",
     author_email="dave.p.hoffman@gmail.com",
+    url='https://github.com/david-hoffman/pyOTF',
     description="A python library for simulating and analyzing microscope point spread functions (PSFs)",
     long_description=long_description,
     long_description_content_type="text/markdown",

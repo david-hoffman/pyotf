@@ -33,5 +33,5 @@ test:
 about:
   home: {{ setupdata.get('url') }}
   license: {{ setupdata.get('license') }}
-  license_file: LICENSE
+  license_file: LICENSE.md
   summary: {{ setupdata.get('description') }}
