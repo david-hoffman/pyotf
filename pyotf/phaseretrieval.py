@@ -325,7 +325,6 @@ class ZernikeDecomposition(object):
         return _plot_complex_pupil(mag, phase, axs)
 
 
-
 def _plot_complex_pupil(mag, phase, axs=None):
     """Plot the retrieved results"""
     if axs is None:
