@@ -14,6 +14,10 @@ import versioneer
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+# read in license
+with open("LICENSE.md", "r") as fh:
+    license = fh.read()
+
 # get requirements
 with open("requirements.txt", "r") as fh:
     requirements = [line.strip() for line in fh]
@@ -28,6 +32,7 @@ setuptools.setup(
     description="A python library for simulating and analyzing microscope point spread functions (PSFs)",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    license=license,
     packages=setuptools.find_packages(),
     classifiers=[
         "Development Status :: Alpha",
