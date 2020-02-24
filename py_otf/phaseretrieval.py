@@ -121,7 +121,7 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, ph
         if phase_only:
             new_pupil = np.exp(1j * np.angle(new_pupil)) * mask
     else:
-        logger.warn("Reach max iterations without convergence")
+        logger.warning("Reach max iterations without convergence")
     mse = mse[: i + 1]
     mse_diff = mse_diff[: i + 1]
     pupil_diff = pupil_diff[: i + 1]
@@ -184,7 +184,7 @@ class PhaseRetrievalResult(object):
         self.zd_result = ZernikeDecomposition(mag_coefs, phase_coefs, zerns)
         return self.zd_result
 
-    def generate_psf(self, sphase=slice(4, None, None), size=None, zsize=None, zrange=None):
+    def _generate_psf(self, complex_pupil, size=None, zsize=None, zrange=None):
         """Make a perfect PSF"""
         # make a copy of the internal model
         model = copy.copy(self.model)
@@ -194,7 +194,7 @@ class PhaseRetrievalResult(object):
         if zrange is not None:
             model.zrange = zrange
         # generate the PSF from the reconstructed phase
-        model._gen_psf(ifftshift(self.zd_result.complex_pupil(sphase=sphase)))
+        model._gen_psf(ifftshift(complex_pupil))
         # reshpae PSF if needed in x/y dimensions
         psf = model.PSFi
         nz, ny, nx = psf.shape
@@ -212,22 +212,17 @@ class PhaseRetrievalResult(object):
         # return data
         return psf
 
+    def generate_zd_psf(self, sphase=slice(4, None, None), size=None, zsize=None, zrange=None):
+        """Generate a PSF from the zernike decomposition (if available)"""
+        return self._generate_psf(self.zd_result.complex_pupil(sphase=sphase), size, zsize, zrange)
+
+    def generate_psf(self, size=None, zsize=None, zrange=None):
+        """Generate a PSF from the retrieved phase"""
+        return self._generate_psf(self.complex_pupil, size, zsize, zrange)
+
     def plot(self, axs=None):
         """Plot the retrieved results"""
-        if axs is None:
-            fig, (ax_phase, ax_mag) = plt.subplots(1, 2, figsize=(12, 5))
-        else:
-            (ax_phase, ax_mag) = axs
-            fig = ax_phase.get_figure()
-
-        phase_img = ax_phase.matshow(self.phase, cmap="seismic", vmin=-np.pi, vmax=np.pi)
-        plt.colorbar(phase_img, ax=ax_phase)
-        mag_img = ax_mag.matshow(self.mag, cmap="inferno")
-        plt.colorbar(mag_img, ax=ax_mag)
-        ax_phase.set_title("Pupil Phase")
-        ax_mag.set_title("Pupil Magnitude")
-        fig.tight_layout()
-        return fig, (ax_phase, ax_mag)
+        return _plot_complex_pupil(self.mag, self.phase, axs)
 
     def plot_convergence(self):
         """Diagnostic plots of the convergence criteria"""
@@ -324,6 +319,30 @@ class ZernikeDecomposition(object):
         phase = self.phase(*args, s=sphase, **kwargs)
         return mag * np.exp(1j * phase)
 
+    def plot(self, smag=Ellipsis, sphase=Ellipsis, axs=None, *args, **kwargs):
+        mag = self.mag(*args, s=smag, **kwargs)
+        phase = self.phase(*args, s=sphase, **kwargs)
+        return _plot_complex_pupil(mag, phase, axs)
+
+
+
+def _plot_complex_pupil(mag, phase, axs=None):
+    """Plot the retrieved results"""
+    if axs is None:
+        fig, (ax_phase, ax_mag) = plt.subplots(1, 2, figsize=(12, 5))
+    else:
+        (ax_phase, ax_mag) = axs
+        fig = ax_phase.get_figure()
+
+    phase_img = ax_phase.matshow(phase, cmap="seismic", vmin=-np.pi, vmax=np.pi)
+    plt.colorbar(phase_img, ax=ax_phase)
+    mag_img = ax_mag.matshow(mag, cmap="inferno")
+    plt.colorbar(mag_img, ax=ax_mag)
+    ax_phase.set_title("Pupil Phase")
+    ax_mag.set_title("Pupil Magnitude")
+    fig.tight_layout()
+    return fig, (ax_phase, ax_mag)
+
 
 def _calc_mse(data1, data2):
     """utility to calculate mean square error"""
@@ -383,7 +402,7 @@ if __name__ == "__main__":
     pr_start = time.time()
     print("Starting phase retrieval")
     pr_result = retrieve_phase(data_prepped, params)
-    print("It took {} seconds to retrieve the pupil function".format(time.time() - pr_start))
+    print("It took {:.1f} seconds to retrieve the pupil function".format(time.time() - pr_start))
     # plot
     pr_result.plot()
     pr_result.plot_convergence()
@@ -391,7 +410,7 @@ if __name__ == "__main__":
     zd_start = time.time()
     print("Starting zernike decomposition")
     pr_result.fit_to_zernikes(120)
-    print("It took {} seconds to fit 120 Zernikes".format(time.time() - zd_start))
+    print("It took {:.1f} seconds to fit 120 Zernikes".format(time.time() - zd_start))
     # plot
     pr_result.zd_result.plot_named_coefs()
     pr_result.zd_result.plot_coefs()
