@@ -8,6 +8,7 @@ Copyright (c) 2020, David Hoffman
 """
 
 import setuptools
+import versioneer
 
 # read in long description
 with open("README.md", "r") as fh:
@@ -19,7 +20,8 @@ with open("requirements.txt", "r") as fh:
 
 setuptools.setup(
     name="pyotf",
-    version="0.0.1",
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     author="David Hoffman",
     author_email="dave.p.hoffman@gmail.com",
     description="A python library for simulating and analyzing microscope point spread functions (PSFs)",
