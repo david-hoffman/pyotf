@@ -1,0 +1,7 @@
+include README.md
+include LICENSE.md
+include requirements.txt
+graft pyotf
+recursive-exclude * *.py[co]
+include versioneer.py
+include pyotf/_version.py

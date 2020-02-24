@@ -1,4 +1,4 @@
-name: py-otf
+name: pyotf
 dependencies:
   - python
   - numpy
@@ -6,3 +6,4 @@ dependencies:
   - numpy
   - scikit-image
   - matplotlib
+  - nose

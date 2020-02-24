@@ -18,7 +18,7 @@ with open("requirements.txt", "r") as fh:
     requirements = [line.strip() for line in fh]
 
 setuptools.setup(
-    name="py-otf",
+    name="pyotf",
     version="0.0.1",
     author="David Hoffman",
     author_email="dave.p.hoffman@gmail.com",
