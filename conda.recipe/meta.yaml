@@ -1,25 +1,22 @@
-{% set name = "pyotf" %}
 {% set setupdata = load_setup_py_data() %}
 
 package:
-  name: {{ name }}
-  version: {{ setupdata.get('version') }}
+  name: pyotf
+  version: {{ setupdata['version'] }}
 
 source:
-  # path: ..
   git_url: ../
-  git_rev: 'packaging'
+  git_rev: 0.0.1
 
 build:
-  noarch: generic
+  noarch: python
   number: 0
-  string: 'py{{ PY_VER|replace(".", "") }}_{{ PKG_BUILDNUM }}'
-  script: python setup.py install --single-version-externally-managed --record record.txt
+  script: pip install .
 
 requirements:
   build:
     - python
-    - setuptools
+    - pip
   run:
     - python
     - numpy
@@ -27,8 +24,12 @@ requirements:
     - scikit-image
     - matplotlib
 
+test:
+  imports:
+    - pyotf
+
 about:
-  home: {{ setupdata.get('url') }}
+  home: {{ setupdata['url'] }}
   license: Apache License Version 2.0
   license_file: LICENSE.md
-  summary: {{ setupdata.get('description') }}
+  summary: {{ setupdata['description'] }}

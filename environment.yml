@@ -3,9 +3,5 @@ dependencies:
   - python
   - numpy
   - scipy
-  - numpy
   - scikit-image
   - matplotlib
-  - nose
-  - anaconda-client
-  - conda-build
