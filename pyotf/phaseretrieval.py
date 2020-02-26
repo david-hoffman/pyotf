@@ -228,13 +228,17 @@ class PhaseRetrievalResult(object):
         """Diagnostic plots of the convergence criteria"""
         with np.errstate(invalid="ignore"):
             fig, axs = plt.subplots(3, 1, figsize=(6, 6), sharex=True)
+
             for ax, data in zip(axs, (self.mse, self.mse_diff, self.pupil_diff)):
                 ax.semilogy(data)
+
             for ax, t in zip(
                 axs, ("Mean Squared Error", "Relative Change in MSE", "Relative Change in Pupil")
             ):
                 ax.set_title(t)
+
             fig.tight_layout()
+
         return fig, axs
 
     @property
@@ -333,13 +337,23 @@ def _plot_complex_pupil(mag, phase, axs=None):
         (ax_phase, ax_mag) = axs
         fig = ax_phase.get_figure()
 
-    phase_img = ax_phase.matshow(phase, cmap="seismic", vmin=-np.pi, vmax=np.pi)
+    phase_img = ax_phase.matshow(
+        np.ma.array(phase, mask=mag == 0), cmap="coolwarm", vmin=-np.pi, vmax=np.pi
+    )
     plt.colorbar(phase_img, ax=ax_phase)
+
     mag_img = ax_mag.matshow(mag, cmap="inferno")
     plt.colorbar(mag_img, ax=ax_mag)
-    ax_phase.set_title("Pupil Phase")
-    ax_mag.set_title("Pupil Magnitude")
+
+    ax_phase.set_title("Pupil Phase", pad=0)
+    ax_mag.set_title("Pupil Magnitude", pad=0)
+
+    for ax in (ax_phase, ax_mag):
+        ax.xaxis.set_major_locator(plt.NullLocator())
+        ax.yaxis.set_major_locator(plt.NullLocator())
+
     fig.tight_layout()
+
     return fig, (ax_phase, ax_mag)
 
 
@@ -386,32 +400,45 @@ if __name__ == "__main__":
     # phase retrieve a pupil
     from pathlib import Path
     import time
+    import warnings
     from skimage.external import tifffile as tif
     from .utils import prep_data_for_PR
 
     # read in data from fixtures
-    data = tif.imread(
-        str(Path(__file__).parent.parent / "fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif")
-    )
-    # prep data
-    data_prepped = prep_data_for_PR(data, 512)
-    # set up model params
-    params = dict(wl=520, na=0.85, ni=1.0, res=130, zres=300)
-    # retrieve the phase
-    pr_start = time.time()
-    print("Starting phase retrieval")
-    pr_result = retrieve_phase(data_prepped, params)
-    print("It took {:.1f} seconds to retrieve the pupil function".format(time.time() - pr_start))
-    # plot
-    pr_result.plot()
-    pr_result.plot_convergence()
-    # fit to zernikes
-    zd_start = time.time()
-    print("Starting zernike decomposition")
-    pr_result.fit_to_zernikes(120)
-    print("It took {:.1f} seconds to fit 120 Zernikes".format(time.time() - zd_start))
-    # plot
-    pr_result.zd_result.plot_named_coefs()
-    pr_result.zd_result.plot_coefs()
-    # show
-    plt.show()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        data = tif.imread(
+            str(
+                Path(__file__).parent.parent / "fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif"
+            )
+        )
+        # prep data
+        data_prepped = prep_data_for_PR(data, 512)
+
+        # set up model params
+        params = dict(wl=520, na=0.85, ni=1.0, res=130, zres=300)
+
+        # retrieve the phase
+        pr_start = time.time()
+        print("Starting phase retrieval ... ", end="", flush=True)
+        pr_result = retrieve_phase(data_prepped, params)
+        pr_time = time.time() - pr_start
+        print(f"{pr_time:.1f} seconds were required to retrieve the pupil function")
+
+        # plot
+        pr_result.plot()
+        pr_result.plot_convergence()
+
+        # fit to zernikes
+        zd_start = time.time()
+        print("Starting zernike decomposition ... ", end="", flush=True)
+        pr_result.fit_to_zernikes(120)
+        zd_time = time.time() - zd_start
+        print(f"{zd_time:.1f} seconds were required to fit 120 Zernikes")
+
+        # plot
+        pr_result.zd_result.plot_named_coefs()
+        pr_result.zd_result.plot_coefs()
+
+        # show
+        plt.show()

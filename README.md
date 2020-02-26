@@ -10,10 +10,14 @@ The majority of this package's documentation is included in the source code and 
 
 ## Installation
 
-Installation is simplest with `conda`:
+Installation is simplest with `conda` or `pip`:
 
 ```
 conda install -c david-hoffman pyotf
+```
+
+```
+pip install pyotf
 ```
 
 ## Components
@@ -38,9 +42,63 @@ Both the `SheppardPSF` and `HanserPSF` have much the same interface. When instan
 
 For numerical calculations we'll also want to know the x/y resolution and number of points. Note that it is assumed that z is the optical axis of the objective lens.
 
-### phase_retrieval.py
+### phaseretrieval.py
 
 The phase retrieval algorithm implemented in this module is described by [Hanser et. al][3].
+
+An example for how to use these functions can be found at the end of the file:
+
+```python
+import time
+import warnings
+from skimage.external import tifffile as tif
+from pyotf.utils import prep_data_for_PR
+from pyotf.phaseretrieval import retrieve_phase
+
+# read in data from fixtures
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    data = tif.imread("fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif")
+
+    # prep data
+    data_prepped = prep_data_for_PR(data, 512)
+    
+    # set up model params
+    params = dict(wl=520, na=0.85, ni=1.0, res=130, zres=300)
+    
+    # retrieve the phase
+    pr_start = time.time()
+    print("Starting phase retrieval ... ", end="", flush=True)
+    pr_result = retrieve_phase(data_prepped, params)
+    pr_time = time.time() - pr_start
+    print(f"{pr_time:.1f} seconds were required to retrieve the pupil function")
+    
+    # plot
+    pr_result.plot()
+    pr_result.plot_convergence()
+    
+    # fit to zernikes
+    zd_start = time.time()
+    print("Starting zernike decomposition ... ", end="", flush=True)
+    pr_result.fit_to_zernikes(120)
+    zd_time = time.time() - zd_start
+    print(f"{zd_time:.1f} seconds were required to fit 120 Zernikes")
+    
+    # plot
+    pr_result.zd_result.plot_named_coefs()
+    pr_result.zd_result.plot_coefs()
+```
+Below is a plot of the phase and magnitude of the retrieved pupil function from a PSF recorded from [this](https://science.sciencemag.org/content/367/6475/eaaz5357) instrument. To generate this plot we simply call the `plot` method of the `PhaseRetrievalResult` object (in this case `pr_result`).
+
+![ ](https://github.com/david-hoffman/pyOTF/blob/master/fixtures/PR Result.png?raw=true "The phase and magnitude of the retrieved pupil function")
+
+And here the phase and magnitude have been fitted to 120 zernike polynomials. To generate this plot we simply call the `plot` method of the `ZernikeDecomposition` object (in this case `pr_result.zd_result`).
+
+![ ](https://github.com/david-hoffman/pyOTF/blob/master/fixtures/PR Result ZD.png?raw=true "The phase and magnitude decomposed into 120 zernike polynomials")
+
+We can plot the magnitude of the first 15 named phase coefficients by calling `pr_result.zd_result.plot_named_coefs()`. 
+
+![ ](https://github.com/david-hoffman/pyOTF/blob/master/fixtures/Named Coefs.png?raw=true "The first 15 zernike polynomial coefficients which correspond to named aberrations.")
 
 ### zernike.py
 
@@ -55,8 +113,6 @@ Most of the contents of `utils` won't be useful to the average user save one fun
 ## LabVIEW API
 
 An example of inputing a 3D stack and running this python function from LabVIEW (>2018) is given in `\labview\Test Phase Retrieval.vi`
-
-## Use cases
 
 ### References
 

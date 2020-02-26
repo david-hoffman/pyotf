@@ -620,27 +620,44 @@ if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
     # generate a comparison
-    args = (488, 0.85, 1.0, 140, 256, 240, 128)
-    kwargs = dict(vec_corr="none", condition="none")
-    psf = [HanserPSF(*args, **kwargs), SheppardPSF(*args, **kwargs)]
+    kwargs = dict(
+        wl=520,
+        na=1.27,
+        ni=1.33,
+        res=90,
+        size=256,
+        zres=190,
+        zsize=128,
+        vec_corr="none",
+        condition="none",
+    )
+    psfs = HanserPSF(**kwargs), SheppardPSF(**kwargs)
+
     with plt.style.context("dark_background"):
+
         fig, axs = plt.subplots(2, 2, figsize=(9, 6), gridspec_kw=dict(width_ratios=(1, 2)))
-        for p, ax_sub in zip(psf, axs):
+
+        for psf, ax_sub in zip(psfs, axs):
             # make coordinates
             ax_yx, ax_zx = ax_sub
-            otf = abs(p.OTFi)
+            # get magnitude
+            otf = abs(psf.OTFi)
+            # normalize
             otf /= otf.max()
             otf /= otf.mean()
             otf = np.log(otf + np.finfo(float).eps)
-            ax_yx.matshow(otf[otf.shape[0] // 2], vmin=-5, vmax=5, cmap="inferno")
-            ax_yx.set_title("{} $k_y k_x$ plane".format(p.__class__.__name__))
-            ax_zx.matshow(otf[..., otf.shape[1] // 2], vmin=-5, vmax=5, cmap="inferno")
-            ax_zx.set_title("{} $k_z k_x$ plane".format(p.__class__.__name__))
+
+            # plot
+            ax_yx.matshow(otf[otf.shape[0] // 2], vmin=-3, vmax=5, cmap="inferno")
+            ax_yx.set_title("{} $k_y k_x$ plane".format(psf.__class__.__name__))
+            ax_zx.matshow(otf[..., otf.shape[1] // 2], vmin=-3, vmax=5, cmap="inferno")
+            ax_zx.set_title("{} $k_z k_x$ plane".format(psf.__class__.__name__))
+
             for ax in ax_sub:
                 ax.xaxis.set_major_locator(plt.NullLocator())
                 ax.yaxis.set_major_locator(plt.NullLocator())
         fig.tight_layout()
         plt.show()
-    # NOTE: the results are _very_ close on a qualitative scale, but they
-    # do not match exactly as theory says they should (they're
-    # mathematically identical to one another)
+
+    # NOTE: the results are _very_ close on a qualitative scale, but they do not match exactly
+    # as theory says they should (they're mathematically identical to one another)
