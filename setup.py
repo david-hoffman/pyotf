@@ -18,6 +18,7 @@ with open("README.md", "r") as fh:
 with open("requirements.txt", "r") as fh:
     requirements = [line.strip() for line in fh]
 
+
 setuptools.setup(
     name="pyotf",
     version=versioneer.get_version(),
