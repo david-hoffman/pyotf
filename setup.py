@@ -31,9 +31,9 @@ setuptools.setup(
     license="Apache V2.0",
     packages=setuptools.find_packages(),
     classifiers=[
-        "Development Status :: Alpha",
+        "Development Status :: 3 - Alpha",
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: Apache License",
+        "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering",
