@@ -25,10 +25,10 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
         # model kwargs
         self.model_kwargs = dict(
             wl=525,
-            na=0.85,
-            ni=1.0,
-            res=140,
-            size=64,
+            na=1.27,
+            ni=1.33,
+            res=100,
+            size=128,
             zrange=[-1000, -500, 0, 250, 1000, 3000],
             vec_corr="none",
             condition="none",
@@ -42,6 +42,7 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
         # make zernikes (need to convert kr to r where r = 1 when kr is at
         # diffraction limit)
         r = kr * model.wl / model.na
+        self.mask = r <= 1
         zerns = zernike(r, theta, np.arange(5, 16))
         # make fake phase and magnitude coefs
         self.pcoefs = np.random.rand(zerns.shape[0])
@@ -65,10 +66,12 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
 
     def test_phase(self):
         """Make sure phase retrieval returns same phase"""
-        # doesn't seem to be fitting the piston part correctly, not sure why
-        # or if it matters
+        # from the unwrap_phase docs:
+        # >>> np.std(image_unwrapped - image) < 1e-6   # A constant offset is normal
         np.testing.assert_allclose(
-            fftshift(self.pupil_phase), self.PR_result.phase, err_msg="Phase failed"
+            (fftshift(self.pupil_phase) - self.PR_result.phase) * self.mask,
+            0,
+            err_msg="Phase failed",
         )
 
     def test_zernike_modes(self):
