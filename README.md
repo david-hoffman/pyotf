@@ -1,4 +1,4 @@
-![Conda Badge](https://anaconda.org/david-hoffman/pyotf/badges/installer/conda.svg)
+[![Conda Badge](https://anaconda.org/david-hoffman/pyotf/badges/installer/conda.svg)](https://anaconda.org/david-hoffman/pyotf) [![PyPI version](https://badge.fury.io/py/pyotf.svg)](https://badge.fury.io/py/pyotf)
 
 # pyotf
 
