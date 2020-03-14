@@ -74,7 +74,9 @@ class BasePSF(object):
                 Valid options are: "none", "x", "y", "z", "total"
                 Default is: "none"
         condition : str
-            keyword to indicate whether to model the sine or herschel
+            keyword to indicate whether to model the sine or herschel conditions
+            **Herschel's Condition** invariance of axial magnification
+            **Abbe's Sine Condition** invariance of lateral magnification
             conditions
                 Valid options are: "none", "sine", "herschel"
                 Default is: "sine"
