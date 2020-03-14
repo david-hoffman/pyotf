@@ -13,11 +13,14 @@ https://en.wikipedia.org/wiki/Point_spread_function
 Copyright (c) 2016, David Hoffman
 """
 
+import copy
+
 import numpy as np
 from numpy.linalg import norm
 from numpy.fft import fftshift, fftfreq, ifftn
 
-from pyotf.utils import NumericProperty, easy_fft, easy_ifft, cart2pol, psqrt
+from .utils import NumericProperty, easy_fft, easy_ifft, cart2pol, psqrt
+from .zernike import zernike, name2noll
 
 import logging
 
@@ -617,6 +620,67 @@ class SheppardPSF2D(SheppardPSF):
         return self._PSFa
 
 
+def apply_aberration(model, mcoefs, pcoefs):
+    """Applies a set of abberations to a model PSF
+
+    Parameters
+    ----------
+    model : HanserPSF
+        The model PSF to which to apply the aberrations
+    mcoefs : ndarray (n, )
+        The magnitude coefficiencts
+    pcoefs : ndarray (n, )
+        The phase coefficients
+    
+    Note: this function assumes the mcoefs and pcoefs are Noll ordered"""
+
+    # sanity checks
+    assert isinstance(model, HanserPSF), "Model must be a HanserPSF"
+
+    model = copy.copy(model)
+
+    if mcoefs is None and pcoefs is None:
+        warnings.warn("No abberation applied")
+        return model
+
+    if mcoefs is None:
+        mcoefs = np.zeros_like(pcoefs)
+
+    if pcoefs is None:
+        pcoefs = np.zeros_like(mcoefs)
+
+    assert len(mcoefs) == len(pcoefs), "Coefficient lengths don't match"
+
+    # extract kr
+    model._gen_kr()
+    kr = model._kr
+    theta = model._phi
+    # make zernikes (need to convert kr to r where r = 1 when kr is at
+    # diffraction limit)
+    r = kr * model.wl / model.na
+    zerns = zernike(r, theta, np.arange(len(mcoefs)) + 1)
+
+    pupil_phase = (zerns * pcoefs[:, None, None]).sum(0)
+    pupil_mag = (zerns * mcoefs[:, None, None]).sum(0)
+
+    # apply aberrations to unaberrated pupil (N.B. the unaberrated phase is 0)
+    pupil_mag += abs(model._gen_pupil())
+
+    # generate the PSF
+    model._gen_psf(pupil_mag * np.exp(1j * pupil_phase))
+
+    return model
+
+
+def apply_named_aberration(model, aberration, magnitude):
+    """A convenience function to apply a specific named aberration to the PSF. This will only effect the phase"""
+    # get the Noll number and build pcoefs
+    noll = name2noll[aberration]
+    pcoefs = np.zeros(noll)
+    pcoefs[-1] = magnitude
+    return apply_aberration(model, None, pcoefs)
+
+
 if __name__ == "__main__":
     # import plotting
     from matplotlib import pyplot as plt
@@ -659,7 +723,26 @@ if __name__ == "__main__":
                 ax.xaxis.set_major_locator(plt.NullLocator())
                 ax.yaxis.set_major_locator(plt.NullLocator())
         fig.tight_layout()
-        plt.show()
 
     # NOTE: the results are _very_ close on a qualitative scale, but they do not match exactly
     # as theory says they should (they're mathematically identical to one another)
+
+    model_kwargs = dict(
+        wl=525, na=1.27, ni=1.33, res=70, size=256, zrange=[0], vec_corr="none", condition="none",
+    )
+    model = HanserPSF(**model_kwargs)
+
+    mag = model.na / model.wl * model.res * 2 * np.pi
+
+    with plt.style.context("dark_background"):
+        fig, axs = plt.subplots(3, 5, figsize=(12, 8))
+        # fill out plot
+        for ax, name in zip(axs.ravel(), name2noll.keys()):
+            model2 = apply_named_aberration(model, name, mag * 2)
+            ax.matshow(model2.PSFi.squeeze()[104:-104, 104:-104], cmap="inferno")
+            ax.set_xlabel(name.replace(" ", "\n", 1).title())
+            ax.xaxis.set_major_locator(plt.NullLocator())
+            ax.yaxis.set_major_locator(plt.NullLocator())
+
+        # fig.tight_layout()
+    plt.show()

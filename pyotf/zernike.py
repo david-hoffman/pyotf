@@ -151,9 +151,9 @@ noll_inverse = noll_mapping.argsort()
 # https://en.wikipedia.org/wiki/Zernike_polynomials
 noll2name = {
     1: "Piston",
-    2: "Tip (lateral position) (X-Tilt)",
-    3: "Tilt (lateral position) (Y-Tilt)",
-    4: "Defocus (longitudinal position)",
+    2: "Tip",
+    3: "Tilt",
+    4: "Defocus",
     5: "Oblique astigmatism",
     6: "Vertical astigmatism",
     7: "Vertical coma",
@@ -257,19 +257,24 @@ def zernike(r, theta, *args, **kwargs):
             raise ValueError("Radial and Azimuthal degrees have different shapes")
     else:
         raise ValueError("{} is an invalid number of arguments".format(len(args)))
+
     # make sure r and theta are arrays
     r = np.asarray(r, dtype=float)
     theta = np.asarray(theta, dtype=float)
+
     # make sure that r is always greater than 0
     if not (r >= 0).all():
         raise ValueError("r must always be greater or equal to 0")
     if r.ndim > 2:
         raise ValueError("Input rho and theta cannot have more than two dimensions")
+
     # make sure that n and m are iterable
     n, m = n.ravel(), m.ravel()
+
     # make sure that n is always greater or equal to m
     if not (n >= abs(m)).all():
         raise ValueError("n must always be greater or equal to m")
+
     # return column of zernike polynomials
     return np.array([_zernike(r, theta, nn, mm, **kwargs) for nn, mm in zip(n, m)]).squeeze()
 
@@ -312,6 +317,7 @@ def _zernike(r, theta, n, m, norm=False):
     else:
         # even zernike
         zern *= np.cos(m * theta)
+
     # calculate the normalization factor
     if norm:
         raise NotImplementedError
