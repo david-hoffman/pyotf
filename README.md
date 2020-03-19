@@ -104,6 +104,8 @@ We can plot the magnitude of the first 15 named phase coefficients by calling `p
 
 ![First 15 zernike Polynomials plotted on the unit disk](https://github.com/david-hoffman/pyOTF/blob/master/fixtures/zernike.png?raw=true "Output of python -m pyotf.zernike")
 
+![Corresponding aberrations](https://github.com/david-hoffman/pyOTF/blob/master/fixtures/aberrations.png?raw=true)
+
 [Zernike Polynomials](https://en.wikipedia.org/wiki/Zernike_polynomials) are orthonormal functions defined over the unit disk. Being orthonormal any function defined on a unit disk has a unique decomposition into Zernike polynomials. In this package, the Zernike polynomials are used to quantify the abberation of the phase and magnitude of the retrieved back pupil of the optical system. To do so one can call the `fit_to_zernikes` method of a `PhaseRetrievalResult` object, which will fit a specified number of Zernike modes to the back pupil's retrieved phase and magnitude, each independently, and return a `ZernikeDecomposition` object. The `ZernikeDecomposition` that is returned is also saved as an attribute of the `PhaseRetreivalResult` object on which the `fit_to_zernikes` method was called, for convenience. `ZernikeDecomposition` objects have plotting methods so that the user can inspect the decomposition. `ZernikeDecomposition` objects also have methods for reconstructing the phase, magnitude or complete complex pupil which can be fed back into `HanserPSF` to generate an abberated, but noise free, PSF. The method for doing this simply is currently a member of the `PhaseRetreivalResult` class but will probably be moved to the `ZernikeDecomposition` class later.
 
 ### utils.py
