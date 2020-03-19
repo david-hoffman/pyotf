@@ -413,32 +413,32 @@ if __name__ == "__main__":
             )
         )
         # prep data
-        data_prepped = prep_data_for_PR(data, 512)
+    data_prepped = prep_data_for_PR(data, 512)
 
-        # set up model params
-        params = dict(wl=520, na=0.85, ni=1.0, res=130, zres=300)
+    # set up model params
+    params = dict(wl=520, na=0.85, ni=1.0, res=130, zres=300)
 
-        # retrieve the phase
-        pr_start = time.time()
-        print("Starting phase retrieval ... ", end="", flush=True)
-        pr_result = retrieve_phase(data_prepped, params)
-        pr_time = time.time() - pr_start
-        print(f"{pr_time:.1f} seconds were required to retrieve the pupil function")
+    # retrieve the phase
+    pr_start = time.time()
+    print("Starting phase retrieval ... ", end="", flush=True)
+    pr_result = retrieve_phase(data_prepped, params)
+    pr_time = time.time() - pr_start
+    print(f"{pr_time:.1f} seconds were required to retrieve the pupil function")
 
-        # plot
-        pr_result.plot()
-        pr_result.plot_convergence()
+    # plot
+    pr_result.plot()
+    pr_result.plot_convergence()
 
-        # fit to zernikes
-        zd_start = time.time()
-        print("Starting zernike decomposition ... ", end="", flush=True)
-        pr_result.fit_to_zernikes(120)
-        zd_time = time.time() - zd_start
-        print(f"{zd_time:.1f} seconds were required to fit 120 Zernikes")
+    # fit to zernikes
+    zd_start = time.time()
+    print("Starting zernike decomposition ... ", end="", flush=True)
+    pr_result.fit_to_zernikes(120)
+    zd_time = time.time() - zd_start
+    print(f"{zd_time:.1f} seconds were required to fit 120 Zernikes")
 
-        # plot
-        pr_result.zd_result.plot_named_coefs()
-        pr_result.zd_result.plot_coefs()
+    # plot
+    pr_result.zd_result.plot_named_coefs()
+    pr_result.zd_result.plot_coefs()
 
-        # show
-        plt.show()
+    # show
+    plt.show()
