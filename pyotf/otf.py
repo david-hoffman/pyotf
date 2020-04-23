@@ -386,9 +386,6 @@ class SheppardPSF(BasePSF):
     def __init__(self, *args, dual=False, **kwargs):
         """dual : bool
             Simulate dual objectives
-        condition : str
-            Keyword indicating imaging condition
-                Valid values: "none", "sine", "herschel"
         """
         super().__init__(*args, **kwargs)
         self.dual = dual
@@ -525,101 +522,6 @@ class SheppardPSF(BasePSF):
         return self._PSFa
 
 
-class SheppardPSF2D(SheppardPSF):
-    """A two dimensional version of `SheppardPSF`"""
-
-    def _gen_kr(self):
-        """Internal utility function to generate internal state"""
-        # generate internal kspace coordinates
-        k = fftfreq(self.size, self.res)
-        kz = fftfreq(self.zsize, self.zres)
-        k_tot = np.meshgrid(kz, k, indexing="ij")
-        # calculate r
-        kr = norm(k_tot, axis=0)
-        # calculate the radius of the spherical shell in k-space
-        self.kmag = kmag = self.ni / self.wl
-        # determine k-space pixel size
-        dk, dkz = k[1] - k[0], kz[1] - kz[0]
-        # save output for user
-        self.dk, self.dkz = dk, dkz
-        # determine the min value for kz given the NA and wavelength
-        kz_min = np.sqrt(kmag ** 2 - (self.na / self.wl) ** 2)
-        # make sure we're not crazy
-        assert kz_min >= 0, "Something went horribly wrong"
-        # if the user gave us different z and x/y res we need to calculate
-        # the positional "error" in k-space to draw the spherical shell
-        if dk != dkz:
-            with np.errstate(invalid="ignore"):
-                dd = np.array((dkz, dk)).reshape(2, 1, 1)
-                dkr = norm(np.array(k_tot) * dd, axis=0) / kr
-            # we know the origin is zero so replace it
-            dkr[0, 0] = 0.0
-        else:
-            dkr = dk
-        if self.dual:
-            # if we want dual objectives we need two spherical shells
-            kzz = abs(k_tot[0])
-        else:
-            kzz = k_tot[0]
-        # calculate the points on the spherical shell, save them and the
-        # corresponding kz, ky and kx coordinates
-        self.valid_points = np.logical_and(abs(kr - kmag) < dkr, kzz > kz_min + dkr)
-        self.kzz, self.krr = [k[self.valid_points] for k in k_tot]
-
-    def _gen_otf(self):
-        """Internal utility function to generate the OTFs"""
-        # generate coordinate space
-        self._gen_kr()
-        krr, kzz = self.krr, self.kzz
-        # generate direction cosines
-        n, s = np.array((krr, kzz)) / norm((krr, kzz), axis=0)
-        # apply a given imaging condition
-        if self.condition == "sine":
-            a = 1.0 / np.sqrt(s)
-        elif self.condition == "herschel":
-            a = 1.0 / s
-        elif self.condition == "none":
-            a = 1.0
-        else:
-            raise RuntimeError("You should never see this")
-        # apply the vectorial corrections if requested
-        if self.vec_corr != "none":
-            plist = []
-            if self.vec_corr == "z" or self.vec_corr == "total":
-                plist.append(-m)  # Pzx
-                plist.append(-n)  # Pzy
-            if self.vec_corr == "y" or self.vec_corr == "total":
-                plist.append(-n * m / (1 + s))  # Pyx
-                plist.append(1 - n ** 2 / (1 + s))  # Pyy
-            if self.vec_corr == "x" or self.vec_corr == "total":
-                plist.append(1 - m ** 2 / (1 + s))  # Pxx
-                plist.append(-m * n / (1 + s))  # Pxy
-            # generate empty otf
-            otf = np.zeros((len(plist), self.zsize, self.size, self.size), dtype="D")
-            # fill in the valid poins
-            for o, p in zip(otf, plist):
-                o[self.valid_points] = p * a
-        else:
-            # TODO: we can actually do a LOT better here.
-            # if the vectorial correction is None then we can
-            # calculate a 2D (kz, kr) OTF and interpolate it out to
-            # the full 3D size.
-            # otf_sub = self._gen_radsym_otf()
-            # otf = otf_sub[np.newaxis]
-            otf_sub = np.zeros((self.zsize, self.size), dtype="D")
-            otf_sub[self.valid_points] = 1.0
-            otf = otf_sub[np.newaxis]
-        # we're already calculating the OTF, so we just need to shift it into
-        # the right place.
-        self._OTFa = fftshift(otf, axes=(1, 2))
-
-    @property
-    def PSFa(self):
-        if self._PSFa is None:
-            self._PSFa = easy_ifft(self.OTFa, axes=(1, 2))
-        return self._PSFa
-
-
 def apply_aberration(model, mcoefs, pcoefs):
     """Applies a set of abberations to a model PSF
 
@@ -714,9 +616,10 @@ if __name__ == "__main__":
             otf = np.log(otf + np.finfo(float).eps)
 
             # plot
-            ax_yx.matshow(otf[otf.shape[0] // 2], vmin=-3, vmax=5, cmap="inferno")
+            style = dict(vmin=-3, vmax=5, cmap="inferno", interpolation=None)
+            ax_yx.matshow(otf[otf.shape[0] // 2], **style)
             ax_yx.set_title("{} $k_y k_x$ plane".format(psf.__class__.__name__))
-            ax_zx.matshow(otf[..., otf.shape[1] // 2], vmin=-3, vmax=5, cmap="inferno")
+            ax_zx.matshow(otf[..., otf.shape[1] // 2], **style)
             ax_zx.set_title("{} $k_z k_x$ plane".format(psf.__class__.__name__))
 
             for ax in ax_sub:
@@ -739,7 +642,7 @@ if __name__ == "__main__":
         # fill out plot
         for ax, name in zip(axs.ravel(), name2noll.keys()):
             model2 = apply_named_aberration(model, name, mag * 2)
-            ax.matshow(model2.PSFi.squeeze()[104:-104, 104:-104], cmap="inferno")
+            ax.imshow(model2.PSFi.squeeze()[104:-104, 104:-104], cmap="inferno", interpolation=None)
             ax.set_xlabel(name.replace(" ", "\n", 1).title())
             ax.xaxis.set_major_locator(plt.NullLocator())
             ax.yaxis.set_major_locator(plt.NullLocator())

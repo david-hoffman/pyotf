@@ -328,7 +328,7 @@ if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
     # make coordinates
-    x = np.linspace(-1, 1, 1025)
+    x = np.linspace(-1, 1, 257)
     xx, yy = np.meshgrid(x, x)  # xy indexing is default
     r, theta = cart2pol(yy, xx)
     # set up plot
@@ -336,7 +336,7 @@ if __name__ == "__main__":
     # fill out plot
     for ax, (k, v) in zip(axs.ravel(), noll2name.items()):
         zern = zernike(r, theta, k, norm=False)
-        ax.matshow(np.ma.array(zern, mask=r > 1), vmin=-1, vmax=1, cmap="coolwarm")
+        ax.imshow(np.ma.array(zern, mask=r > 1), vmin=-1, vmax=1, cmap="coolwarm", interpolation='bicubic')
         ax.set_title(v + r", $Z_{{{}}}^{{{}}}$".format(*noll2degrees(k)))
         ax.axis("off")
     fig.tight_layout()
