@@ -196,7 +196,7 @@ class NumericProperty(property):
                     raise TypeError(
                         "{} must be an {}, var = {!r}".format(self.attr, self.vartype, value)
                     )
-                if value <= 0:
+                if value < 0:
                     raise ValueError("{} must be larger than 0".format(self.attr))
                 if getattr(obj, self.attr, None) != value:
                     setattr(obj, self.attr, value)
@@ -304,3 +304,55 @@ def prep_data_for_PR(data, xysize=None, multiplier=1.5):
         return center_data(data_without_bg)[[Ellipsis] + my_slice]
     # return centered data
     return center_data(pad_data)
+
+
+def bin_ndarray(ndarray, new_shape=None, bin_size=None, operation="sum"):
+    """
+    Bins an ndarray in all axes based on the target shape, by summing or
+        averaging.
+
+    Number of output dimensions must match number of input dimensions and
+        new axes must divide old ones.
+
+    Parameters
+    ----------
+    ndarray : array like object (can be dask array)
+    new_shape : iterable (optional)
+        The new size to bin the data to
+    bin_size : scalar or iterable (optional)
+        The size of the new bins
+
+    Returns
+    -------
+    binned array.
+    """
+    if new_shape is None:
+        # if new shape isn't passed then calculate it
+        if bin_size is None:
+            # if bin_size isn't passed then raise error
+            raise ValueError("Either new shape or bin_size must be passed")
+        # pull old shape
+        old_shape = np.array(ndarray.shape)
+        # calculate new shape, integer division!
+        new_shape = old_shape // bin_size
+        # calculate the crop window
+        crop = tuple(slice(None, -r) if r else slice(None) for r in old_shape % bin_size)
+        # crop the input array
+        ndarray = ndarray[crop]
+    # proceed as before
+    operation = operation.lower()
+    if operation not in {"sum", "mean"}:
+        raise ValueError("Operation not supported.")
+    if ndarray.ndim != len(new_shape):
+        raise ValueError("Shape mismatch: {} -> {}".format(ndarray.shape, new_shape))
+
+    compression_pairs = [(d, c // d) for d, c in zip(new_shape, ndarray.shape)]
+
+    flattened = [l for p in compression_pairs for l in p]
+
+    ndarray = ndarray.reshape(flattened)
+
+    for i in range(len(new_shape)):
+        op = getattr(ndarray, operation)
+        ndarray = op(-1 * (i + 1))
+    return ndarray

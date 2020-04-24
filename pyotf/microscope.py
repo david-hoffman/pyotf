@@ -15,9 +15,13 @@ See notebooks/Microscope Imaging Models for more details
 Copyright (c) 2020, David Hoffman
 """
 
-from collections import namedtuple
+import copy
 
-from .utils import cached_property, easy_fft
+import numpy as np
+from scipy.signal import fftconvolve
+
+from .otf import HanserPSF, SheppardPSF
+from .utils import cached_property, easy_fft, bin_ndarray, NumericProperty
 
 MODELS = {
     "hanser": HanserPSF,
@@ -34,68 +38,24 @@ def choose_model(model):
         )
 
 
-def bin_ndarray(ndarray, new_shape=None, bin_size=None, operation="sum"):
-    """
-    Bins an ndarray in all axes based on the target shape, by summing or
-        averaging.
-
-    Number of output dimensions must match number of input dimensions and
-        new axes must divide old ones.
-
-    Parameters
-    ----------
-    ndarray : array like object (can be dask array)
-    new_shape : iterable (optional)
-        The new size to bin the data to
-    bin_size : scalar or iterable (optional)
-        The size of the new bins
-
-    Returns
-    -------
-    binned array.
-    """
-    if new_shape is None:
-        # if new shape isn't passed then calculate it
-        if bin_size is None:
-            # if bin_size isn't passed then raise error
-            raise ValueError("Either new shape or bin_size must be passed")
-        # pull old shape
-        old_shape = np.array(ndarray.shape)
-        # calculate new shape, integer division!
-        new_shape = old_shape // bin_size
-        # calculate the crop window
-        crop = tuple(slice(None, -r) if r else slice(None) for r in old_shape % bin_size)
-        # crop the input array
-        ndarray = ndarray[crop]
-    # proceed as before
-    operation = operation.lower()
-    if operation not in {"sum", "mean"}:
-        raise ValueError("Operation not supported.")
-    if ndarray.ndim != len(new_shape):
-        raise ValueError("Shape mismatch: {} -> {}".format(ndarray.shape, new_shape))
-
-    compression_pairs = [(d, c // d) for d, c in zip(new_shape, ndarray.shape)]
-
-    flattened = [l for p in compression_pairs for l in p]
-
-    ndarray = ndarray.reshape(flattened)
-
-    for i in range(len(new_shape)):
-        op = getattr(ndarray, operation)
-        ndarray = op(-1 * (i + 1))
-    return ndarray
-
-
 class WidefieldMicroscope(object):
     """A base class for microscope models"""
 
+    oversample_factor = NumericProperty(
+        attr="_oversample_factor",
+        vartype=int,
+        doc="By how much do you want to oversample the simulation",
+    )
+
     def __init__(self, model, na, ni, wl, size, pixel_size, oversample_factor, **kwargs):
-        # set zsize here because we don't want to oversample there.
-        self.psf_params = dict(na=na, ni=ni, wl=wl, zsize=size)
+        # set zsize and zres here because we don't want to oversample there.
+
+        self.oversample_factor = oversample_factor
+
+        self.psf_params = dict(na=na, ni=ni, wl=wl, zres=pixel_size, zsize=size)
         self.psf_params.update(kwargs)
 
-        assert isinstance(oversample_factor, int), "oversample_factor must be integer"
-        assert oversample_factor % 2 == 1, "oversample_factor must be odd"
+        assert self.oversample_factor % 2 == 1, "oversample_factor must be odd"
 
         if oversample_factor == 1:
             self.psf_params["size"] = size
@@ -123,23 +83,74 @@ class WidefieldMicroscope(object):
         except AttributeError:
             pass
 
+    @property
+    def model_psf(self):
+        return self.model.PSFi
+
     @cached_property
     def PSF(self):
         """The point spread function of the microscope"""
+        psf = self.model_psf
+        if self.oversample_factor == 1:
+            return psf
+        if self.psf_params["size"] % 2 == 0:
+            # if we're even then we'll be in the upper left hand corner of the super pixel
+            # and we'll need to shift to the bottom and right by oversample_factor // 2
+            shift = self.oversample_factor // 2
+            psf = np.roll(psf, (shift, shift), axis=(1, 2))
+
         # only bin in the lateral direction
-        return bin_ndarray(
-            self.model.PSFi, bin_size=(1, self.oversample_factor, self.oversample_factor)
-        )
+        return bin_ndarray(psf, bin_size=(1, self.oversample_factor, self.oversample_factor))
 
     @cached_property
     def OTF(self):
         return easy_fft(self.PSF)
 
+def _disk_kernel(radius):
+    """Model of the pinhole transmission function"""
+    full_size = int(np.ceil(radius * 2))
+    if full_size % 2 == 0:
+        full_size += 1
+    coords = np.indices((full_size, full_size)) - (full_size - 1) // 2
+    r = np.sqrt((coords**2).sum(0))
+    kernel = r < radius
+    return kernel / kernel.sum()
+
 
 class ConfocalMicroscope(WidefieldMicroscope):
     """A base class for microscope models"""
 
-    pass
+    pinhole_size = NumericProperty(
+        attr="_pinhole_size",
+        vartype=(float, int),
+        doc="Size of the pinhole (in airy units relative to emission wavelength",
+    )
+
+    def __init__(self, *args, wl_em, pinhole_size, **kwargs):
+        """zrange : array-like
+            An alternate way to specify the z range for the calculation
+            must be expressed in the same units as wavelength
+        """
+        super().__init__(*args, **kwargs)
+        self.pinhole_size = pinhole_size
+        if self.pinhole_size < 0:
+            raise ValueError("pinhole_size cannot be less than 0")
+
+        # make the emission PSF
+        self.model_em = copy.deepcopy(self.model)
+        self.model_em.wl = wl_em
+
+
+    @property
+    def model_psf(self):
+        if self.pinhole_size > 0:
+            airy_unit = 1.22 * self.model.wl / self.model.na / self.model.res
+            kernel = _disk_kernel(self.pinhole_size * airy_unit / 2)
+            psf_det_au = fftconvolve(self.model_em.PSFi, kernel[None], "same", axes=(1,2))
+        else:
+            psf_det_au = self.model_em.PSFi
+        psf_con_au = psf_det_au * self.model.PSFi
+        return psf_con_au
 
 
 class ApotomeMicroscope(WidefieldMicroscope):

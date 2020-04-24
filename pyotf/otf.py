@@ -383,6 +383,8 @@ class SheppardPSF(BasePSF):
     2002, 211 (1–6), 53–63.](dx.doi.org/10.1016/S0030-4018(02)01857-6)
     """
 
+    dual = NumericProperty(attr="_dual", vartype=bool, doc="Simulate dual objectives")
+
     def __init__(self, *args, dual=False, **kwargs):
         """dual : bool
             Simulate dual objectives
