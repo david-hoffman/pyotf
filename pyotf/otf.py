@@ -10,7 +10,7 @@ the HanserPSF to the SheppardPSF in a plot.
 https://en.wikipedia.org/wiki/Optical_transfer_function
 https://en.wikipedia.org/wiki/Point_spread_function
 
-Copyright (c) 2016, David Hoffman
+Copyright (c) 2020, David Hoffman
 """
 
 import copy
