@@ -106,19 +106,20 @@ class WidefieldMicroscope(object):
     def OTF(self):
         return easy_fft(self.PSF)
 
+
 def _disk_kernel(radius):
     """Model of the pinhole transmission function"""
     full_size = int(np.ceil(radius * 2))
     if full_size % 2 == 0:
         full_size += 1
     coords = np.indices((full_size, full_size)) - (full_size - 1) // 2
-    r = np.sqrt((coords**2).sum(0))
+    r = np.sqrt((coords ** 2).sum(0))
     kernel = r < radius
     return kernel / kernel.sum()
 
 
 class ConfocalMicroscope(WidefieldMicroscope):
-    """A base class for microscope models"""
+    """A class representing a confocal microscope"""
 
     pinhole_size = NumericProperty(
         attr="_pinhole_size",
@@ -126,10 +127,9 @@ class ConfocalMicroscope(WidefieldMicroscope):
         doc="Size of the pinhole (in airy units relative to emission wavelength",
     )
 
-    def __init__(self, *args, wl_em, pinhole_size, **kwargs):
-        """zrange : array-like
-            An alternate way to specify the z range for the calculation
-            must be expressed in the same units as wavelength
+    def __init__(self, *args, wl_exc, pinhole_size, **kwargs):
+        """pinhole_size : float
+            The size of the confocal pinhole in airy units
         """
         super().__init__(*args, **kwargs)
         self.pinhole_size = pinhole_size
@@ -137,38 +137,27 @@ class ConfocalMicroscope(WidefieldMicroscope):
             raise ValueError("pinhole_size cannot be less than 0")
 
         # make the emission PSF
-        self.model_em = copy.deepcopy(self.model)
-        self.model_em.wl = wl_em
-
+        self.model_exc = copy.deepcopy(self.model)
+        self.model_exc.wl = wl_exc
 
     @property
     def model_psf(self):
-        if self.pinhole_size > 0:
-            airy_unit = 1.22 * self.model.wl / self.model.na / self.model.res
-            kernel = _disk_kernel(self.pinhole_size * airy_unit / 2)
-            psf_det_au = fftconvolve(self.model_em.PSFi, kernel[None], "same", axes=(1,2))
+        """The oversampled PSF"""
+        # Calculate the AU in pixels
+        airy_unit = 1.22 * self.model.wl / self.model.na / self.model.res
+        # Calculate the pinhole radius in pixels
+        pixel_pinhole_radius = self.pinhole_size * airy_unit / 2
+        #
+        if pixel_pinhole_radius > 1.5:
+            kernel = _disk_kernel(pixel_pinhole_radius)
+            psf_det_au = fftconvolve(self.model.PSFi, kernel[None], "same", axes=(1, 2))
         else:
-            psf_det_au = self.model_em.PSFi
-        psf_con_au = psf_det_au * self.model.PSFi
+            psf_det_au = self.model.PSFi
+        psf_con_au = psf_det_au * self.model_exc.PSFi
         return psf_con_au
 
 
 class ApotomeMicroscope(WidefieldMicroscope):
     """A base class for microscope models"""
 
-    pass
-
-
-# convenience functions
-
-
-def widefield():
-    pass
-
-
-def confocal():
-    pass
-
-
-def apotome():
     pass
