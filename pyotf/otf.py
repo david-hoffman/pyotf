@@ -230,7 +230,7 @@ class HanserPSF(BasePSF):
 
     def _gen_zrange(self):
         """Internal utility to generate the zrange from zsize and zres"""
-        self.zrange = (np.arange(self.zsize) - (self.zsize - 1) / 2) * self.zres
+        self.zrange = (np.arange(self.zsize) - (self.zsize + 1) // 2) * self.zres
 
     @BasePSF.zsize.setter
     def zsize(self, value):
