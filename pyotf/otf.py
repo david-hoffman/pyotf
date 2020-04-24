@@ -642,7 +642,9 @@ if __name__ == "__main__":
         # fill out plot
         for ax, name in zip(axs.ravel(), name2noll.keys()):
             model2 = apply_named_aberration(model, name, mag * 2)
-            ax.imshow(model2.PSFi.squeeze()[104:-104, 104:-104], cmap="inferno", interpolation=None)
+            ax.imshow(
+                model2.PSFi.squeeze()[104:-104, 104:-104], cmap="inferno", interpolation=None
+            )
             ax.set_xlabel(name.replace(" ", "\n", 1).title())
             ax.xaxis.set_major_locator(plt.NullLocator())
             ax.yaxis.set_major_locator(plt.NullLocator())
