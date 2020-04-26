@@ -91,16 +91,18 @@ class WidefieldMicroscope(object):
     def PSF(self):
         """The point spread function of the microscope"""
         psf = self.model_psf
-        if self.oversample_factor == 1:
-            return psf
-        if self.psf_params["size"] % 2 == 0:
-            # if we're even then we'll be in the upper left hand corner of the super pixel
-            # and we'll need to shift to the bottom and right by oversample_factor // 2
-            shift = self.oversample_factor // 2
-            psf = np.roll(psf, (shift, shift), axis=(1, 2))
+        if self.oversample_factor > 1:
+            if self.psf_params["size"] % 2 == 0:
+                # if we're even then we'll be in the upper left hand corner of the super pixel
+                # and we'll need to shift to the bottom and right by oversample_factor // 2
+                shift = self.oversample_factor // 2
+                psf = np.roll(psf, (shift, shift), axis=(1, 2))
 
-        # only bin in the lateral direction
-        return bin_ndarray(psf, bin_size=(1, self.oversample_factor, self.oversample_factor))
+            # only bin in the lateral direction
+            psf = bin_ndarray(psf, bin_size=(1, self.oversample_factor, self.oversample_factor))
+
+        # normalize psf
+        return psf / psf.sum()
 
     @cached_property
     def OTF(self):
