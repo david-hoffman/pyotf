@@ -316,8 +316,8 @@ class BaseSIMMicroscope(WidefieldMicroscope):
             sim_psf = psf * (abs(exc_pattern) ** 2)
         else:
             # If we want to suppress the DC component do it here.
-            if self.dc_suppress and self.dc:
-                sim_psf -= (3 * len(self.orientations) - 1) * psf
+            if self.dc_suppress:
+                sim_psf -= (2 * len(self.orientations) - 1) * psf
 
         return sim_psf
 
@@ -326,7 +326,7 @@ class SIM2DMicroscope(BaseSIMMicroscope):
     """A class for 2D-SIM, including optical sectioning SIM"""
 
     def __init__(self, **kwargs):
-        super().__init__(coherent=False, dc=False, dc_suppress=False, **kwargs)
+        super().__init__(coherent=False, dc=False, **kwargs)
 
 
 class SIM3DMicroscope(BaseSIMMicroscope):
@@ -344,7 +344,7 @@ class LatticeSIMMicroscope(BaseSIMMicroscope):
 
     def __init__(self, **kwargs):
         super().__init__(
-            coherent=True, dc=True, dc_suppress=False, orientations=(0, np.pi / 2), **kwargs
+            coherent=True, dc=True, orientations=(0, np.pi / 2), **kwargs
         )
 
 
@@ -362,13 +362,13 @@ if __name__ == "__main__":
         "wl": 0.585,
         "size": 128,
         "vec_corr": "none",
-        "res": 0.05,
     }
 
     sim_psf_params = {
         "na_exc": None,
         "wl_exc": 0.561,
         "wiener": 10,
+        "dc_suppress": True
     }
 
     sim_psf_params.update(base_psf_params)
@@ -383,7 +383,7 @@ if __name__ == "__main__":
             orientations=orientations, **{**sim_psf_params, "na_exc": sim_psf_params["na"] / 2}
         ),
         SIM2DMicroscope(orientations=orientations, **sim_psf_params),
-        SIM3DMicroscope(orientations=orientations, dc_suppress=True, **sim_psf_params),
+        SIM3DMicroscope(orientations=orientations, **sim_psf_params),
         LatticeSIMMicroscope(**sim_psf_params),
     )
 
@@ -393,7 +393,7 @@ if __name__ == "__main__":
     gam = 0.5
     interpolation = "bicubic"
     vmin = 1e-3
-    res = base_psf_params["res"]
+    res = base_psf_params["pixel_size"]
 
     assert ncols == len(labels), "Lengths mismatched"
     assert ncols < 10
