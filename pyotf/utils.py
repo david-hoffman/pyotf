@@ -356,3 +356,69 @@ def bin_ndarray(ndarray, new_shape=None, bin_size=None, operation="sum"):
         op = getattr(ndarray, operation)
         ndarray = op(-1 * (i + 1))
     return ndarray
+
+
+def radial_profile(data, center=None, binsize=1.0):
+    """Take the radial average of a 2D data array
+
+    Adapted from http://stackoverflow.com/a/21242776/5030014
+
+    Parameters
+    ----------
+    data : ndarray (2D)
+        the 2D array for which you want to calculate the radial average
+    center : sequence
+        the center about which you want to calculate the radial average
+    binsize : sequence
+        Size of radial bins, numbers less than one have questionable utility
+
+    Returns
+    -------
+    radial_mean : ndarray
+        a 1D radial average of data
+    radial_std : ndarray
+        a 1D radial standard deviation of data
+
+    Examples
+    --------
+    >>> radial_profile(np.ones((11, 11)))
+    (array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.]), array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]))
+    """
+    # test if the data is complex
+    if np.iscomplexobj(data):
+        # if it is complex, call this function on the real and
+        # imaginary parts and return the complex sum.
+        real_prof, real_std = radial_profile(np.real(data), center, binsize)
+        imag_prof, imag_std = radial_profile(np.imag(data), center, binsize)
+        return real_prof + imag_prof * 1j, np.sqrt(real_std ** 2 + imag_std ** 2)
+        # or do mag and phase
+        # mag_prof, mag_std = radial_profile(np.abs(data), center, binsize)
+        # phase_prof, phase_std = radial_profile(np.angle(data), center, binsize)
+        # return mag_prof * np.exp(phase_prof * 1j), mag_std * np.exp(phase_std * 1j)
+    # pull the data shape
+    idx = np.indices((data.shape))
+    if center is None:
+        # find the center
+        center = np.array(data.shape) // 2
+    else:
+        # make sure center is an array.
+        center = np.asarray(center)
+    # calculate the radius from center
+    idx2 = idx - center[(Ellipsis,) + (np.newaxis,) * (data.ndim)]
+    r = np.sqrt(np.sum([i ** 2 for i in idx2], 0))
+    # convert to int
+    r = np.round(r / binsize).astype(np.int)
+    # sum the values at equal r
+    tbin = np.bincount(r.ravel(), data.ravel())
+    # sum the squares at equal r
+    tbin2 = np.bincount(r.ravel(), (data ** 2).ravel())
+    # find how many equal r's there are
+    nr = np.bincount(r.ravel())
+    # calculate the radial mean
+    # NOTE: because nr could be zero (for missing bins) the results will
+    # have NaN for binsize != 1
+    radial_mean = tbin / nr
+    # calculate the radial std
+    radial_std = np.sqrt(tbin2 / nr - radial_mean ** 2)
+    # return them
+    return radial_mean, radial_std

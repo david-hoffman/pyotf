@@ -21,7 +21,7 @@ import numpy as np
 from scipy.signal import fftconvolve
 
 from .otf import HanserPSF, SheppardPSF
-from .utils import cached_property, easy_fft, bin_ndarray, NumericProperty
+from .utils import cached_property, easy_fft, bin_ndarray, NumericProperty, radial_profile
 
 MODELS = {
     "hanser": HanserPSF,
@@ -144,7 +144,7 @@ class ConfocalMicroscope(WidefieldMicroscope):
 
     @property
     def model_psf(self):
-        """The oversampled PSF"""
+        """The oversampled confocal PSF"""
         # Calculate the AU in pixels
         airy_unit = 1.22 * self.model.wl / self.model.na / self.model.res
         # Calculate the pinhole radius in pixels
@@ -160,6 +160,35 @@ class ConfocalMicroscope(WidefieldMicroscope):
 
 
 class ApotomeMicroscope(WidefieldMicroscope):
-    """A base class for microscope models"""
+    """A class representing the approximate PSF/OTF for the apotome microscope
 
-    pass
+    This is a poor approximation (see notebooks) and thus has limited functionality.
+
+    The grid pattern is set at half NA
+    
+    https://www.zeiss.com/microscopy/us/products/imaging-systems/apotome-2-for-biology.html
+    https://www.osapublishing.org/abstract.cfm?URI=ol-22-24-1905
+    http://www.sciencedirect.com/science/article/pii/S0030401898002107
+    """
+
+    @property
+    def model_psf(self):
+        """The oversampled apotome PSF"""
+        # make the hybrid OTF
+        hybrid_otf = easy_fft(self.model.PSFi, axes=(1, 2))
+        # get the radial average
+        rotf = np.array([radial_profile(o)[0] for o in hybrid_otf])
+        rotf /= rotf.max()
+        rotf = abs(rotf)
+
+        # define the Abbe diffraction limit in frequency space pixels.
+        nyquist_sampling = self.psf_params["wl"] / self.psf_params["na"] / 4
+        abbe_limit = int(
+            np.rint(self.psf_params["size"] * self.psf_params["res"] / nyquist_sampling / 2)
+        )
+
+        # define the approximate axial response of the system
+        axial_profile = rotf[:, abbe_limit // 2]
+
+        psf_apotome = axial_profile[:, None, None] * self.model.PSFi
+        return psf_apotome
