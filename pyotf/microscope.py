@@ -201,8 +201,8 @@ class ApotomeMicroscope(WidefieldMicroscope):
 class BaseSIMMicroscope(WidefieldMicroscope):
     """A base class for SIM and SIM like microscopes"""
 
-    wl_exc = NumericProperty(attr="_wl_exc", vartype=float, doc="The excitation wavelength")
     na_exc = NumericProperty(attr="_na_exc", vartype=float, doc="The excitation NA")
+    wl_exc = NumericProperty(attr="_wl_exc", vartype=float, doc="The excitation wavelength")
     coherent = NumericProperty(
         attr="_coherent", vartype=bool, doc="Treat the orientations coherently?"
     )
@@ -236,6 +236,8 @@ class BaseSIMMicroscope(WidefieldMicroscope):
         self.orientations = orientations
 
         self.wiener = wiener
+        if self.wiener < 0:
+            raise ValueError(f"self.wiener is {self.wiener:} which should be greater than zero")
 
     @property
     def model_psf(self):
