@@ -345,9 +345,7 @@ class LatticeSIMMicroscope(BaseSIMMicroscope):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(
-            coherent=True, dc=True, orientations=(0, np.pi / 2), **kwargs
-        )
+        super().__init__(coherent=True, dc=True, orientations=(0, np.pi / 2), **kwargs)
 
 
 if __name__ == "__main__":
@@ -366,12 +364,7 @@ if __name__ == "__main__":
         "vec_corr": "none",
     }
 
-    sim_psf_params = {
-        "na_exc": None,
-        "wl_exc": 0.561,
-        "wiener": 10,
-        "dc_suppress": True
-    }
+    sim_psf_params = {"na_exc": None, "wl_exc": 0.561, "wiener": 10, "dc_suppress": True}
 
     sim_psf_params.update(base_psf_params)
 
@@ -379,7 +372,7 @@ if __name__ == "__main__":
 
     psfs = (
         WidefieldMicroscope(**base_psf_params),
-        ConfocalMicroscope(**base_psf_params, pinhole_size=1, wl_exc=0.561),
+        ConfocalMicroscope(**base_psf_params, pinhole_size=1.5, wl_exc=0.561),
         ConfocalMicroscope(**base_psf_params, pinhole_size=0, wl_exc=0.561),
         SIM2DMicroscope(
             orientations=orientations, **{**sim_psf_params, "na_exc": sim_psf_params["na"] / 2}
@@ -389,7 +382,7 @@ if __name__ == "__main__":
         LatticeSIMMicroscope(**sim_psf_params),
     )
 
-    labels = ("Epi", "Confocal 1AU", "AiryScan", "OS-SIM", "2D-SIM", "3D-SIM", "Lattice SIM")
+    labels = ("Epi", "Confocal 1.5 AU", "AiryScan", "OS-SIM", "2D-SIM", "3D-SIM", "Lattice SIM")
 
     ncols = len(psfs)
     gam = 0.5
