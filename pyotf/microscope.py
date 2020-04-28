@@ -21,7 +21,14 @@ import numpy as np
 from scipy.signal import fftconvolve
 
 from .otf import HanserPSF, SheppardPSF
-from .utils import cached_property, easy_fft, bin_ndarray, NumericProperty, radial_profile
+from .utils import (
+    cached_property,
+    easy_fft,
+    easy_ifft,
+    bin_ndarray,
+    NumericProperty,
+    radial_profile,
+)
 
 MODELS = {
     "hanser": HanserPSF,
@@ -47,7 +54,7 @@ class WidefieldMicroscope(object):
         doc="By how much do you want to oversample the simulation",
     )
 
-    def __init__(self, model, na, ni, wl, size, pixel_size, oversample_factor, **kwargs):
+    def __init__(self, *, model, na, ni, wl, size, pixel_size, oversample_factor, **kwargs):
         # set zsize and zres here because we don't want to oversample there.
 
         self.oversample_factor = oversample_factor
@@ -129,14 +136,11 @@ class ConfocalMicroscope(WidefieldMicroscope):
         doc="Size of the pinhole (in airy units relative to emission wavelength",
     )
 
-    def __init__(self, *args, wl_exc, pinhole_size, **kwargs):
-        """pinhole_size : float
-            The size of the confocal pinhole in airy units
-        """
-        super().__init__(*args, **kwargs)
+    wl_exc = NumericProperty(attr="_wl_exc", vartype=float, doc="The excitation wavelength")
+
+    def __init__(self, *, wl_exc, pinhole_size, **kwargs):
+        super().__init__(**kwargs)
         self.pinhole_size = pinhole_size
-        if self.pinhole_size < 0:
-            raise ValueError("pinhole_size cannot be less than 0")
 
         # make the emission PSF
         self.model_exc = copy.deepcopy(self.model)
@@ -192,3 +196,256 @@ class ApotomeMicroscope(WidefieldMicroscope):
 
         psf_apotome = axial_profile[:, None, None] * self.model.PSFi
         return psf_apotome
+
+
+class BaseSIMMicroscope(WidefieldMicroscope):
+    """A base class for SIM and SIM like microscopes"""
+
+    wl_exc = NumericProperty(attr="_wl_exc", vartype=float, doc="The excitation wavelength")
+    na_exc = NumericProperty(attr="_na_exc", vartype=float, doc="The excitation NA")
+    coherent = NumericProperty(
+        attr="_coherent", vartype=bool, doc="Treat the orientations coherently?"
+    )
+    dc = NumericProperty(attr="_dc", vartype=bool, doc="Include the DC component")
+    dc_suppress = NumericProperty(
+        attr="_dc_suppress", vartype=bool, doc="Suppress the DC component"
+    )
+
+    def __init__(
+        self, *, na_exc, wl_exc, wiener, coherent, dc, dc_suppress, orientations, **kwargs
+    ):
+        """orientations : sequence
+            The different orentation angles of the excitation
+        wiener : float or None
+            The value of the wiener paramter, if None is passed then no deconvolution is performed
+        """
+        super().__init__(**kwargs)
+
+        if na_exc is None:
+            na_exc = self.psf_params["na"]
+        self.na_exc = na_exc
+
+        if wl_exc is None:
+            wl_exc = self.psf_params["wl"]
+        self.wl_exc = wl_exc
+
+        self.coherent = coherent
+        self.dc = dc
+        self.dc_suppress = dc_suppress
+
+        self.orientations = orientations
+
+        self.wiener = wiener
+
+    @property
+    def model_psf(self):
+        """The oversampled SIM PSF
+
+        This is by no means the most general implementation, but it seems to serve
+        all my use cases
+        """
+        # centered coordinate system.
+        x = (
+            np.arange(self.psf_params["size"]) - (self.psf_params["size"] + 1) // 2
+        ) * self.psf_params["res"]
+
+        # open grid
+        zz, yy, xx = x[:, None, None], x[None, :, None], x[None, None, :]
+
+        # magnitude of the excitation k vector (spatial frequency of a plane wave with
+        # wavelength self.exc_wl)
+        freq = 2 * np.pi * self.psf_params["ni"] / self.wl_exc
+
+        # the angle in frequency space that the exciation waves make with the kz axis
+        alpha = np.arcsin(self.na_exc / self.psf_params["ni"])
+
+        # are we applying a wiener filter?
+        if self.wiener is None:
+            psf = self.model.PSFi
+        elif self.wiener >= 0:
+            # https://en.wikipedia.org/wiki/Wiener_deconvolution
+            otf = abs(self.model.OTFi) ** 2
+            if self.wiener == 0:
+                # everything within OTF support is 1
+                wiener_otf = otf > 1e-16
+            else:
+                w = otf.max() / self.wiener ** 2
+                wiener_otf = otf / (otf + w)
+            # The PSF is real, discard the imaginary part
+            # we don't take the absolute value because
+            # wiener deconvolution doesn't prescribe it
+            psf = easy_ifft(wiener_otf).real
+        else:
+            raise ValueError(f"self.wiener is {self.wiener:} which should be greater than zero")
+
+        # Are we including a DC beam?
+        if self.dc:
+            base_pattern = np.exp(1j * zz * freq) * np.ones(psf.shape[:2], dtype=complex)
+        else:
+            base_pattern = np.zeros(psf.shape, dtype=complex)
+
+        # If we're not coherent, initialize the PSF
+        if not self.coherent:
+            sim_psf = np.zeros_like(psf)
+
+        # loop through orientations
+        for orientation in self.orientations:
+            # if we're not coherent reinitialize for the new orientation.
+            if not self.coherent:
+                exc_pattern = base_pattern.copy()
+            else:
+                exc_pattern = base_pattern
+
+            # Calculate lateral rotated coordinate system
+            rr = xx * np.cos(orientation) + yy * np.sin(orientation)
+
+            # Again, not the most general, but covers most cases
+            # There's symmetry to be exploited here for computational
+            # gains.
+
+            # build up the excitation pattern
+            for theta in (-alpha, alpha):
+                exc_pattern += np.exp(1j * ((rr * np.sin(theta) + zz * np.cos(theta)) * freq))
+
+            # if we're not coherent sum the effective PSFs for each orientation
+            if not self.coherent:
+                sim_psf += psf * (abs(exc_pattern) ** 2)
+
+        # if we are coherent then just calculate the total PSF
+        if self.coherent:
+            sim_psf = psf * (abs(exc_pattern) ** 2)
+        else:
+            # If we want to suppress the DC component do it here.
+            if self.dc_suppress and self.dc:
+                sim_psf -= (3 * len(self.orientations) - 1) * psf
+
+        return sim_psf
+
+
+class SIM2DMicroscope(BaseSIMMicroscope):
+    """A class for 2D-SIM, including optical sectioning SIM"""
+
+    def __init__(self, **kwargs):
+        super().__init__(coherent=False, dc=False, dc_suppress=False, **kwargs)
+
+
+class SIM3DMicroscope(BaseSIMMicroscope):
+    """A class for 3D-SIM using multiple pattern orientations"""
+
+    def __init__(self, **kwargs):
+        super().__init__(coherent=False, dc=True, **kwargs)
+
+
+class LatticeSIMMicroscope(BaseSIMMicroscope):
+    """A class for Zeiss Lattice SIM
+
+    https://www.zeiss.com/microscopy/us/products/elyra-7-with-lattice-sim-for-fast-and-gentle-3d-superresolution-microscopy.html
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(
+            coherent=True, dc=True, dc_suppress=False, orientations=(0, np.pi / 2), **kwargs
+        )
+
+
+if __name__ == "__main__":
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.axes_grid1 import ImageGrid
+
+    base_psf_params = {
+        "model": "sheppard",
+        "oversample_factor": 1,
+        "pixel_size": 0.05,
+        "na": 1.27,
+        "ni": 1.33,
+        "wl": 0.585,
+        "size": 128,
+        "vec_corr": "none",
+        "res": 0.05,
+    }
+
+    sim_psf_params = {
+        "na_exc": None,
+        "wl_exc": 0.561,
+        "wiener": 10,
+    }
+
+    sim_psf_params.update(base_psf_params)
+
+    orientations = (0, 2 * np.pi / 3, 4 * np.pi / 3)
+
+    psfs = (
+        WidefieldMicroscope(**base_psf_params),
+        ConfocalMicroscope(**base_psf_params, pinhole_size=1, wl_exc=0.561),
+        ConfocalMicroscope(**base_psf_params, pinhole_size=0, wl_exc=0.561),
+        SIM2DMicroscope(
+            orientations=orientations, **{**sim_psf_params, "na_exc": sim_psf_params["na"] / 2}
+        ),
+        SIM2DMicroscope(orientations=orientations, **sim_psf_params),
+        SIM3DMicroscope(orientations=orientations, dc_suppress=True, **sim_psf_params),
+        LatticeSIMMicroscope(**sim_psf_params),
+    )
+
+    labels = ("Epi", "Confocal 1AU", "AiryScan", "OS-SIM", "2D-SIM", "3D-SIM", "Lattice SIM")
+
+    ncols = len(psfs)
+    gam = 0.5
+    interpolation = "bicubic"
+    vmin = 1e-3
+    res = base_psf_params["res"]
+
+    assert ncols == len(labels), "Lengths mismatched"
+    assert ncols < 10
+
+    plot_size = 1.5
+
+    fig = plt.figure(
+        None,
+        (plot_size * ncols, plot_size * 4),
+        subplotpars=mpl.figure.SubplotParams(bottom=0.015, left=0.025, right=0.975, top=0.965,),
+    )
+    grid = ImageGrid(fig, 111, nrows_ncols=(4, ncols), axes_pad=0.1)
+
+    fig2, axp = plt.subplots(
+        dpi=150,
+        figsize=(plot_size * ncols, 4),
+        subplotpars=mpl.figure.SubplotParams(bottom=0.1, left=0.025, right=0.975, top=0.925,),
+    )
+
+    plt.set_cmap("inferno")
+
+    for (i, p), l, col in zip(enumerate(psfs), labels, grid.axes_column):
+        p = p.PSF
+        p /= p.max()
+        col[0].imshow(p.max(1), norm=mpl.colors.PowerNorm(gam), interpolation=interpolation)
+        col[1].imshow(p.max(0), norm=mpl.colors.PowerNorm(gam), interpolation=interpolation)
+
+        col[0].set_title(l)
+
+        otf = abs(easy_fft(p))
+        otf /= otf.max()
+        otf = np.fmax(otf, vmin)
+        c = (len(otf) + 1) // 2
+
+        col[2].matshow(otf[:, c], norm=mpl.colors.LogNorm(), interpolation=interpolation)
+        col[3].matshow(otf[c], norm=mpl.colors.LogNorm(), interpolation=interpolation)
+
+        pp = p.sum((1, 2))
+        axp.plot((np.arange(len(pp)) - (len(pp) + 1) // 2) * res, pp / pp.max(), label=l)
+
+    for ax in grid:
+        ax.xaxis.set_major_locator(plt.NullLocator())
+        ax.yaxis.set_major_locator(plt.NullLocator())
+
+    ylabels = "XZ", "XY"
+    ylabels += tuple(map(lambda x: r"$k_{{{}}}$".format(x), ylabels))
+    for ax, l in zip(grid.axes_column[0], ylabels):
+        ax.set_ylabel(l)
+
+    axp.yaxis.set_major_locator(plt.NullLocator())
+    axp.set_xlabel("Axial Position (µm)")
+    axp.set_title("On Axis Intensity")
+    axp.legend()
+
+    plt.show()
