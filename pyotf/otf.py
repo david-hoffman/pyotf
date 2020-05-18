@@ -618,7 +618,7 @@ if __name__ == "__main__":
             otf = np.log(otf + np.finfo(float).eps)
 
             # plot
-            style = dict(vmin=-3, vmax=5, cmap="inferno", interpolation=None)
+            style = dict(vmin=-3, vmax=5, cmap="inferno", interpolation="bicubic")
             ax_yx.matshow(otf[otf.shape[0] // 2], **style)
             ax_yx.set_title("{} $k_y k_x$ plane".format(psf.__class__.__name__))
             ax_zx.matshow(otf[..., otf.shape[1] // 2], **style)
@@ -645,7 +645,7 @@ if __name__ == "__main__":
         for ax, name in zip(axs.ravel(), name2noll.keys()):
             model2 = apply_named_aberration(model, name, mag * 2)
             ax.imshow(
-                model2.PSFi.squeeze()[104:-104, 104:-104], cmap="inferno", interpolation=None
+                model2.PSFi.squeeze()[104:-104, 104:-104], cmap="inferno", interpolation="bicubic"
             )
             ax.set_xlabel(name.replace(" ", "\n", 1).title())
             ax.xaxis.set_major_locator(plt.NullLocator())
