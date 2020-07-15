@@ -1,4 +1,6 @@
-[![Conda Badge](https://anaconda.org/david-hoffman/pyotf/badges/installer/conda.svg)](https://anaconda.org/david-hoffman/pyotf) [![PyPI version](https://badge.fury.io/py/pyotf.svg)](https://badge.fury.io/py/pyotf)
+[![Conda Badge](https://anaconda.org/david-hoffman/pyotf/badges/installer/conda.svg)](https://anaconda.org/david-hoffman/pyotf)
+[![PyPI version](https://badge.fury.io/py/pyotf.svg)](https://badge.fury.io/py/pyotf)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # pyotf
 
@@ -12,11 +14,11 @@ The majority of this package's documentation is included in the source code and 
 
 Installation is simplest with `conda` or `pip`:
 
-```
+```bash
 conda install -c david-hoffman pyotf
 ```
 
-```
+```bash
 pip install pyotf
 ```
 

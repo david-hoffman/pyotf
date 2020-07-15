@@ -544,7 +544,7 @@ def apply_aberration(model, mcoefs, pcoefs):
     model = copy.copy(model)
 
     if mcoefs is None and pcoefs is None:
-        warnings.warn("No abberation applied")
+        logger.warning("No abberation applied")
         return model
 
     if mcoefs is None:
