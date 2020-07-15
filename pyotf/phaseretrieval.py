@@ -16,7 +16,7 @@ import numpy as np
 from numpy.linalg import lstsq
 from numpy.fft import fftshift, ifftshift, fftn
 
-from .utils import psqrt
+from .utils import psqrt, fft_pad
 from .otf import HanserPSF
 from .zernike import zernike, noll2name
 from skimage.restoration import unwrap_phase
@@ -305,27 +305,38 @@ class ZernikeDecomposition(object):
         fig.tight_layout()
         return fig, axs
 
-    def _recon(self, coefs, s=Ellipsis):
+    def _recon(self, coefs, s):
         """reconstruct mag or phase, base function for dispatch"""
         return _recon_from_zerns(coefs[s], self.zerns[s])
 
-    def phase(self, *args, **kwargs):
+    def phase(self, s):
         """Reconstruct the phase from the specified slice"""
-        return self._recon(self.pcoefs, *args, **kwargs)
+        return self._recon(self.pcoefs, s)
 
-    def mag(self, *args, **kwargs):
+    def mag(self, s):
         """Reconstruct the magnitude from the specified slice"""
-        return self._recon(self.mcoefs, *args, **kwargs)
+        return self._recon(self.mcoefs, s)
 
-    def complex_pupil(self, smag=Ellipsis, sphase=Ellipsis, *args, **kwargs):
+    def complex_pupil(self, smag=slice(None), sphase=slice(None)):
         """Reconstruct the complex pupil from the specified slice"""
-        mag = self.mag(*args, s=smag, **kwargs)
-        phase = self.phase(*args, s=sphase, **kwargs)
+        mag = self.mag(smag)
+        phase = self.phase(sphase)
         return mag * np.exp(1j * phase)
 
-    def plot(self, smag=Ellipsis, sphase=Ellipsis, axs=None, *args, **kwargs):
-        mag = self.mag(*args, s=smag, **kwargs)
-        phase = self.phase(*args, s=sphase, **kwargs)
+    def plot(self, smag=slice(None), sphase=slice(None), axs=None):
+        """Plot the zernike decomposed pupil
+        
+        Parameters
+        ----------
+        smag : slice
+            Slice to choose which magnitude components to include
+        sphase : slice
+            Slice to choose which phase components to include
+        axs : matplotlib axes
+            Axes to plot the magnitude and phase (phase is the first axis and mag is the second)
+        """
+        mag = self.mag(s=smag)
+        phase = self.phase(s=sphase)
         return _plot_complex_pupil(mag, phase, axs)
 
 
