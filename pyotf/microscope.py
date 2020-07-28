@@ -30,6 +30,10 @@ from .utils import (
     radial_profile,
 )
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 MODELS = {
     "hanser": HanserPSF,
     "sheppard": SheppardPSF,
