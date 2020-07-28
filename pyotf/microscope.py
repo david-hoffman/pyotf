@@ -155,6 +155,7 @@ class ConfocalMicroscope(WidefieldMicroscope):
         """The oversampled confocal PSF"""
         # Calculate the AU in pixels
         airy_unit = 1.22 * self.model.wl / self.model.na / self.model.res
+        logger.info(f"Airy unit = {airy_unit:}")
         # Calculate the pinhole radius in pixels
         pixel_pinhole_radius = self.pinhole_size * airy_unit / 2
         #
