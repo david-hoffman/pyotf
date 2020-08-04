@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# phaseretrieval_test.py
 """
 Phase Retrieval tests
 """

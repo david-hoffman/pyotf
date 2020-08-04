@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # zernike_tests.py
 """
 Test suite for zernike.py
