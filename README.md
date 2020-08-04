@@ -114,6 +114,7 @@ We can plot the magnitude of the first 15 named phase coefficients by calling `p
 
 Most of the contents of `utils` won't be useful to the average user save one function: `prep_data_for_PR(data, xysize=None, multiplier=1.5)`. `prep_data_for_PR` can, as its name suggests, be used to quickly prep PSF image data for phase retrieval using the `retrieve_phase` function of the `phase_retrieval` module.
 
+
 ## LabVIEW API
 
 An example of inputing a 3D stack and running this python function from LabVIEW (>2018) is given in `\labview\Test Phase Retrieval.vi`
