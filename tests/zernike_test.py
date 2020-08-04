@@ -3,9 +3,10 @@
 Test suite for zernike.py
 """
 
-import pytest
-from pyotf.zernike import *
 import numpy as np
+import pytest
+
+from pyotf.zernike import *
 
 
 def test_degrees_input():
