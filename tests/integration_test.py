@@ -7,11 +7,12 @@ Small test suite
 Copyright David Hoffman, 2018
 """
 
-from nose.tools import *
 import unittest
+
+import numpy as np
+
 from pyotf.otf import *
 from pyotf.phaseretrieval import *
-import numpy as np
 
 
 class TestHanserPhaseRetrieval(unittest.TestCase):

@@ -1,6 +1,11 @@
-import numpy as np
-from nose.tools import *
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# otf_test.py
 import unittest
+
+import numpy as np
+import pytest
+
 from pyotf.otf import *
 
 
@@ -14,20 +19,20 @@ class BasePSFCase(object):
         model = self.model
         assert np.issubdtype(
             model.PSFi.dtype, np.floating
-        ), "PSFi should be a float but is a {}".format(model.PSFi.dtype)
+        ), f"PSFi should be a float but is a {model.PSFi.dtype}"
         assert np.issubdtype(
             model.PSFa.dtype, np.complexfloating
-        ), "PSFa should be complex but is a {}".format(model.PSFa.dtype)
+        ), f"PSFa should be complex but is a {model.PSFa.dtype}"
         assert np.issubdtype(
             model.OTFi.dtype, np.complexfloating
-        ), "OTFi should be complex but is a {}".format(model.OTFi.dtype)
+        ), f"OTFi should be complex but is a f{model.OTFi.dtype}"
         assert np.issubdtype(
             model.OTFa.dtype, np.complexfloating
-        ), "OTFa should be complex but is a {}".format(model.OTFa.dtype)
+        ), f"OTFa should be complex but is a {model.OTFa.dtype}"
 
     def test_PSFi_positive(self):
         """The intensity PSF should always be positive"""
-        assert_true((self.model.PSFi >= 0).all())
+        assert (self.model.PSFi >= 0).all()
 
 
 class TestHanserPSF(unittest.TestCase, BasePSFCase):
@@ -42,11 +47,11 @@ class TestHanserPSF(unittest.TestCase, BasePSFCase):
         # make one size
         model.size = 128
         model.zrange = [-1000, 0, 1000]
-        assert_tuple_equal(model.PSFi.shape, (3, 128, 128))
+        assert model.PSFi.shape == (3, 128, 128)
         # make sure changing sizes is reflected in result
         model.size = 256
         model.zrange = 0
-        assert_tuple_equal(model.PSFi.shape, (1, 256, 256))
+        assert model.PSFi.shape == (1, 256, 256)
 
 
 class TestSheppardPSF(unittest.TestCase, BasePSFCase):
