@@ -81,6 +81,8 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, ph
     new_pupil = model._gen_pupil()
     # save it as a mask
     mask = new_pupil.real
+    # initialize
+    old_mse = old_pupil = np.nan
     # iterate
     for i in range(max_iters):
         # generate new mse and add it to the list

@@ -7,7 +7,9 @@ Copyright (c) 2016, David Hoffman
 """
 
 import numpy as np
-from numpy.fft import fftshift, ifftshift, fftn, ifftn
+import scipy.fftpack
+from numpy.fft import fftn, fftshift, ifftn, ifftshift
+from scipy.ndimage._ni_support import _normalize_sequence
 
 
 def _calc_crop(s1, s2):
@@ -77,7 +79,7 @@ def fft_pad(array, newshape=None, mode="median", **kwargs):
     oldshape = array.shape
     if newshape is None:
         # update each dimension to a 5-smooth hamming number
-        newshape = tuple(sig.fftpack.helper.next_fast_len(n) for n in oldshape)
+        newshape = tuple(scipy.fftpack.helper.next_fast_len(n) for n in oldshape)
     else:
         if isinstance(newshape, int):
             newshape = tuple(newshape for n in oldshape)
