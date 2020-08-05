@@ -46,6 +46,7 @@ def otf_plots(model_kwargs):
     fig, axs = plt.subplots(2, 2, figsize=(9, 6), gridspec_kw=dict(width_ratios=(1, 2)))
 
     for psf, ax_sub in zip(psfs, axs):
+        print(f"Making {psf} plot")
         # make coordinates
         ax_yx, ax_zx = ax_sub
         # get magnitude
@@ -56,9 +57,13 @@ def otf_plots(model_kwargs):
         otf = np.log(otf + np.finfo(float).eps)
 
         # plot
-        ax_yx.matshow(otf[otf.shape[0] // 2], vmin=-3, vmax=5, cmap="inferno")
+        ax_yx.imshow(
+            otf[otf.shape[0] // 2], vmin=-3, vmax=5, cmap="inferno", interpolation="bicubic"
+        )
         ax_yx.set_title("{} $k_y k_x$ plane".format(psf.__class__.__name__))
-        ax_zx.matshow(otf[..., otf.shape[1] // 2], vmin=-3, vmax=5, cmap="inferno")
+        ax_zx.imshow(
+            otf[..., otf.shape[1] // 2], vmin=-3, vmax=5, cmap="inferno", interpolation="bicubic"
+        )
         ax_zx.set_title("{} $k_z k_x$ plane".format(psf.__class__.__name__))
 
         for ax in ax_sub:
@@ -80,8 +85,11 @@ def aberration_plots(model_kwargs):
     fig, axs = plt.subplots(3, 5, figsize=(12, 8))
     # fill out plot
     for ax, name in zip(axs.ravel(), name2noll.keys()):
+        print(f"Making {name} plot")
         model2 = apply_named_aberration(model, name, mag * 2)
-        ax.matshow(model2.PSFi.squeeze()[104:-104, 104:-104], cmap="inferno")
+        ax.imshow(
+            model2.PSFi.squeeze()[104:-104, 104:-104], cmap="inferno", interpolation="bicubic"
+        )
         ax.set_xlabel(name.replace(" ", "\n", 1).title())
         ax.xaxis.set_major_locator(plt.NullLocator())
         ax.yaxis.set_major_locator(plt.NullLocator())
@@ -98,8 +106,15 @@ def zernike_plots():
     fig, axs = plt.subplots(3, 5, figsize=(20, 12))
     # fill out plot
     for ax, (k, v) in zip(axs.ravel(), noll2name.items()):
+        print(f"Making {v} plot")
         zern = zernike(r, theta, k, norm=False)
-        ax.matshow(np.ma.array(zern, mask=r > 1), vmin=-1, vmax=1, cmap="coolwarm")
+        ax.imshow(
+            np.ma.array(zern, mask=r > 1),
+            vmin=-1,
+            vmax=1,
+            cmap="coolwarm",
+            interpolation="bicubic",
+        )
         ax.set_title(v + r", $Z_{{{}}}^{{{}}}$".format(*noll2degrees(k)))
         ax.axis("off")
     fig.tight_layout()
