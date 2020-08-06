@@ -579,7 +579,14 @@ def apply_aberration(model, mcoefs, pcoefs):
 def apply_named_aberration(model, aberration, magnitude):
     """A convenience function to apply a specific named aberration to the PSF. This will only effect the phase"""
     # get the Noll number and build pcoefs
-    noll = name2noll[aberration]
+    try:
+        noll = name2noll[aberration]
+    except KeyError as e:
+        raise KeyError(
+            f"Aberration '{aberration}' unknown, choose from: '"
+            + "', '".join(name2noll.keys())
+            + "'"
+        )
     pcoefs = np.zeros(noll)
     pcoefs[-1] = magnitude
     return apply_aberration(model, None, pcoefs)

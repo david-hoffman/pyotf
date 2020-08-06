@@ -150,21 +150,21 @@ noll_inverse = noll_mapping.argsort()
 # classical names for the Noll indices
 # https://en.wikipedia.org/wiki/Zernike_polynomials
 noll2name = {
-    1: "Piston",
-    2: "Tip",
-    3: "Tilt",
-    4: "Defocus",
-    5: "Oblique astigmatism",
-    6: "Vertical astigmatism",
-    7: "Vertical coma",
-    8: "Horizontal coma",
-    9: "Vertical trefoil",
-    10: "Oblique trefoil",
-    11: "Primary spherical",
-    12: "Vertical secondary astigmatism",
-    13: "Oblique secondary astigmatism",
-    14: "Vertical quadrafoil",
-    15: "Oblique quadrafoil",
+    1: "piston",
+    2: "tip",
+    3: "tilt",
+    4: "defocus",
+    5: "oblique astigmatism",
+    6: "vertical astigmatism",
+    7: "vertical coma",
+    8: "horizontal coma",
+    9: "vertical trefoil",
+    10: "oblique trefoil",
+    11: "primary spherical",
+    12: "vertical secondary astigmatism",
+    13: "oblique secondary astigmatism",
+    14: "vertical quadrafoil",
+    15: "oblique quadrafoil",
 }
 
 name2noll = {v: k for k, v in noll2name.items()}
