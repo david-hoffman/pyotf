@@ -34,6 +34,11 @@ class BasePSFCase(object):
         """The intensity PSF should always be positive"""
         assert (self.model.PSFi >= 0).all()
 
+    def test_diffraction_limit(self):
+        """Should raise an error if the resolution is below nyquist for the diffraction limit"""
+        with pytest.raises(ValueError):
+            self.model.res = self.model.wl / self.model.na
+
 
 class TestHanserPSF(unittest.TestCase, BasePSFCase):
     """Test HanserPSF"""
