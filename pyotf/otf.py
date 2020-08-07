@@ -101,6 +101,13 @@ class BasePSF(object):
         self.vec_corr = vec_corr
         self.condition = condition
 
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}(wl={self.wl}, na={self.na}, ni={self.ni},"
+            + f" res={self.res}, size={self.size}, zres={self.zres}, zsize={self.zsize},"
+            + f" vec_corr='{self.vec_corr}', condition='{self.condition}')"
+        )
+
     def _attribute_changed(self):
         """Called whenever key attributes are changed
         Sets internal state variables to None so that when the
@@ -219,6 +226,9 @@ class HanserPSF(BasePSF):
 
     # include parent documentation
     __init__.__doc__ = BasePSF.__init__.__doc__ + __init__.__doc__
+
+    def __repr__(self):
+        return super().__repr__()[:-1] + f", zrange={self.zrange})"
 
     def _gen_zrange(self):
         """Internal utility to generate the zrange from zsize and zres"""
@@ -383,6 +393,9 @@ class SheppardPSF(BasePSF):
 
     # include parent documentation
     __init__.__doc__ = BasePSF.__init__.__doc__ + __init__.__doc__
+
+    def __repr__(self):
+        return super().__repr__()[:-1] + f", dual={self.dual})"
 
     @property
     def dual(self):
