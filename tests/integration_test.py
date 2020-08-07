@@ -52,7 +52,7 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
         self.pupil_mag = (zerns * self.mcoefs[:, np.newaxis, np.newaxis]).sum(0)
         self.pupil_mag = self.pupil_mag + model._gen_pupil() * (2.0 - self.pupil_mag.min())
         # phase only test
-        model._gen_psf(self.pupil_mag * np.exp(1j * self.pupil_phase) * model._gen_pupil())
+        model.apply_pupil(self.pupil_mag * np.exp(1j * self.pupil_phase) * model._gen_pupil())
         self.PSFi = model.PSFi
         # we have to converge really close for this to work.
         self.PR_result = retrieve_phase(
@@ -75,12 +75,16 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
             err_msg="Phase failed",
         )
 
-    def test_zernike_modes(self):
+    def test_zernike_modes_phase(self):
         """Make sure the fitted zernike modes agree"""
         self.PR_result.fit_to_zernikes(15)
         np.testing.assert_allclose(
             self.PR_result.zd_result.pcoefs[4:], self.pcoefs, err_msg="Phase coefs failed"
         )
+
+    def test_zernike_modes_mag(self):
+        """Make sure the fitted zernike modes agree"""
+        self.PR_result.fit_to_zernikes(15)
         np.testing.assert_allclose(
             self.PR_result.zd_result.mcoefs[4:], self.mcoefs, err_msg="Mag coefs failed"
         )
