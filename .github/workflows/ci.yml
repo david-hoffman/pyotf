@@ -9,6 +9,7 @@ on:
     paths:
       # only run tests if package has changed
       - "pyotf/**"
+      - "requirements.txt"
   pull_request:
     branches: [master]
 
