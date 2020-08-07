@@ -6,6 +6,9 @@ name: ci
 on:
   push:
     branches: [master]
+    paths:
+      # only run tests if package has changed
+      - "pyotf/**"
   pull_request:
     branches: [master]
 
