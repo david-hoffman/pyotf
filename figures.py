@@ -123,7 +123,7 @@ def zernike_plots():
 
 
 def pr_plots():
-
+    """Phase retrieval plots"""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         data = tif.imread("fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif")
