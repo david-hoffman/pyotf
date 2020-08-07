@@ -86,7 +86,7 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, ph
     # iterate
     for i in range(max_iters):
         # generate new mse and add it to the list
-        model._gen_psf(new_pupil)
+        model.apply_pupil(new_pupil)
         new_mse = _calc_mse(data, model.PSFi)
         mse[i] = new_mse
         if i > 0:
@@ -196,7 +196,7 @@ class PhaseRetrievalResult(object):
         if zrange is not None:
             model.zrange = zrange
         # generate the PSF from the reconstructed phase
-        model._gen_psf(ifftshift(complex_pupil))
+        model.apply_pupil(ifftshift(complex_pupil))
         # reshpae PSF if needed in x/y dimensions
         psf = model.PSFi
         nz, ny, nx = psf.shape

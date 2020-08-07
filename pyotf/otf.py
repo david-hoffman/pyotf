@@ -105,10 +105,11 @@ class BasePSF(object):
         """Called whenever key attributes are changed
         Sets internal state variables to None so that when the
         user asks for them they are recalculated"""
-        self._PSFi = None
-        self._PSFa = None
-        self._OTFi = None
-        self._OTFa = None
+        for attr in ("PSFa", "OTFa", "PSFi", "OTFi"):
+            try:
+                delattr(self, attr)
+            except AttributeError:
+                logger.debug(f"{attr} wasn't available to delete")
 
     @property
     def zres(self):
@@ -138,9 +139,7 @@ class BasePSF(object):
         max_val = 1 / (2 * self.na / self.wl) / 2
         if value >= max_val:
             raise ValueError(
-                (
-                    "{!r} is larger than the Nyquist Limit," " try a number smaller than {!r}"
-                ).format(value, max_val)
+                f"{value} is larger than the Nyquist Limit, try a number smaller than {max_val}"
             )
         self._res = value
         self._attribute_changed()
@@ -173,32 +172,25 @@ class BasePSF(object):
         self._condition = value
         self._attribute_changed()
 
-    @property
+    @cached_property
     def OTFa(self):
         """Amplitude OTF (coherent transfer function), complex array"""
         raise NotImplementedError
 
-    @property
+    @cached_property
     def PSFa(self):
         """Amplitude PSF, complex array"""
         raise NotImplementedError
 
-    @property
+    @cached_property
     def PSFi(self):
         """Intensity PSF, real array"""
-        if self._PSFi is None:
-            # the intensity PSFs are the absolute value of the coherent PSF
-            # because our imaging is _incoherent_ the result is simply the sum
-            # of the intensities for each vectorial component.
-            self._PSFi = (abs(self.PSFa) ** 2).sum(axis=0)
-        return self._PSFi
+        return (abs(self.PSFa) ** 2).sum(axis=0)
 
-    @property
+    @cached_property
     def OTFi(self):
         """Intensity OTF, complex array"""
-        if self._OTFi is None:
-            self._OTFi = easy_fft(self.PSFi)
-        return self._OTFi
+        return easy_fft(self.PSFi)
 
 
 class HanserPSF(BasePSF):
@@ -311,7 +303,7 @@ class HanserPSF(BasePSF):
         if pupil_base is None:
             pupil_base = self._gen_pupil()
         else:
-            assert pupil_base.ndim == 2, "`pupil_base` is wrong shape"
+            assert pupil_base.ndim == 2, f"`pupil_base` is wrong shape: {pupil_base.shape}"
             # Maybe we should do ifftshift here so user doesn't have too
         # pull relevant internal state variables
         kr = self._kr
@@ -325,15 +317,14 @@ class HanserPSF(BasePSF):
         # The authors claim that the following code is unecessary as the
         # sine condition is already taken into account in the definition
         # of the pupil, but I call bullshit
-        if self.condition == "sine":
-            a = 1.0 / np.sqrt(np.cos(theta))
-        elif self.condition == "herschel":
-            a = 1.0 / np.cos(theta)
-        elif self.condition == "none":
-            a = 1.0
-        else:
-            raise RuntimeError("You should never see this")
-        pupil *= a
+        if self.condition != "none":
+            if self.condition == "sine":
+                a = 1.0 / np.sqrt(np.cos(theta))
+            elif self.condition == "herschel":
+                a = 1.0 / np.cos(theta)
+            else:
+                raise RuntimeError("You should never see this")
+            pupil *= a
         # apply the vectorial corrections, if requested
         if self.vec_corr != "none":
             plist = []
@@ -358,21 +349,19 @@ class HanserPSF(BasePSF):
         # is necessary.
         PSFa = fftshift(ifftn(pupils, axes=(2, 3)), axes=(2, 3))
         # save the PSF internally
-        self._PSFa = PSFa
+        return PSFa
 
-    # Because the _attribute_changed() method sets all the internal OTFs and
-    # PSFs None we can recalculate them only when needed
-    @property
+    def apply_pupil(self, pupil):
+        """Apply a pupil function to the model"""
+        self.PSFa = self._gen_psf(pupil)
+
+    @cached_property
     def OTFa(self):
-        if self._OTFa is None:
-            self._OTFa = easy_fft(self.PSFa, axes=(1, 2, 3))
-        return self._OTFa
+        return easy_fft(self.PSFa, axes=(1, 2, 3))
 
-    @property
+    @cached_property
     def PSFa(self):
-        if self._PSFa is None:
-            self._gen_psf()
-        return self._PSFa
+        return self._gen_psf()
 
 
 class SheppardPSF(BasePSF):
@@ -459,13 +448,10 @@ class SheppardPSF(BasePSF):
         self.valid_points = np.logical_and(abs(kr - kmag) < dkr, kzz > kz_min + dkr)
         self.kzz, self.kyy, self.kxx = [k[self.valid_points] for k in k_tot]
 
-    def _gen_radsym_otf(self):
-        """Generate a radially symmetric OTF first and then interpolate to
-        requested size"""
-        raise NotImplementedError
-
     def _gen_otf(self):
         """Internal utility function to generate the OTFs"""
+        # clear internal state
+        self._attribute_changed()
         # generate coordinate space
         self._gen_kr()
         kxx, kyy, kzz = self.kxx, self.kyy, self.kzz
@@ -509,19 +495,15 @@ class SheppardPSF(BasePSF):
             otf = otf_sub[np.newaxis]
         # we're already calculating the OTF, so we just need to shift it into
         # the right place.
-        self._OTFa = fftshift(otf, axes=(1, 2, 3))
+        return fftshift(otf, axes=(1, 2, 3))
 
-    @property
+    @cached_property
     def OTFa(self):
-        if self._OTFa is None:
-            self._gen_otf()
-        return self._OTFa
+        return self._gen_otf()
 
-    @property
+    @cached_property
     def PSFa(self):
-        if self._PSFa is None:
-            self._PSFa = easy_ifft(self.OTFa, axes=(1, 2, 3))
-        return self._PSFa
+        return easy_ifft(self.OTFa, axes=(1, 2, 3))
 
 
 def apply_aberration(model, mcoefs, pcoefs):
@@ -570,8 +552,8 @@ def apply_aberration(model, mcoefs, pcoefs):
     # apply aberrations to unaberrated pupil (N.B. the unaberrated phase is 0)
     pupil_mag += abs(model._gen_pupil())
 
-    # generate the PSF
-    model._gen_psf(pupil_mag * np.exp(1j * pupil_phase))
+    # generate the PSF, assign to attribute
+    model.apply_pupil(pupil_mag * np.exp(1j * pupil_phase))
 
     return model
 
