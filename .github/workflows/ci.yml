@@ -9,6 +9,7 @@ on:
     paths:
       # only run tests if package has changed
       - "pyotf/**"
+      - "tests/**"
       - "requirements.txt"
       - ".github/workflows/ci.yml"
   pull_request:
