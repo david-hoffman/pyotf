@@ -14,15 +14,15 @@ Copyright (c) 2020, David Hoffman
 """
 
 import copy
+import logging
+from functools import cached_property
 
 import numpy as np
+from numpy.fft import fftfreq, fftshift, ifftn
 from numpy.linalg import norm
-from numpy.fft import fftshift, fftfreq, ifftn
 
-from .utils import NumericProperty, easy_fft, easy_ifft, cart2pol, psqrt
-from .zernike import zernike, name2noll
-
-import logging
+from .utils import NumericProperty, cart2pol, easy_fft, easy_ifft, psqrt
+from .zernike import name2noll, zernike
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 name: pyotf
 dependencies:
-  - python
+  - python>=3.8
   - numpy
   - scipy
   - scikit-image
