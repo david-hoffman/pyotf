@@ -1,5 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# utils_test.py
 """
 Tests for utility functions
+
+Copyright (c) 2020, David Hoffman
 """
 
 import numpy as np

@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # otf_test.py
+"""
+Test suite for otf.py
+
+Copyright (c) 2020, David Hoffman
+"""
+
 import unittest
 
 import numpy as np

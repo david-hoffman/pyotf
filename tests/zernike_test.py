@@ -3,6 +3,8 @@
 # zernike_tests.py
 """
 Test suite for zernike.py
+
+Copyright (c) 2020, David Hoffman
 """
 
 import numpy as np

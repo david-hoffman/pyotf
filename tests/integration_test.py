@@ -4,7 +4,7 @@
 """
 Small test suite
 
-Copyright David Hoffman, 2018
+Copyright (c) 2020, David Hoffman
 """
 
 import unittest
