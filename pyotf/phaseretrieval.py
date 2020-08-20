@@ -11,19 +11,18 @@ Copyright (c) 2016, David Hoffman
 """
 
 import copy
+import logging
 
+import matplotlib as mpl
 import numpy as np
+from matplotlib import pyplot as plt
+from numpy.fft import fftn, fftshift, ifftshift
 from numpy.linalg import lstsq
-from numpy.fft import fftshift, ifftshift, fftn
-
-from .utils import psqrt, fft_pad
-from .otf import HanserPSF
-from .zernike import zernike, noll2name
 from skimage.restoration import unwrap_phase
 
-from matplotlib import pyplot as plt
-
-import logging
+from .otf import HanserPSF
+from .utils import fft_pad, psqrt
+from .zernike import noll2name, zernike
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +30,13 @@ logger = logging.getLogger(__name__)
 def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, phase_only=False):
     """Retrieve the phase across the objective's back pupil from an
     experimentally measured PSF.
+
+    NOTE: If all that is needed is phase, e.g. for adaptive optical correction, then most normal
+    ways of estimating the background should be sufficient and you can use the `phase_only`
+    keyword. However, if you want to properly model your PSF for something like deconvolution
+    then you should be aware that the magnitude estimate is _incredibly_ sensitive to the background
+    correction applied to the data prior to running the algorithm, and multiple background
+    methods/parameters should be tried.
 
     Follows: [Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.;
     Sedat, J. W. Phase Retrieval for High-Numerical-Aperture Optical Systems.
@@ -60,6 +66,7 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, ph
         An object that contains the phase retrieval result
     """
     # make sure data is square
+    assert max_iters > 0, "Must have at least one iteration"
     assert data.shape[1] == data.shape[2], "Data is not square in x/y"
     assert data.ndim == 3, "Data doesn't have enough dims"
     # make sure the user hasn't screwed up the params
@@ -100,9 +107,7 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, ph
         # check tolerances, how much has the pupil changed, how much has the mse changed
         # and what's the absolute mse
         logger.info(
-            "Iteration {}, mse_diff = {:.2g}, pupil_diff = {:.2g}".format(
-                i, mse_diff[i], pupil_diff[i]
-            )
+            f"Iteration {i}, mse_diff = {mse_diff[i]:.2g}, pupil_diff = {pupil_diff[i]:.2g}"
         )
         if pupil_diff[i] < pupil_tol or mse_diff[i] < mse_tol or mse[i] < mse_tol:
             break
@@ -355,7 +360,7 @@ def _plot_complex_pupil(mag, phase, axs=None):
     )
     plt.colorbar(phase_img, ax=ax_phase)
 
-    mag_img = ax_mag.matshow(mag, cmap="inferno")
+    mag_img = ax_mag.matshow(mag, cmap="inferno", norm=mpl.colors.PowerNorm(0.5))
     plt.colorbar(mag_img, ax=ax_mag)
 
     ax_phase.set_title("Pupil Phase", pad=0)

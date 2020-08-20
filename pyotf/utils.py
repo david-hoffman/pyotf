@@ -126,7 +126,7 @@ def slice_maker(xs, ws):
     if not np.isrealobj((xs, ws)):
         raise TypeError("`slice_maker` only accepts real input")
     if np.any(ws < 0):
-        raise ValueError("width cannot be negative, width = {}".format(ws))
+        raise ValueError(f"width cannot be negative, width = {ws}")
     # ensure integers
     xs = np.rint(xs).astype(int)
     ws = np.rint(ws).astype(int)
@@ -195,11 +195,9 @@ class NumericProperty(property):
 
             def fset(obj, value):
                 if not isinstance(value, self.vartype):
-                    raise TypeError(
-                        "{} must be an {}, var = {!r}".format(self.attr, self.vartype, value)
-                    )
+                    raise TypeError(f"{self.attr} must be an {self.vartype}, var = {value}")
                 if value < 0:
-                    raise ValueError("{} must be larger than 0".format(self.attr))
+                    raise ValueError(f"{self.attr} must be larger than 0")
                 if getattr(obj, self.attr, None) != value:
                     setattr(obj, self.attr, value)
                     # call update code
@@ -263,11 +261,7 @@ def remove_bg(data, multiplier=1.5):
 
 def psqrt(data):
     """Take the positive square root, negative values will be set to zero."""
-    # make zero array
-    sdata = np.zeros_like(data, float)
-    # fill only sqrt of positive values
-    sdata[data > 0] = np.sqrt(data[data > 0])
-    return sdata
+    return np.sqrt(np.fmax(0, data))
 
 
 def prep_data_for_PR(data, xysize=None, multiplier=1.5):
@@ -346,7 +340,7 @@ def bin_ndarray(ndarray, new_shape=None, bin_size=None, operation="sum"):
     if operation not in {"sum", "mean"}:
         raise ValueError("Operation not supported.")
     if ndarray.ndim != len(new_shape):
-        raise ValueError("Shape mismatch: {} -> {}".format(ndarray.shape, new_shape))
+        raise ValueError(f"Shape mismatch: {ndarray.shape} -> {new_shape}")
 
     compression_pairs = [(d, c // d) for d, c in zip(new_shape, ndarray.shape)]
 

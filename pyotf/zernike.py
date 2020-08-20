@@ -174,9 +174,9 @@ def noll2degrees(noll):
     """Convert from Noll's indices to radial degree and azimuthal degree"""
     noll = np.asarray(noll)
     if not np.issubdtype(noll.dtype, np.signedinteger):
-        raise ValueError("input is not integer, input = {}".format(noll))
+        raise ValueError(f"input is not integer, input = {noll}")
     if not (noll > 0).all():
-        raise ValueError("Noll indices must be greater than 0, input = {}".format(noll))
+        raise ValueError(f"Noll indices must be greater than 0, input = {noll}")
     # need to subtract 1 from the Noll's indices because they start at 1.
     p = noll_inverse[noll - 1]
     n = np.ceil((-3 + np.sqrt(9 + 8 * p)) / 2)
@@ -189,9 +189,9 @@ def degrees2noll(n, m):
     n, m = np.asarray(n), np.asarray(m)
     # check inputs
     if not np.issubdtype(n.dtype, np.signedinteger):
-        raise ValueError("Radial degree is not integer, input = {}".format(n))
+        raise ValueError("Radial degree is not integer, input = {n}")
     if not np.issubdtype(m.dtype, np.signedinteger):
-        raise ValueError("Azimuthal degree is not integer, input = {}".format(m))
+        raise ValueError("Azimuthal degree is not integer, input = {m}")
     if ((n - m) % 2).any():
         raise ValueError("The difference between radial and azimuthal degree isn't mod 2")
     # do the mapping
@@ -246,7 +246,7 @@ def zernike(r, theta, *args, **kwargs):
             else:
                 raise RuntimeError("This shouldn't happen")
         else:
-            raise ValueError("{} is the wrong shape".format(args.shape))
+            raise ValueError(f"{args.shape} is the wrong shape")
     elif len(args) == 2:
         n, m = np.asarray(args)
         if n.ndim > 1:
@@ -256,7 +256,7 @@ def zernike(r, theta, *args, **kwargs):
         if n.shape != m.shape:
             raise ValueError("Radial and Azimuthal degrees have different shapes")
     else:
-        raise ValueError("{} is an invalid number of arguments".format(len(args)))
+        raise ValueError(f"{len(args)} is an invalid number of arguments")
 
     # make sure r and theta are arrays
     r = np.asarray(r, dtype=float)

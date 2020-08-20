@@ -363,6 +363,7 @@ class HanserPSF(BasePSF):
 
     def apply_pupil(self, pupil):
         """Apply a pupil function to the model"""
+        self._attribute_changed()
         self.PSFa = self._gen_psf(pupil)
 
     @cached_property
@@ -418,9 +419,7 @@ class SheppardPSF(BasePSF):
         if value >= max_val:
             # this will cause a fftconvolution error when calculating the
             # intensity OTF
-            raise ValueError(
-                "{!r} is too large try a number smaller than {!r}".format(value, max_val)
-            )
+            raise ValueError(f"{value} is too large try a number smaller than {max_val}")
         BasePSF.zres.fset(self, value)
 
     def _gen_kr(self):

@@ -103,6 +103,8 @@ We can plot the magnitude of the first 15 named phase coefficients by calling `p
 
 ![ ](https://github.com/david-hoffman/pyOTF/blob/master/fixtures/Named%20Coefs.png?raw=true "The first 15 zernike polynomial coefficients which correspond to named aberrations.")
 
+**NOTE:** If all that is needed is phase, e.g. for adaptive optical correction, then most normal ways of estimating the background should be sufficient and you can use the `phase_only` keyword. However, if you want to properly model your PSF for something like deconvolution then you should be aware that the magnitude estimate is _incredibly_ sensitive to the background correction applied to the data prior to running the algorithm, and multiple background methods/parameters should be tried.
+
 ### zernike.py
 
 ![First 15 zernike Polynomials plotted on the unit disk](https://github.com/david-hoffman/pyOTF/blob/master/fixtures/zernike.png?raw=true "Output of python -m pyotf.zernike")
