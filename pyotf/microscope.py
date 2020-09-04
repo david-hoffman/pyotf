@@ -16,21 +16,20 @@ Copyright (c) 2020, David Hoffman
 """
 
 import copy
+import logging
 
 import numpy as np
 from scipy.signal import fftconvolve
 
 from .otf import HanserPSF, SheppardPSF
 from .utils import (
+    NumericProperty,
+    bin_ndarray,
     cached_property,
     easy_fft,
     easy_ifft,
-    bin_ndarray,
-    NumericProperty,
     radial_profile,
 )
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -256,8 +255,12 @@ class BaseSIMMicroscope(WidefieldMicroscope):
             np.arange(self.psf_params["size"]) - (self.psf_params["size"] + 1) // 2
         ) * self.psf_params["res"]
 
+        z = (
+            np.arange(self.psf_params["zsize"]) - (self.psf_params["zsize"] + 1) // 2
+        ) * self.psf_params["zres"]
+
         # open grid
-        zz, yy, xx = x[:, None, None], x[None, :, None], x[None, None, :]
+        zz, yy, xx = z[:, None, None], x[None, :, None], x[None, None, :]
 
         # magnitude of the excitation k vector (spatial frequency of a plane wave with
         # wavelength self.exc_wl)
@@ -276,7 +279,7 @@ class BaseSIMMicroscope(WidefieldMicroscope):
                 # everything within OTF support is 1
                 wiener_otf = otf > 1e-16
             else:
-                w = otf.max() / self.wiener ** 2
+                w = otf.max() * self.wiener ** 2
                 wiener_otf = otf / (otf + w)
             # The PSF is real, discard the imaginary part
             # we don't take the absolute value because
@@ -287,7 +290,7 @@ class BaseSIMMicroscope(WidefieldMicroscope):
 
         # Are we including a DC beam?
         if self.dc:
-            base_pattern = np.exp(1j * zz * freq) * np.ones(psf.shape[:2], dtype=complex)
+            base_pattern = np.exp(1j * zz * freq) * np.ones(psf.shape[1:], dtype=complex)[None]
         else:
             base_pattern = np.zeros(psf.shape, dtype=complex)
 
@@ -369,7 +372,7 @@ if __name__ == "__main__":
         "vec_corr": "none",
     }
 
-    sim_psf_params = {"na_exc": None, "wl_exc": 0.561, "wiener": 10, "dc_suppress": True}
+    sim_psf_params = {"na_exc": None, "wl_exc": 0.561, "wiener": 0.1, "dc_suppress": True}
 
     sim_psf_params.update(base_psf_params)
 
@@ -418,8 +421,13 @@ if __name__ == "__main__":
     for (i, p), l, col in zip(enumerate(psfs), labels, grid.axes_column):
         p = p.PSF
         p /= p.max()
-        col[0].imshow(p.max(1), norm=mpl.colors.PowerNorm(gam), interpolation=interpolation)
-        col[1].imshow(p.max(0), norm=mpl.colors.PowerNorm(gam), interpolation=interpolation)
+
+        psf_plot = dict(
+            norm=mpl.colors.PowerNorm(gam), interpolation=interpolation, cmap="Greys_r"
+        )
+
+        col[0].imshow(p.max(1), **psf_plot)
+        col[1].imshow(p.max(0), **psf_plot)
 
         col[0].set_title(l)
 
