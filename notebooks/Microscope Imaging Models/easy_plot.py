@@ -9,12 +9,12 @@ Copyright (c) 2020, David Hoffman
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 from mpl_toolkits.axes_grid1 import ImageGrid
 
-import numpy as np
-
-from pyotf.utils import easy_fft, easy_ifft
 from dphutils import bin_ndarray
+from pyotf.utils import easy_fft
+
 
 # plot function 😬
 def easy_plot(
