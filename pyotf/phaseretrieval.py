@@ -278,7 +278,7 @@ class ZernikeDecomposition(object):
         self.zerns = zerns
 
     def plot_named_coefs(self):
-        """Plot the first 15 zernike mode coefficients
+        """Plot the first 11 zernike mode coefficients (no piston, tip, tilt or defocus)
 
         These coefficients correspond to the classical abberations
         """
@@ -291,7 +291,7 @@ class ZernikeDecomposition(object):
         # pull the data
         data = self.pcoefs[: len(ordered_names)]
         # make the bar plot
-        ax.bar(x, data, align="center", tick_label=ordered_names)
+        ax.bar(x[4:], data[4:], align="center", tick_label=ordered_names[4:])
         # set up axes
         ax.axis("tight")
         ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
