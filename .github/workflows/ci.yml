@@ -48,5 +48,6 @@ jobs:
         run: |
           black --check . -l 99
       - name: Test with pytest
+        if: ${{ always() }}
         run: |
           pytest --cov-report=term-missing --cov=pyotf
