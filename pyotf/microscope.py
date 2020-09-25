@@ -77,7 +77,7 @@ class WidefieldMicroscope(object):
             raise ValueError("oversample_factor must be positive")
 
         self.oversample_factor = oversample_factor
-
+        self.pixel_size = pixel_size
         self.model = choose_model(model)(**self.psf_params)
 
     def _attribute_changed(self):
