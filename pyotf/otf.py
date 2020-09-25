@@ -415,7 +415,7 @@ class SheppardPSF(BasePSF):
         # this checks the nyquist limit for z
         # remember that because we create a spherical shell for
         # The amplitude OTF not nyquist for the final intensity OTF ...
-        max_val = 1 / (2 * self.ni / self.wl)
+        max_val = self.wl / 2 / self.ni
         if value >= max_val:
             # this will cause a fftconvolution error when calculating the
             # intensity OTF
