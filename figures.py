@@ -129,12 +129,12 @@ def pr_plots():
         data = tif.imread("fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif")
 
     # prep data
-    data_prepped = prep_data_for_PR(data, 512)
+    data_prepped = prep_data_for_PR(data, 512, 1.1)
 
     # set up model params
     params = dict(wl=520, na=0.85, ni=1.0, res=130, zres=300)
 
-    pr_result = retrieve_phase(data_prepped, params)
+    pr_result = retrieve_phase(data_prepped, params, 200, 1e-6, 1e-6)
 
     # plot
     fig, axs = pr_result.plot()

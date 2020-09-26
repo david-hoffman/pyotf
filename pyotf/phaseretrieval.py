@@ -285,7 +285,7 @@ class ZernikeDecomposition(object):
         # set up the subplot
         fig, ax = plt.subplots(1, 1, sharex=True, figsize=(6, 6))
         # get the ordered names
-        ordered_names = [noll2name[i + 1] for i in range(len(noll2name))]
+        ordered_names = [noll2name[i + 1].title() for i in range(len(noll2name))]
         # make an x range for the bar plot
         x = np.arange(len(ordered_names)) + 1
         # pull the data
@@ -431,7 +431,7 @@ if __name__ == "__main__":
             )
         )
         # prep data
-    data_prepped = prep_data_for_PR(data, 512)
+    data_prepped = prep_data_for_PR(data, 256, 1.1)
 
     # set up model params
     params = dict(wl=520, na=0.85, ni=1.0, res=130, zres=300)
@@ -439,7 +439,7 @@ if __name__ == "__main__":
     # retrieve the phase
     pr_start = time.time()
     print("Starting phase retrieval ... ", end="", flush=True)
-    pr_result = retrieve_phase(data_prepped, params)
+    pr_result = retrieve_phase(data_prepped, params, 100, 1e-4, 1e-4)
     pr_time = time.time() - pr_start
     print(f"{pr_time:.1f} seconds were required to retrieve the pupil function")
 
@@ -451,6 +451,7 @@ if __name__ == "__main__":
     zd_start = time.time()
     print("Starting zernike decomposition ... ", end="", flush=True)
     pr_result.fit_to_zernikes(120)
+    pr_result.zd_result.plot()
     zd_time = time.time() - zd_start
     print(f"{zd_time:.1f} seconds were required to fit 120 Zernikes")
 
