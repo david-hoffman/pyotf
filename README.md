@@ -52,44 +52,52 @@ The phase retrieval algorithm implemented in this module is described by [Hanser
 An example for how to use these functions can be found at the end of the file:
 
 ```python
-import time
-import warnings
-from skimage.external import tifffile as tif
-from pyotf.utils import prep_data_for_PR
-from pyotf.phaseretrieval import retrieve_phase
+    # phase retrieve a pupil
+    from pathlib import Path
+    import time
+    import warnings
+    from skimage.external import tifffile as tif
+    from .utils import prep_data_for_PR
 
-# read in data from fixtures
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    data = tif.imread("fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif")
+    # read in data from fixtures
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        data = tif.imread(
+            str(
+                Path(__file__).parent.parent / "fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif"
+            )
+        )
+        # prep data
+    data_prepped = prep_data_for_PR(data, 256, 1.1)
 
-    # prep data
-    data_prepped = prep_data_for_PR(data, 512)
-    
     # set up model params
     params = dict(wl=520, na=0.85, ni=1.0, res=130, zres=300)
-    
+
     # retrieve the phase
     pr_start = time.time()
     print("Starting phase retrieval ... ", end="", flush=True)
-    pr_result = retrieve_phase(data_prepped, params)
+    pr_result = retrieve_phase(data_prepped, params, 100, 1e-4, 1e-4)
     pr_time = time.time() - pr_start
     print(f"{pr_time:.1f} seconds were required to retrieve the pupil function")
-    
+
     # plot
     pr_result.plot()
     pr_result.plot_convergence()
-    
+
     # fit to zernikes
     zd_start = time.time()
     print("Starting zernike decomposition ... ", end="", flush=True)
     pr_result.fit_to_zernikes(120)
+    pr_result.zd_result.plot()
     zd_time = time.time() - zd_start
     print(f"{zd_time:.1f} seconds were required to fit 120 Zernikes")
-    
+
     # plot
     pr_result.zd_result.plot_named_coefs()
     pr_result.zd_result.plot_coefs()
+
+    # show
+    plt.show()
 ```
 Below is a plot of the phase and magnitude of the retrieved pupil function from a PSF recorded from [this](https://science.sciencemag.org/content/367/6475/eaaz5357) instrument. To generate this plot we simply call the `plot` method of the `PhaseRetrievalResult` object (in this case `pr_result`).
 
