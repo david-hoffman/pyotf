@@ -2,3 +2,4 @@ numpy
 scipy
 scikit-image
 matplotlib
+tifffile

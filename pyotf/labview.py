@@ -65,7 +65,7 @@ if __name__ == "__main__":
     import os
     import time
     import logging
-    from skimage.external import tifffile as tif
+    import tifffile as tif
     from matplotlib import pyplot as plt
 
     logging.basicConfig()

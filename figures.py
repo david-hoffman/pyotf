@@ -13,7 +13,7 @@ import warnings
 import numpy as np
 from matplotlib import pyplot as plt
 
-from skimage.external import tifffile as tif
+import tifffile as tif
 
 from pyotf.otf import HanserPSF, SheppardPSF, apply_named_aberration
 from pyotf.zernike import zernike, cart2pol, noll2name, noll2degrees, name2noll

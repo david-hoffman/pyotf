@@ -419,7 +419,7 @@ if __name__ == "__main__":
     from pathlib import Path
     import time
     import warnings
-    from skimage.external import tifffile as tif
+    import tifffile as tif
     from .utils import prep_data_for_PR
 
     # read in data from fixtures

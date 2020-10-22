@@ -26,6 +26,7 @@ pip install pyotf
 ## Components
 
 The package is made up of four component modules:
+
 - `otf.py` which contains classes for generating different types of OTFs and PSFs
 - `phase_retrieval.py` which contains functions and classes to perform iterative [phase retrieval][3] of the rear aperature of the optical system
 - `zernike.py` which contains functions for calculating [Zernike Polynomials](https://en.wikipedia.org/wiki/Zernike_polynomials)
@@ -56,7 +57,7 @@ An example for how to use these functions can be found at the end of the file:
     from pathlib import Path
     import time
     import warnings
-    from skimage.external import tifffile as tif
+    import tifffile as tif
     from .utils import prep_data_for_PR
 
     # read in data from fixtures
@@ -99,6 +100,7 @@ An example for how to use these functions can be found at the end of the file:
     # show
     plt.show()
 ```
+
 Below is a plot of the phase and magnitude of the retrieved pupil function from a PSF recorded from [this](https://science.sciencemag.org/content/367/6475/eaaz5357) instrument. To generate this plot we simply call the `plot` method of the `PhaseRetrievalResult` object (in this case `pr_result`).
 
 ![ ](https://github.com/david-hoffman/pyOTF/blob/master/fixtures/PR%20Result.png?raw=true "The phase and magnitude of the retrieved pupil function")
@@ -107,7 +109,7 @@ And here the phase and magnitude have been fitted to 120 zernike polynomials. To
 
 ![ ](https://github.com/david-hoffman/pyOTF/blob/master/fixtures/PR%20Result%20ZD.png?raw=true "The phase and magnitude decomposed into 120 zernike polynomials")
 
-We can plot the magnitude of the first 15 named phase coefficients by calling `pr_result.zd_result.plot_named_coefs()`. 
+We can plot the magnitude of the first 15 named phase coefficients by calling `pr_result.zd_result.plot_named_coefs()`.
 
 ![ ](https://github.com/david-hoffman/pyOTF/blob/master/fixtures/Named%20Coefs.png?raw=true "The first 15 zernike polynomial coefficients which correspond to named aberrations.")
 
@@ -124,7 +126,6 @@ We can plot the magnitude of the first 15 named phase coefficients by calling `p
 ### utils.py
 
 Most of the contents of `utils` won't be useful to the average user save one function: `prep_data_for_PR(data, xysize=None, multiplier=1.5)`. `prep_data_for_PR` can, as its name suggests, be used to quickly prep PSF image data for phase retrieval using the `retrieve_phase` function of the `phase_retrieval` module.
-
 
 ## LabVIEW API
 
