@@ -270,7 +270,7 @@ class HanserPSF(BasePSF):
     def _gen_kr(self):
         """Internal utiltiy to generate coordinate system and other internal
         parameters"""
-        k = fftfreq(self.size, self.res)
+        k = self._k = fftfreq(self.size, self.res)
         kxx, kyy = np.meshgrid(k, k)
         self._kr, self._phi = cart2pol(kyy, kxx)
         # kmag is the radius of the spherical shell of the OTF
