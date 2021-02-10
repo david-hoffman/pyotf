@@ -267,7 +267,7 @@ def psqrt(data):
 def prep_data_for_PR(data, xysize=None, multiplier=1.5):
     """A utility to prepare data for phase retrieval
 
-    Will pad or crop to xysize and remove mode times multiplier
+    Will pad or crop to xysize and remove mode times multiplier and clip at zero
 
     Parameters
     ----------
@@ -299,7 +299,7 @@ def prep_data_for_PR(data, xysize=None, multiplier=1.5):
         my_slice = slice_maker(((ny + 1) // 2, (nx + 1) // 2), xysize)
         return center_data(data_without_bg)[[Ellipsis] + my_slice]
     # return centered data
-    return center_data(pad_data)
+    return np.fmax(0, center_data(pad_data))
 
 
 def bin_ndarray(ndarray, new_shape=None, bin_size=None, operation="sum"):

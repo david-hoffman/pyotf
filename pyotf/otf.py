@@ -125,7 +125,7 @@ class BasePSF(object):
 
     @zres.setter
     def zres(self, value):
-        # make sure z is positive
+        # make sure z res is positive
         if not value > 0:
             raise ValueError("zres must be positive")
         self._zres = value
@@ -138,15 +138,21 @@ class BasePSF(object):
 
     @res.setter
     def res(self, value):
-        # max_val is the nyquist limit, for an accurate simulation
-        # the pixel size must be smaller than this number
+        # max_val is the abbe limit, but for an accurate simulation
+        # the pixel size must be smaller than half this number
         # thinking in terms of the convolution that is implicitly
         # performed when generating the OTFi we also don't want
-        # any wrapping effects.
-        max_val = 1 / (2 * self.na / self.wl) / 2
-        if value >= max_val:
+        # any wrapping effects. However, allowing the number
+        # to be the Abbe limit can allow phase retrieval for
+        # larger pixels
+        abbe_limit = 1 / (2 * self.na / self.wl)
+        if value >= abbe_limit:
             raise ValueError(
-                f"{value} is larger than the Nyquist Limit, try a number smaller than {max_val}"
+                f"{value} is larger than the Abbe Limit, try a number smaller than {abbe_limit}"
+            )
+        if value >= abbe_limit / 2:
+            logger.warning(
+                f"res has been set to {value} which is greater than the Nyquist limit of {abbe_limit / 2}"
             )
         self._res = value
         self._attribute_changed()
@@ -565,7 +571,8 @@ def apply_aberration(model, mcoefs, pcoefs):
     pupil_mag += abs(model._gen_pupil())
 
     # generate the PSF, assign to attribute
-    model.apply_pupil(pupil_mag * np.exp(1j * pupil_phase))
+    pupil_total = pupil_mag * np.exp(1j * pupil_phase)
+    model.apply_pupil(pupil_total)
 
     return model
 

@@ -23,6 +23,7 @@ requirements:
     - scipy
     - scikit-image
     - matplotlib
+    - tifffile
 
 test:
   imports:
