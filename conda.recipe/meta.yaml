@@ -5,8 +5,7 @@ package:
   version: {{ setupdata['version'] }}
 
 source:
-  git_url: ../
-  git_rev: 0.0.1
+  path: ../pyotf
 
 build:
   noarch: python

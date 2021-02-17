@@ -47,3 +47,9 @@ jobs:
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.PYPI_TOKEN }}
+      - name: Publish Conda package to Anaconda.org
+        if: success()
+        uses: maxibor/conda-package-publish-action@v1.1
+        with:
+          subDir: "conda"
+          AnacondaToken: ${{ secrets.ANACONDA_TOKEN }}
