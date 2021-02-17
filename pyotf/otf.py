@@ -234,7 +234,7 @@ class HanserPSF(BasePSF):
     __init__.__doc__ = BasePSF.__init__.__doc__ + __init__.__doc__
 
     def __repr__(self):
-        return super().__repr__()[:-1] + f", zrange={self.zrange})"
+        return super().__repr__()[:-1] + f", zrange={self.zrange!r})"
 
     def _gen_zrange(self):
         """Internal utility to generate the zrange from zsize and zres"""
@@ -616,6 +616,7 @@ if __name__ == "__main__":
         fig, axs = plt.subplots(2, 2, figsize=(9, 6), gridspec_kw=dict(width_ratios=(1, 2)))
 
         for psf, ax_sub in zip(psfs, axs):
+            print(psf)
             # make coordinates
             ax_yx, ax_zx = ax_sub
             # get magnitude

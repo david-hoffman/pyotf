@@ -416,10 +416,12 @@ def _recon_from_zerns(coefs, zerns):
 
 if __name__ == "__main__":
     # phase retrieve a pupil
-    from pathlib import Path
     import time
     import warnings
+    from pathlib import Path
+
     import tifffile as tif
+
     from .utils import prep_data_for_PR
 
     # read in data from fixtures
