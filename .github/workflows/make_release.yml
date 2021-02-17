@@ -52,5 +52,5 @@ jobs:
         if: success()
         uses: maxibor/conda-package-publish-action@v1.1
         with:
-          subDir: "conda"
+          subDir: "conda.recipe"
           AnacondaToken: ${{ secrets.ANACONDA_TOKEN }}

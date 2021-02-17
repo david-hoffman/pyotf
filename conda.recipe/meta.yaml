@@ -1,3 +1,6 @@
+# conda config --set anaconda_upload yes
+# conda build --python 3.8 conda.recipe/
+
 {% set setupdata = load_setup_py_data() %}
 
 package:
@@ -5,7 +8,8 @@ package:
   version: {{ setupdata['version'] }}
 
 source:
-  path: ../pyotf
+  git_url: ../
+  git_rev: v0.0.2
 
 build:
   noarch: python
