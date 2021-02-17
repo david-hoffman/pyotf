@@ -1,0 +1,50 @@
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
+    branches:
+      - master
+
+name: Create Release
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    if: github.repository == 'david-hoffman/pyotf'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install setuptools wheel
+      - name: build
+        run: |
+          python setup.py sdist bdist_wheel
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ env.tag }}
+          draft: false
+          prerelease: ${{ contains(github.ref, 'rc') }}
+      - name: Publish distribution 📦 to Test PyPI
+        if: success() && startsWith(github.ref, 'refs/tags') && contains(github.ref, 'rc')
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.TESTPYPI_TOKEN }}
+          repository_url: https://test.pypi.org/
+      - name: Publish distribution 📦 to PyPI
+        if: startsWith(github.ref, 'refs/tags') && !contains(github.ref, 'rc')
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.PYPI_TOKEN }}
