@@ -3,8 +3,6 @@ on:
     # Sequence of patterns matched against refs/tags
     tags:
       - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
-    branches:
-      - master
 
 name: Create Release
 
@@ -38,13 +36,14 @@ jobs:
           draft: false
           prerelease: ${{ contains(github.ref, 'rc') }}
       - name: Publish distribution 📦 to Test PyPI
-        if: success() && startsWith(github.ref, 'refs/tags') && contains(github.ref, 'rc')
+        if: success() && startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.TESTPYPI_TOKEN }}
           repository_url: https://test.pypi.org/legacy/
       - name: Publish distribution 📦 to PyPI
-        if: startsWith(github.ref, 'refs/tags') && !contains(github.ref, 'rc')
+        # if the test build works, try a real build if rc isn't part of the name
+        if: success() && !contains(github.ref, 'rc')
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.PYPI_TOKEN }}
