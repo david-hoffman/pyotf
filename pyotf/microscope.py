@@ -17,19 +17,13 @@ Copyright (c) 2020, David Hoffman
 
 import copy
 import logging
+from functools import cached_property
 
 import numpy as np
 from scipy.signal import fftconvolve
 
 from .otf import HanserPSF, SheppardPSF
-from .utils import (
-    NumericProperty,
-    bin_ndarray,
-    cached_property,
-    easy_fft,
-    easy_ifft,
-    radial_profile,
-)
+from .utils import NumericProperty, bin_ndarray, easy_fft, easy_ifft, radial_profile
 
 logger = logging.getLogger(__name__)
 
