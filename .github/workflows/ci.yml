@@ -16,7 +16,34 @@ on:
     branches: [master]
 
 jobs:
-  build:
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # black 19 ---> 20 is incompatible
+          pip install black==19.10b0 flake8 pydocstyle
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          # flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Check formatting with black
+        run: |
+          black --check . -l 99
+      - name: Check docstrings
+        run: |
+          pydocstyle --convention=numpy
+
+  test:
+    needs: formatting
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -32,21 +59,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # black 19 ---> 20 is incompatible
-          pip install black==19.10b0 flake8 pytest pytest-cov
+          # install pytest
+          pip install pytest pytest-cov
           # install requirements
           pip install -r requirements.txt
           # install package
           pip install .
-      - name: Lint with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          # flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Check formatting with black
-        run: |
-          black --check . -l 99
       - name: Test with pytest
         run: |
-          pytest --cov-report=term-missing --cov=pyotf
+          pytest --cov-report=term-missing --cov=pyotf --doctest-modules
