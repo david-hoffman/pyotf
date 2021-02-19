@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # __init__.py
-"""
-A module to simulate optical transfer functions and point spread functions
+"""A module to simulate optical transfer functions and point spread functions.
 
 If this file is run as a script (python -m pyotf.otf) it will compare
 the HanserPSF to the SheppardPSF in a plot.
@@ -29,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 class BasePSF(object):
     """A base class for objects that can calculate OTF's and PSF's.
+    
     It is not intended to be used alone
 
     To fully describe a PSF or OTF of an objective lens, assuming no
@@ -39,7 +39,8 @@ class BasePSF(object):
 
     For numerical calculations we'll also want to know the x/y resolution
     and number of points. Note that it is assumed that z is the optical
-    axis of the objective lens"""
+    axis of the objective lens
+    """
 
     # Define all the numeric properties of the base class
     wl = NumericProperty(attr="_wl", vartype=(float, int), doc="Wavelength of emission, in nm")
@@ -51,7 +52,7 @@ class BasePSF(object):
     def __init__(
         self, wl, na, ni, res, size, zres=None, zsize=None, vec_corr="none", condition="sine"
     ):
-        """Generate a PSF object
+        """Generate a PSF object.
 
         Parameters
         ----------
@@ -102,6 +103,7 @@ class BasePSF(object):
         self.condition = condition
 
     def __repr__(self):
+        """Return representation of PSF object."""
         return (
             f"{self.__class__.__name__}(wl={self.wl}, na={self.na}, ni={self.ni},"
             + f" res={self.res}, size={self.size}, zres={self.zres}, zsize={self.zsize},"
@@ -109,9 +111,11 @@ class BasePSF(object):
         )
 
     def _attribute_changed(self):
-        """Called whenever key attributes are changed
+        """Attribute has changed.
+
         Sets internal state variables to None so that when the
-        user asks for them they are recalculated"""
+        user asks for them they are recalculated
+        """
         for attr in ("PSFa", "OTFa", "PSFi", "OTFi"):
             try:
                 delattr(self, attr)
@@ -120,7 +124,7 @@ class BasePSF(object):
 
     @property
     def zres(self):
-        """z resolution (nm)"""
+        """Z resolution."""
         return self._zres
 
     @zres.setter
@@ -133,7 +137,7 @@ class BasePSF(object):
 
     @property
     def res(self):
-        """x/y resolution (nm)"""
+        """X/Y resolution."""
         return self._res
 
     @res.setter
@@ -159,8 +163,9 @@ class BasePSF(object):
 
     @property
     def vec_corr(self):
-        """Whether to apply a correction to take into account the vectorial nature of
-        light. Valid values are: "none", "x", "y", "z", "total"
+        """Take into account the vectorial nature of light.
+        
+        Valid values are: "none", "x", "y", "z", "total"
         """
         return self._vec_corr
 
@@ -174,7 +179,7 @@ class BasePSF(object):
 
     @property
     def condition(self):
-        """Which imaging condition to simulate?"""
+        """Imaging condition to simulate."""
         return self._condition
 
     @condition.setter
@@ -187,22 +192,22 @@ class BasePSF(object):
 
     @cached_property
     def OTFa(self):
-        """Amplitude OTF (coherent transfer function), complex array"""
+        """Amplitude OTF (coherent transfer function), complex array."""
         raise NotImplementedError
 
     @cached_property
     def PSFa(self):
-        """Amplitude PSF, complex array"""
+        """Amplitude PSF, complex array."""
         raise NotImplementedError
 
     @cached_property
     def PSFi(self):
-        """Intensity PSF, real array"""
+        """Intensity PSF, real array."""
         return (abs(self.PSFa) ** 2).sum(axis=0)
 
     @cached_property
     def OTFi(self):
-        """Intensity OTF, complex array"""
+        """Intensity OTF, complex array."""
         return easy_fft(self.PSFi)
 
 
@@ -219,7 +224,7 @@ class HanserPSF(BasePSF):
     Optics Letters 2003, 28 (10), 801.](dx.doi.org/10.1364/OL.28.000801)
     """
 
-    def __init__(self, *args, zrange=None, **kwargs):
+    def __init__(self, *args, zrange=None, **kwargs):  # noqa: D205,D208,D400,D403
         """zrange : array-like
             An alternate way to specify the z range for the calculation
             must be expressed in the same units as wavelength
@@ -234,14 +239,16 @@ class HanserPSF(BasePSF):
     __init__.__doc__ = BasePSF.__init__.__doc__ + __init__.__doc__
 
     def __repr__(self):
+        """Represent HanserPSF."""
         return super().__repr__()[:-1] + f", zrange={self.zrange!r})"
 
     def _gen_zrange(self):
-        """Internal utility to generate the zrange from zsize and zres"""
+        """Generate the zrange from zsize and zres."""
         self.zrange = (np.arange(self.zsize) - (self.zsize + 1) // 2) * self.zres
 
     @BasePSF.zsize.setter
     def zsize(self, value):
+        """Set zsize."""
         # we need override this setter so that the zrange is recalculated
         BasePSF.zsize.fset(self, value)
         # try and except is necessary for initialization
@@ -252,6 +259,7 @@ class HanserPSF(BasePSF):
 
     @BasePSF.zres.setter
     def zres(self, value):
+        """Set zres."""
         # same as for zsize
         BasePSF.zres.fset(self, value)
         try:
@@ -261,7 +269,7 @@ class HanserPSF(BasePSF):
 
     @property
     def zrange(self):
-        """The range overwhich to calculate the psf"""
+        """Return range overwhich to calculate the psf."""
         return self._zrange
 
     @zrange.setter
@@ -274,8 +282,7 @@ class HanserPSF(BasePSF):
         self._attribute_changed()
 
     def _gen_kr(self):
-        """Internal utiltiy to generate coordinate system and other internal
-        parameters"""
+        """Generate coordinate system and other internal parameters."""
         k = self._k = fftfreq(self.size, self.res)
         kxx, kyy = np.meshgrid(k, k)
         self._kr, self._phi = cart2pol(kyy, kxx)
@@ -286,7 +293,7 @@ class HanserPSF(BasePSF):
         self._kz = psqrt(self._kmag ** 2 - self._kr ** 2)
 
     def _gen_pupil(self):
-        """Generate an ideal pupil"""
+        """Generate an ideal pupil."""
         kr = self._kr
         # define the diffraction limit
         # remember we"re working with _coherent_ data _not_ intensity,
@@ -297,20 +304,22 @@ class HanserPSF(BasePSF):
         return (kr < diff_limit).astype(complex)
 
     def _calc_defocus(self):
-        """Calculate the defocus to apply to the base pupil"""
+        """Calculate the defocus to apply to the base pupil."""
         kz = self._kz
         return np.exp(2 * np.pi * 1j * kz * self.zrange[:, np.newaxis, np.newaxis])
 
     def _gen_psf(self, pupil_base=None):
-        """An internal utility that generates the PSF
-        Kwargs
+        """Generate the PSF.
+
+        kwargs
         ------
         pupil_base : ndarray
             provided so that phase retrieval algorithms can hook into this
             method.
 
         NOTE: that the internal state is created with fftfreq, which creates
-        _unshifted_ frequences"""
+        _unshifted_ frequences
+        """
         # clear internal state
         self._attribute_changed()
         # generate internal coordinates
@@ -368,21 +377,25 @@ class HanserPSF(BasePSF):
         return PSFa
 
     def apply_pupil(self, pupil):
-        """Apply a pupil function to the model"""
+        """Apply a pupil function to the model."""
         self._attribute_changed()
         self.PSFa = self._gen_psf(pupil)
 
     @cached_property
     def OTFa(self):
+        """Amplitude OTF."""
         return easy_fft(self.PSFa, axes=(1, 2, 3))
 
     @cached_property
     def PSFa(self):
+        """Amplitude PSF."""
         return self._gen_psf()
 
 
 class SheppardPSF(BasePSF):
-    """Based on the following work
+    """A class defining the 3D pupil function and its closely related methods.
+    
+    Based on the following work:
 
     [(1) Arnison, M. R.; Sheppard, C. J. R. A 3D Vectorial Optical Transfer
     Function Suitable for Arbitrary Pupil Functions. Optics Communications
@@ -391,7 +404,7 @@ class SheppardPSF(BasePSF):
 
     dual = NumericProperty(attr="_dual", vartype=bool, doc="Simulate dual objectives")
 
-    def __init__(self, *args, dual=False, **kwargs):
+    def __init__(self, *args, dual=False, **kwargs):  # noqa: D205,D208,D400,D403
         """dual : bool
             Simulate dual objectives
         """
@@ -402,11 +415,12 @@ class SheppardPSF(BasePSF):
     __init__.__doc__ = BasePSF.__init__.__doc__ + __init__.__doc__
 
     def __repr__(self):
+        """Represent SheppardPSF."""
         return super().__repr__()[:-1] + f", dual={self.dual})"
 
     @property
     def dual(self):
-        """Simulate opposing objectives?"""
+        """Simulate opposing objectives."""
         return self._dual
 
     @dual.setter
@@ -418,6 +432,7 @@ class SheppardPSF(BasePSF):
 
     @BasePSF.zres.setter
     def zres(self, value):
+        """Set zres."""
         # this checks the nyquist limit for z
         # remember that because we create a spherical shell for
         # The amplitude OTF not nyquist for the final intensity OTF ...
@@ -429,7 +444,7 @@ class SheppardPSF(BasePSF):
         BasePSF.zres.fset(self, value)
 
     def _gen_kr(self):
-        """Internal utility function to generate internal state"""
+        """Generate internal state."""
         # generate internal kspace coordinates
         k = fftfreq(self.size, self.res)
         kz = fftfreq(self.zsize, self.zres)
@@ -467,7 +482,7 @@ class SheppardPSF(BasePSF):
         self.kzz, self.kyy, self.kxx = [k[self.valid_points] for k in k_tot]
 
     def _gen_otf(self):
-        """Internal utility function to generate the OTFs"""
+        """Generate the OTFs."""
         # clear internal state
         self._attribute_changed()
         # generate coordinate space
@@ -517,15 +532,17 @@ class SheppardPSF(BasePSF):
 
     @cached_property
     def OTFa(self):
+        """Amplitude OTF."""
         return self._gen_otf()
 
     @cached_property
     def PSFa(self):
+        """Amplitude PSF."""
         return easy_ifft(self.OTFa, axes=(1, 2, 3))
 
 
 def apply_aberration(model, mcoefs, pcoefs):
-    """Applies a set of abberations to a model PSF
+    """Apply a set of abberations to a model PSF.
 
     Parameters
     ----------
@@ -536,8 +553,8 @@ def apply_aberration(model, mcoefs, pcoefs):
     pcoefs : ndarray (n, )
         The phase coefficients
     
-    Note: this function assumes the mcoefs and pcoefs are Noll ordered"""
-
+    Note: this function assumes the mcoefs and pcoefs are Noll ordered
+    """
     # sanity checks
     assert isinstance(model, HanserPSF), "Model must be a HanserPSF"
 
@@ -578,7 +595,10 @@ def apply_aberration(model, mcoefs, pcoefs):
 
 
 def apply_named_aberration(model, aberration, magnitude):
-    """A convenience function to apply a specific named aberration to the PSF. This will only effect the phase"""
+    """Apply a specific named aberration to the PSF.
+    
+    This will only effect the phase and will overwrite any other applied aberrations.
+    """
     # get the Noll number and build pcoefs
     try:
         noll = name2noll[aberration]
