@@ -2,10 +2,14 @@
 # -*- coding: utf-8 -*-
 # display.py
 """
-Display functions for PSFs and OTFs
+Display functions for PSFs and OTFs.
 
 Copyright (c) 2021, David Hoffman
 """
+
+import typing
+
+from .utils import _calc_pad
 
 import matplotlib as mpl
 import matplotlib.font_manager as fm
@@ -16,11 +20,53 @@ import numpy as np
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 
-def max_min(n, d):
-    return np.array((-n // 2, (n - 1) // 2 + n % 2)) * d
+def max_min(n: int, d: float) -> typing.Tuple[float, float]:
+    """Return max and min extents.
+    
+    Parameters
+    ----------
+    n : int
+        Number of pixels
+    d : float
+        Pixel pitch / spacing
+
+    Returns
+    -------
+    min, max : floats
+        Min and max extents
+
+    >>> max_min(11, 1.0)
+    (-5.0, 5.0)
+
+    >>> max_min(10, 1.0)
+    (-5.0, 4.0)
+    """
+    min_ = (n // 2) * d
+    max_ = (n // 2 - (n - 1) % 2) * d
+    return -min_, max_
 
 
 def fft_max_min(n, d):
+    """Return max and min Fourier extents.
+    
+    Parameters
+    ----------
+    n : int
+        Number of pixels
+    d : float
+        Pixel pitch / spacing
+
+    Returns
+    -------
+    min, max : floats
+        Min and max extents
+
+    >>> fft_max_min(10, 1.0)
+    (-0.5, 0.4)
+
+    >>> fft_max_min(5, 1 / 3)
+    (-1.2, 1.2)
+    """
     step_size = 1 / d / n
     return max_min(n, step_size)
 
@@ -54,37 +100,8 @@ def add_scalebar(ax, scalebar_size, pixel_size, unit="µm", edgecolor=None, **kw
     return scalebar
 
 
-def z_squeeze(n1, n2, na=0.85):
-    """Amount z expands or contracts when using an objective designed
-    for one index (n1) to image into a medium with another index (n2)"""
-
-    if n1 == n2:
-        return 1
-
-    def func(n):
-        return n - np.sqrt(max(0, n ** 2 - na ** 2))
-
-    return func(n1) / func(n2)
-
-
-def psf_plot(
-    psf,
-    *,
-    na=0.85,
-    nobj=1.0,
-    nsample=None,
-    zstep=0.25,
-    pixel_size=0.13,
-    fig=None,
-    loc=111,
-    mip=True,
-    **kwargs,
-):
+def psf_plot(psf, *, zres, res, fig=None, loc=111, mip=True, **kwargs):
     """"""
-    if nsample is None:
-        nsample = nobj
-    # expand z step
-    zstep *= z_squeeze(nobj, nsample, na)
     # update our default kwargs for plotting
     dkwargs = dict(interpolation="nearest", cmap="inferno")
     dkwargs.update(kwargs)
@@ -95,7 +112,7 @@ def psf_plot(
     grid = mpl.ImageGrid(fig, loc, nrows_ncols=(2, 2), axes_pad=0.3)
     # calc extents
     nz, ny, nx = psf.shape
-    kz, ky, kx = [max_min(n, d) for n, d in zip(psf.shape, (zstep, pixel_size, pixel_size))]
+    kz, ky, kx = [max_min(n, d) for n, d in zip(psf.shape, (zres, res, res))]
 
     # do plotting
     if mip:
@@ -123,23 +140,8 @@ def psf_plot(
     return fig, grid
 
 
-def otf_plot(
-    otf,
-    na=0.85,
-    wl=0.52,
-    nobj=1.0,
-    nsample=None,
-    zstep=0.25,
-    pixel_size=0.13,
-    fig=None,
-    loc=111,
-    **kwargs,
-):
+def otf_plot(otf, *, na, wl, ni, zres, res, fig=None, loc=111, **kwargs):
     """"""
-    if nsample is None:
-        nsample = nobj
-    # expand z step
-    zstep *= z_squeeze(nobj, nsample, na)
     # update our default kwargs for plotting
     dkwargs = dict(
         norm=mpl.colors.LogNorm(vmin=kwargs.pop("vmin", None), vmax=kwargs.pop("vmax", None)),
@@ -155,7 +157,7 @@ def otf_plot(
 
     nz, ny, nx = otf.shape
     assert nx == ny
-    kz, ky, kx = [fft_max_min(n, d) for n, d in zip(otf.shape, (zstep, pixel_size, pixel_size))]
+    kz, ky, kx = [fft_max_min(n, d) for n, d in zip(otf.shape, (zres, res, res))]
 
     grid[3].imshow(otf[nz // 2, :, :], **dkwargs, extent=(*kx, *ky))
     grid[2].imshow(otf[:, ny // 2, :].T, **dkwargs, extent=(*kz, *ky))
@@ -172,12 +174,12 @@ def otf_plot(
         g.yaxis.set_major_locator(plt.NullLocator())
 
     # calculate the angle of the marginal rays
-    a = np.arcsin(min(1, na / nsample))
+    a = np.arcsin(min(1, na / ni))
     # make a circle of the OTF limits
     c = patches.Circle((0, 0), 2 * na / wl, ec="w", lw=2, fill=None)
     grid[3].add_patch(c)
     # add bowties
-    n_l = nsample / wl
+    n_l = ni / wl
     for b, g in zip((0, np.pi / 2), grid[1:3]):
         for j in (0, np.pi):
             for i in (0, np.pi):
