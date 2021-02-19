@@ -8,12 +8,12 @@ package:
   version: {{ setupdata['version'] }}
 
 source:
-  git_url: ../
-  git_rev: v0.0.2
+  path: ../
 
 build:
+  string: {{ GIT_BUILD_STR }}
   noarch: python
-  number: 0
+  number: {{ GIT_DESCRIBE_NUMBER }}
   script: pip install .
 
 requirements:

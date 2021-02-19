@@ -49,7 +49,7 @@ jobs:
         with:
           password: ${{ secrets.PYPI_TOKEN }}
       - name: Publish Conda package to Anaconda.org
-        if: success()
+        if: success() && !contains(github.ref, 'rc')
         uses: maxibor/conda-package-publish-action@v1.1
         with:
           subDir: "conda.recipe"
