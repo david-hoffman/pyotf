@@ -593,6 +593,34 @@ def apply_named_aberration(model, aberration, magnitude):
     return apply_aberration(model, None, pcoefs)
 
 
+def named_aberration_to_pcoefs(aberration, magnitude):
+    try:
+        noll = name2noll[aberration]
+    except KeyError as e:
+        raise KeyError(
+            f"Aberration '{aberration}' unknown, choose from: '"
+            + "', '".join(name2noll.keys())
+            + "'"
+        )
+    pcoefs = np.zeros(len(name2noll))
+    pcoefs[noll - 1] = magnitude
+    return pcoefs
+
+
+def apply_named_aberrations(model, aberrations):
+    """A convenience function to apply multiple named aberration to the PSF. This will only effect the phase
+    :param model: PSF model
+    :param aberrations: dictionary in format {aberration_name: magnitude, ...}
+    :return: aberrated model
+    """
+
+    pcoefs = np.zeros(len(name2noll))
+    for aberration, magnitude in aberrations.items():
+        # Sum phase coefficients
+        pcoefs = np.add(pcoefs, named_aberration_to_pcoefs(aberration, magnitude))
+    return apply_aberration(model, None, pcoefs)
+
+
 if __name__ == "__main__":
     # import plotting
     from matplotlib import pyplot as plt
