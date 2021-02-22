@@ -9,13 +9,13 @@ Copyright (c) 2021, David Hoffman
 
 import typing
 
-from .utils import _calc_pad
-
 import matplotlib as mpl
 import matplotlib.font_manager as fm
 import matplotlib.patches as patches
 import matplotlib.patheffects as path_effects
 import matplotlib.pyplot as plt
+
+from mpl_toolkits.axes_grid1 import ImageGrid
 import numpy as np
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
@@ -72,7 +72,7 @@ def fft_max_min(n: int, d: float) -> typing.Tuple[float, float]:
 
 
 def add_scalebar(
-    ax: mpl.Axis,
+    ax: mpl.axes.Axes,
     scalebar_size: float,
     pixel_size: float,
     unit: str = "µm",
@@ -112,7 +112,7 @@ def psf_plot(
     *,
     zres: float,
     res: float,
-    fig: mpl.Figure = None,
+    fig: mpl.figure.Figure = None,
     loc: int = 111,
     mip: bool = True,
     **kwargs,
@@ -154,7 +154,7 @@ def psf_plot(
     if fig is None:
         fig = plt.figure(None, (8.0, 8.0))
 
-    grid = mpl.ImageGrid(fig, loc, nrows_ncols=(2, 2), axes_pad=0.3)
+    grid = ImageGrid(fig, loc, nrows_ncols=(2, 2), axes_pad=0.3)
     # calc extents
     nz, ny, nx = psf.shape
     kz, ky, kx = [max_min(n, d) for n, d in zip(psf.shape, (zres, res, res))]
@@ -193,7 +193,7 @@ def otf_plot(
     wl: float,
     zres: float,
     res: float,
-    fig: mpl.Figure = None,
+    fig: mpl.figure.Figure = None,
     loc: int = 111,
     **kwargs,
 ):
@@ -245,7 +245,7 @@ def otf_plot(
     if fig is None:
         fig = plt.figure(None, (8.0, 8.0))
 
-    grid = mpl.ImageGrid(fig, loc, nrows_ncols=(2, 2), axes_pad=0.3)
+    grid = ImageGrid(fig, loc, nrows_ncols=(2, 2), axes_pad=0.3)
 
     nz, ny, nx = otf.shape
     assert nx == ny

@@ -21,6 +21,7 @@ from numpy.fft import fftfreq, fftshift, ifftn
 from numpy.linalg import norm
 
 from .utils import NumericProperty, cart2pol, easy_fft, easy_ifft, psqrt
+from .display import psf_plot, otf_plot
 from .zernike import name2noll, zernike
 
 logger = logging.getLogger(__name__)
@@ -209,6 +210,43 @@ class BasePSF(object):
     def OTFi(self):
         """Intensity OTF, complex array."""
         return easy_fft(self.PSFi)
+
+    def _validate_zrange(self):
+        """Check zrange for uniform step size."""
+        try:
+            # make sure there's only one size of z-step and that there's more than one
+            zsteps = np.diff(self.zrange)
+            if len(zsteps) < 2 or not np.allclose(zsteps, zsteps.mean()):
+                raise RuntimeError(f"{self} doesn't have uniform z-steps ---> {zsteps}")
+        except AttributeError:
+            pass
+
+    def plot_psf(self, **kwargs):
+        """Plot the intensity PSF.
+        
+        See `pyotf.display.psf_plot` for details and possible kwargs
+        """
+        self._validate_zrange()
+        return psf_plot(self.PSFi, zres=self.zres, res=self.res, **kwargs)
+
+    def plot_otf(self, **kwargs):
+        """Plot the intensity OTF.
+        
+        See `pyotf.display.otf_plot` for details and possible kwargs
+        """
+        self._validate_zrange()
+
+        # normalize OTF and make sure it's real
+        otf = abs(self.OTFi)
+        otf = np.fmax(otf / otf.max(), np.finfo(float).eps)
+
+        # nice default plotting kwargs
+        dkwargs = dict(vmin=1e-4)
+        dkwargs.update(kwargs)
+
+        return otf_plot(
+            otf, na=self.na, ni=self.ni, wl=self.wl, zres=self.zres, res=self.res, **dkwargs,
+        )
 
 
 class HanserPSF(BasePSF):
@@ -619,12 +657,12 @@ if __name__ == "__main__":
 
     # generate a comparison
     kwargs = dict(
-        wl=520,
+        wl=520e-3,
         na=1.27,
         ni=1.33,
-        res=90,
+        res=90e-3,
         size=256,
-        zres=190,
+        zres=190e-3,
         zsize=128,
         vec_corr="none",
         condition="none",
@@ -637,6 +675,8 @@ if __name__ == "__main__":
 
         for psf, ax_sub in zip(psfs, axs):
             print(psf)
+            psf.plot_otf()
+            psf.plot_psf()
             # make coordinates
             ax_yx, ax_zx = ax_sub
             # get magnitude
