@@ -24,7 +24,8 @@ import numpy as np
 from scipy.signal import fftconvolve
 
 from .otf import HanserPSF, SheppardPSF
-from .utils import NumericProperty, bin_ndarray, easy_fft, easy_ifft, radial_profile
+from .utils import NumericProperty, bin_ndarray, easy_fft, easy_ifft, radial_profile, slice_maker
+from .display import psf_plot, otf_plot
 
 logger = logging.getLogger(__name__)
 
@@ -115,6 +116,48 @@ class WidefieldMicroscope(object):
     def OTF(self):
         """Optical transfer function of the microscope."""
         return easy_fft(self.PSF)
+
+    def plot_psf(self, **kwargs):
+        """Plot the intensity PSF.
+        
+        See `pyotf.display.psf_plot` for details and possible kwargs
+        """
+        # smart cropping
+        lateral_extent = self.model.wl / 2 / self.model.na / self.pixel_size * 32
+        axial_extent = (
+            self.model.wl
+            / (self.model.ni - np.sqrt(self.model.ni ** 2 - self.model.na ** 2))
+            / self.pixel_size
+            * 16
+        )
+
+        max_loc = np.unravel_index(self.PSF.argmax(), self.PSF.shape)
+        crop = slice_maker(max_loc, (axial_extent, lateral_extent, lateral_extent))
+        return psf_plot(self.PSF[crop], zres=self.pixel_size, res=self.pixel_size, **kwargs)
+
+    def plot_otf(self, **kwargs):
+        """Plot the intensity OTF.
+        
+        See `pyotf.display.otf_plot` for details and possible kwargs
+        """
+        # normalize OTF and make sure it's real
+        otf = abs(self.OTF)
+        otf = np.fmax(otf / otf.max(), np.finfo(float).eps)
+
+        # nice default plotting kwargs
+        dkwargs = dict(vmin=1e-4)
+        dkwargs.update(kwargs)
+
+        fig, axs = otf_plot(
+            otf,
+            na=self.model.na,
+            ni=self.model.ni,
+            wl=self.model.wl,
+            zres=self.pixel_size,
+            res=self.pixel_size,
+            **dkwargs,
+        )
+        return fig, axs
 
 
 def _disk_kernel(radius):
@@ -420,12 +463,12 @@ if __name__ == "__main__":
         p = p.PSF
         p /= p.max()
 
-        psf_plot = dict(
+        psf_plot_style = dict(
             norm=mpl.colors.PowerNorm(gam), interpolation=interpolation, cmap="Greys_r"
         )
 
-        col[0].imshow(p.max(1), **psf_plot)
-        col[1].imshow(p.max(0), **psf_plot)
+        col[0].imshow(p.max(1), **psf_plot_style)
+        col[1].imshow(p.max(0), **psf_plot_style)
 
         col[0].set_title(l)
 
