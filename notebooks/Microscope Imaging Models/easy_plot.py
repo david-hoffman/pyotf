@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # easy_plot.py
 """
-An easy plotting function
+An easy plotting function.
 
 Copyright (c) 2020, David Hoffman
 """
@@ -20,6 +20,7 @@ from pyotf.utils import easy_fft
 def easy_plot(
     psfs, labels, oversample_factor=1, res=1, gam=0.3, vmin=1e-3, interpolation="bicubic"
 ):
+    """Make a nice plot."""
     ncols = len(psfs)
 
     assert ncols == len(labels), "Lengths mismatched"

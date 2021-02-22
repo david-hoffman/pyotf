@@ -15,7 +15,7 @@ import numpy as np
 def labview(
     data, wl, na, ni, res, zres, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, phase_only=False
 ):
-    """Generate a PSF object
+    """Generate a PSF object.
 
     Parameters
     ----------
@@ -42,7 +42,6 @@ def labview(
         True means only the phase of the back pupil is retrieved while the
         amplitude is not.
     """
-
     # Convert from LabVIEW data types to Python types
     data = np.asarray(data)  # LabView converts arrays to lists.  This will convert back to arrays.
     params = dict(

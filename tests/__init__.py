@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # __init__.py
 """
-Test suite
+Test suite.
 
 Copyright (c) 2020, David Hoffman
 """

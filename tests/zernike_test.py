@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # zernike_tests.py
 """
-Test suite for zernike.py
+Test suite for zernike.py.
 
 Copyright (c) 2020, David Hoffman
 """
@@ -14,14 +14,14 @@ from pyotf.zernike import *
 
 
 def test_degrees_input():
-    """Make sure an error is returned if n and m aren't seperated by two"""
+    """Make sure an error is returned if n and m aren't seperated by two."""
     with pytest.raises(ValueError):
         degrees2noll(1, 2)
 
 
 @pytest.mark.parametrize("test_input", (0, -1))
 def test_noll_input(test_input):
-    """Make sure an error is raised if noll isn't a positive integer"""
+    """Make sure an error is raised if noll isn't a positive integer."""
     with pytest.raises(ValueError):
         noll2degrees(test_input)
 
@@ -36,28 +36,27 @@ def test_noll_input(test_input):
     ),
 )
 def test_integer_input(test_func, test_input):
-    """make sure degrees2noll and noll2degrees only accept integer inputs"""
+    """Make sure degrees2noll and noll2degrees only accept integer inputs."""
     with pytest.raises(ValueError):
         test_func(*test_input)
 
 
 def test_indices():
-    """Make sure that noll2degrees and degrees2noll are opposites of each
-    other"""
+    """Make sure that noll2degrees and degrees2noll are opposites of each other."""
     test_noll = np.random.randint(1, 36, 10)
     test_n, test_m = noll2degrees(test_noll)
     test_noll2 = degrees2noll(test_n, test_m)
     assert (test_noll == test_noll2).all(), f"{test_noll} != {test_noll2}"
 
 
-def test_n_lt_m():
-    """n must always be greater than or equal to m"""
+def test_n_lt_m():  # noqa: D403
+    """n must always be greater than or equal to m."""
     with pytest.raises(ValueError):
         zernike(0.5, 0.0, 4, 5)
 
 
 def test_forward_mapping():
-    """Make sure that the mapping from degrees to Noll's indices is correct"""
+    """Make sure that the mapping from degrees to Noll's indices is correct."""
     # from https://en.wikipedia.org/wiki/Zernike_polynomials
     degrees = np.array(
         ((0, 0), (1, 1), (1, -1), (2, 0), (2, -2), (2, 2), (3, -1), (3, 1), (3, -3), (3, 3))
@@ -68,7 +67,7 @@ def test_forward_mapping():
 
 
 def test_reverse_mapping():
-    """Make sure that the mapping from Noll's indices to degrees is correct"""
+    """Make sure that the mapping from Noll's indices to degrees is correct."""
     # from https://en.wikipedia.org/wiki/Zernike_polynomials
     degrees = np.array(
         ((0, 0), (1, 1), (1, -1), (2, 0), (2, -2), (2, 2), (3, -1), (3, 1), (3, -3), (3, 3))
@@ -81,14 +80,14 @@ def test_reverse_mapping():
 
 
 def test_r_theta_dims():
-    """Make sure that a ValueError is raised if the dims are greater than 2"""
+    """Make sure that a ValueError is raised if the dims are greater than 2."""
     r = np.ones((3, 3, 3))
     with pytest.raises(ValueError):
         zernike(r, r, 10)
 
 
 def test_zernike_return_shape():
-    """Make sure that the return shape matches input shape"""
+    """Make sure that the return shape matches input shape."""
     x = np.linspace(-1, 1, 512)
     xx, yy = np.meshgrid(x, x)
     r, theta = cart2pol(yy, xx)
@@ -117,7 +116,7 @@ def test_zernike_errors(test_input):
 
 
 def test_zernike_zero():
-    """Make sure same result is obtained for integer and float"""
+    """Make sure same result is obtained for integer and float."""
     n, m = choose_random_nm()
     r = 0.5
     theta = np.random.rand() * 2 * np.pi - np.pi
@@ -126,7 +125,7 @@ def test_zernike_zero():
 
 @pytest.mark.parametrize("num", (0, 1))
 def test_zernike_edges(num):
-    """Make sure same result is obtained at 0 and 0.0 and 1 and 1.0"""
+    """Make sure same result is obtained at 0 and 0.0 and 1 and 1.0."""
     n, m = choose_random_nm()
     theta = np.random.rand() * 2 * np.pi - np.pi
     assert zernike(float(num), theta, n, m) == zernike(
@@ -135,7 +134,7 @@ def test_zernike_edges(num):
 
 
 def test_odd_nm():
-    """Make sure that n and m seperated by odd numbers gives zeros"""
+    """Make sure that n and m seperated by odd numbers gives zeros."""
     n, m = choose_random_nm(True)
     theta = np.random.rand(100) * 2 * np.pi - np.pi
     # we'll check outside the normal range too, when r
@@ -144,8 +143,10 @@ def test_odd_nm():
 
 
 def choose_random_nm(odd=False):
-    """Small utility function to choose random n and m, optional argument specifies
-    whether n and m are seperated by a factor of 2 or not"""
+    """Choose random n and m.
+    
+    Optional argument specifies whether n and m are seperated by a factor of 2 or not.
+    """
     m = np.nan
     n = np.nan
     # make sure m and n are seperated by a factor of 2 otherwise

@@ -375,7 +375,7 @@ LONG_VERSION_PY = {}
 HANDLERS = {}
 
 
-def register_vcs_handler(vcs, method):  # decorator
+def register_vcs_handler(vcs, method):  # decorator noqa: D401
     """Decorator to mark a method as the handler for a particular VCS."""
 
     def decorate(f):
@@ -1729,7 +1729,7 @@ del get_versions
 """
 
 
-def do_setup():
+def do_setup():  # noqa: D401
     """Main VCS-independent setup function for installing Versioneer."""
     root = get_root()
     try:

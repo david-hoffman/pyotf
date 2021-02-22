@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 # phaseretrieval.py
 """
-Back focal plane (pupil) phase retrieval algorithm base on:
+Back focal plane (pupil) phase retrieval algorithm.
+
+Based on:
 [(1) Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W.
 Phase Retrieval for High-Numerical-Aperture Optical Systems.
 Optics Letters 2003, 28 (10), 801.](dx.doi.org/10.1364/OL.28.000801)
@@ -28,8 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, phase_only=False):
-    """Retrieve the phase across the objective's back pupil from an
-    experimentally measured PSF.
+    """Retrieve the phase across the objective's back pupil from an experimentally measured PSF.
 
     NOTE: If all that is needed is phase, e.g. for adaptive optical correction, then most normal
     ways of estimating the background should be sufficient and you can use the `phase_only`
@@ -142,10 +143,10 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, ph
 
 
 class PhaseRetrievalResult(object):
-    """An object for holding the result of phase retrieval"""
+    """An object for holding the result of phase retrieval."""
 
     def __init__(self, mag, phase, mse, pupil_diff, mse_diff, model):
-        """The results of retrieving a pupil function's phase and magnitude
+        """Pupil function's phase and magnitude.
 
         Paramters
         ---------
@@ -180,7 +181,7 @@ class PhaseRetrievalResult(object):
         self.na, self.wl = model.na, model.wl
 
     def fit_to_zernikes(self, num_zerns):
-        """Fits the data to a number of zernikes"""
+        """Fits the data to a number of zernikes."""
         # normalize r so that 1 = diffraction limit
         r, theta = self.r, self.theta
         r = r / (self.na / self.wl)
@@ -192,7 +193,7 @@ class PhaseRetrievalResult(object):
         return self.zd_result
 
     def _generate_psf(self, complex_pupil, size=None, zsize=None, zrange=None):
-        """Make a perfect PSF"""
+        """Make a perfect PSF."""
         # make a copy of the internal model
         model = copy.copy(self.model)
         # update zsize or zrange
@@ -220,19 +221,19 @@ class PhaseRetrievalResult(object):
         return psf
 
     def generate_zd_psf(self, sphase=slice(4, None, None), size=None, zsize=None, zrange=None):
-        """Generate a PSF from the zernike decomposition (if available)"""
+        """Generate a PSF from the zernike decomposition (if available)."""
         return self._generate_psf(self.zd_result.complex_pupil(sphase=sphase), size, zsize, zrange)
 
     def generate_psf(self, size=None, zsize=None, zrange=None):
-        """Generate a PSF from the retrieved phase"""
+        """Generate a PSF from the retrieved phase."""
         return self._generate_psf(self.complex_pupil, size, zsize, zrange)
 
     def plot(self, axs=None):
-        """Plot the retrieved results"""
+        """Plot the retrieved results."""
         return _plot_complex_pupil(self.mag, self.phase, axs)
 
     def plot_convergence(self):
-        """Diagnostic plots of the convergence criteria"""
+        """Diagnostic plots of the convergence criteria."""
         with np.errstate(invalid="ignore"):
             fig, axs = plt.subplots(3, 1, figsize=(6, 6), sharex=True)
 
@@ -250,16 +251,15 @@ class PhaseRetrievalResult(object):
 
     @property
     def complex_pupil(self):
-        """Return the complex pupil function"""
+        """Return the complex pupil function."""
         return self.mag * np.exp(1j * self.phase)
 
 
 class ZernikeDecomposition(object):
-    """An object for holding the results of a zernike decomposition"""
+    """An object for holding the results of a zernike decomposition."""
 
     def __init__(self, mag_coefs, phase_coefs, zerns):
-        """The results of decomposing a pupil function's phase and magnitude
-        into zernike modes
+        """Decompose a pupil function's phase and magnitude into zernike modes.
 
         Paramters
         ---------
@@ -278,7 +278,7 @@ class ZernikeDecomposition(object):
         self.zerns = zerns
 
     def plot_named_coefs(self):
-        """Plot the first 11 zernike mode coefficients (no piston, tip, tilt or defocus)
+        """Plot the first 11 zernike mode coefficients (no piston, tip, tilt or defocus).
 
         These coefficients correspond to the classical abberations
         """
@@ -301,7 +301,7 @@ class ZernikeDecomposition(object):
         return fig, ax
 
     def plot_coefs(self):
-        """Same as `plot_named_coefs` but for all coefs"""
+        """See `plot_named_coefs`: same but for all coefs."""
         fig, axs = plt.subplots(2, 1, sharex=True)
         for ax, data in zip(axs, (self.mcoefs, self.pcoefs)):
             ax.bar(np.arange(data.size) + 1, data)
@@ -313,25 +313,25 @@ class ZernikeDecomposition(object):
         return fig, axs
 
     def _recon(self, coefs, s):
-        """reconstruct mag or phase, base function for dispatch"""
+        """Reconstruct mag or phase, base function for dispatch."""
         return _recon_from_zerns(coefs[s], self.zerns[s])
 
     def phase(self, s):
-        """Reconstruct the phase from the specified slice"""
+        """Reconstruct the phase from the specified slice."""
         return self._recon(self.pcoefs, s)
 
     def mag(self, s):
-        """Reconstruct the magnitude from the specified slice"""
+        """Reconstruct the magnitude from the specified slice."""
         return self._recon(self.mcoefs, s)
 
     def complex_pupil(self, smag=slice(None), sphase=slice(None)):
-        """Reconstruct the complex pupil from the specified slice"""
+        """Reconstruct the complex pupil from the specified slice."""
         mag = self.mag(smag)
         phase = self.phase(sphase)
         return mag * np.exp(1j * phase)
 
     def plot(self, smag=slice(None), sphase=slice(None), axs=None):
-        """Plot the zernike decomposed pupil
+        """Plot the zernike decomposed pupil.
         
         Parameters
         ----------
@@ -348,7 +348,7 @@ class ZernikeDecomposition(object):
 
 
 def _plot_complex_pupil(mag, phase, axs=None):
-    """Plot the retrieved results"""
+    """Plot the retrieved results."""
     if axs is None:
         fig, (ax_phase, ax_mag) = plt.subplots(1, 2, figsize=(12, 5))
     else:
@@ -376,12 +376,12 @@ def _plot_complex_pupil(mag, phase, axs=None):
 
 
 def _calc_mse(data1, data2):
-    """utility to calculate mean square error"""
+    """Calculate mean square error."""
     return ((data1 - data2) ** 2).mean()
 
 
 def _fit_to_zerns(data, zerns, r, **kwargs):
-    """sub function that does the reshaping and the least squares
+    """Do the reshaping and the least squares.
 
     Parameters
     ----------
@@ -410,7 +410,7 @@ def _fit_to_zerns(data, zerns, r, **kwargs):
 
 
 def _recon_from_zerns(coefs, zerns):
-    """Utility to reconstruct from coefs"""
+    """Reconstruct from coefs."""
     return (coefs[:, np.newaxis, np.newaxis] * zerns).sum(0)
 
 

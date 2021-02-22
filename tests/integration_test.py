@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # integration_tests.py
 """
-Small test suite
+Small test suite.
 
 Copyright (c) 2020, David Hoffman
 """
@@ -16,11 +16,13 @@ from pyotf.phaseretrieval import *
 
 
 class TestHanserPhaseRetrieval(unittest.TestCase):
-    """Test for self consistency, generate a pupil with random zernike
-    coefficients generate a psf and phase retrieve it."""
+    """Test for self consistency.
+    
+    Generate a pupil with random zernike coefficients generate a psf and phase retrieve it.
+    """
 
     def setUp(self):
-        """Set up the test"""
+        """Set up the test."""
         # random but no
         np.random.seed(12345)
         # model kwargs
@@ -60,13 +62,13 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
         )
 
     def test_mag(self):
-        """Make sure phase retrieval returns same magnitude"""
+        """Make sure phase retrieval returns same magnitude."""
         np.testing.assert_allclose(
             fftshift(self.pupil_mag), self.PR_result.mag, err_msg="Mag failed"
         )
 
     def test_phase(self):
-        """Make sure phase retrieval returns same phase"""
+        """Make sure phase retrieval returns same phase."""
         # from the unwrap_phase docs:
         # >>> np.std(image_unwrapped - image) < 1e-6   # A constant offset is normal
         np.testing.assert_allclose(
@@ -76,19 +78,19 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
         )
 
     def test_zernike_modes_phase(self):
-        """Make sure the fitted zernike modes agree"""
+        """Make sure the fitted zernike modes agree."""
         self.PR_result.fit_to_zernikes(15)
         np.testing.assert_allclose(
             self.PR_result.zd_result.pcoefs[4:], self.pcoefs, err_msg="Phase coefs failed"
         )
 
     def test_zernike_modes_mag(self):
-        """Make sure the fitted zernike modes agree"""
+        """Make sure the fitted zernike modes agree."""
         self.PR_result.fit_to_zernikes(15)
         np.testing.assert_allclose(
             self.PR_result.zd_result.mcoefs[4:], self.mcoefs, err_msg="Mag coefs failed"
         )
 
     def test_psf_mse(self):
-        """Does the phase retrieved PSF converge to the fake PSF"""
+        """Does the phase retrieved PSF converge to the fake PSF."""
         np.testing.assert_allclose(self.PR_result.model.PSFi, self.PSFi)

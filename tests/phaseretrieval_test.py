@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # phaseretrieval_test.py
 """
-Phase Retrieval tests
+Phase Retrieval tests.
 
 Copyright (c) 2020, David Hoffman
 """

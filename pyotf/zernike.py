@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 # zernike.py
 """
-A module defining the zernike polynomials and associated functions to convert
-between radial and azimuthal degree pairs and Noll's indices.
+A module defining the zernike polynomials and associated functions.
 
 Running this file as a script will output a graph of the first 15 zernike
 polynomials on the unit disk.
@@ -171,7 +170,7 @@ name2noll = {v: k for k, v in noll2name.items()}
 
 
 def noll2degrees(noll):
-    """Convert from Noll's indices to radial degree and azimuthal degree"""
+    """Convert from Noll's indices to radial degree and azimuthal degree."""
     noll = np.asarray(noll)
     if not np.issubdtype(noll.dtype, np.signedinteger):
         raise ValueError(f"input is not integer, input = {noll}")
@@ -185,7 +184,7 @@ def noll2degrees(noll):
 
 
 def degrees2noll(n, m):
-    """Convert from radial and azimuthal degrees to Noll's index"""
+    """Convert from radial and azimuthal degrees to Noll's index."""
     n, m = np.asarray(n), np.asarray(m)
     # check inputs
     if not np.issubdtype(n.dtype, np.signedinteger):
@@ -201,8 +200,7 @@ def degrees2noll(n, m):
 
 
 def zernike(r, theta, *args, **kwargs):
-    """Calculates the Zernike polynomial on the unit disk for the requested
-    orders
+    """Calculate the Zernike polynomial on the unit disk for the requested orders.
 
     Parameters
     ----------
@@ -280,9 +278,10 @@ def zernike(r, theta, *args, **kwargs):
 
 
 def _radial_zernike(r, n, m):
-    """The radial part of the zernike polynomial
+    """Radial part of the zernike polynomial.
 
-    Formula from http://mathworld.wolfram.com/ZernikePolynomial.html"""
+    Formula from http://mathworld.wolfram.com/ZernikePolynomial.html
+    """
     rad_zern = np.zeros_like(r)
     # zernike polynomials are only valid for r <= 1
     valid_points = r <= 1.0
@@ -301,7 +300,7 @@ def _radial_zernike(r, n, m):
 
 
 def _zernike(r, theta, n, m, norm=False):
-    """The actual function that calculates the full zernike polynomial"""
+    """Calculate the full zernike polynomial."""
     # remember if m is negative
     mneg = m < 0
     # going forward m is positive (Radial zernikes are only defined for

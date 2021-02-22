@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # otf_test.py
 """
-Test suite for otf.py
+Test suite for otf.py.
 
 Copyright (c) 2020, David Hoffman
 """
@@ -16,12 +16,13 @@ from pyotf.otf import *
 
 
 class BasePSFCase(object):
-    """A parent class to take care of all psf base class testing
+    """A parent class to take care of all psf base class testing.
 
-    There's no Test in the name because I don't want it picked up by testing"""
+    There's no Test in the name because I don't want it picked up by testing
+    """
 
     def test_dtypes(self):
-        """Make sure dtypes make sense"""
+        """Make sure dtypes make sense."""
         model = self.model
         assert np.issubdtype(
             model.PSFi.dtype, np.floating
@@ -37,23 +38,24 @@ class BasePSFCase(object):
         ), f"OTFa should be complex but is a {model.OTFa.dtype}"
 
     def test_PSFi_positive(self):
-        """The intensity PSF should always be positive"""
+        """Intensity PSF should always be positive."""
         assert (self.model.PSFi >= 0).all()
 
     def test_diffraction_limit(self):
-        """Should raise an error if the resolution is below nyquist for the diffraction limit"""
+        """Should raise an error if the resolution is below nyquist for the diffraction limit."""
         with pytest.raises(ValueError):
             self.model.res = self.model.wl / self.model.na
 
 
 class TestHanserPSF(unittest.TestCase, BasePSFCase):
-    """Test HanserPSF"""
+    """Test HanserPSF."""
 
     def setUp(self):
+        """Make models."""
         self.model = HanserPSF(525, 0.85, 1.0, 140, 64)
 
     def test_size(self):
-        """Make sure when size is changed the output changes accordingly"""
+        """Make sure when size is changed the output changes accordingly."""
         model = self.model
         # make one size
         model.size = 128
@@ -66,19 +68,21 @@ class TestHanserPSF(unittest.TestCase, BasePSFCase):
 
 
 class TestSheppardPSF(unittest.TestCase, BasePSFCase):
-    """Test sheppard PSF"""
+    """Test sheppard PSF."""
 
     def setUp(self):
+        """Make model."""
         self.model = SheppardPSF(500, 0.85, 1.0, 140, 64)
 
     def test_zres(self):
-        """Make sure zres is set properly"""
+        """Make sure zres is set properly."""
         self.model.zres = 100
 
 
 class TestAbberation(unittest.TestCase):
-    """Tests for abberation_applying methods"""
+    """Tests for abberation_applying methods."""
 
     def test_named_aberration_to_pcoefs_should_generate_pcoefs(self):
+        """Test that named aberration matches expectation."""
         res = named_aberration_to_pcoefs("tip", 1)
         np.testing.assert_array_equal(res, np.array([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))

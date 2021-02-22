@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # setup.py
 """
-Setup files
+Setup files.
 
 Copyright (c) 2020, David Hoffman
 """
