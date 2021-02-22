@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # microscope.py
-"""
-A module to simulate optical transfer functions and point spread functions
-for specific types of microscopes
+"""A module to simulate optical transfer functions and point spread functions for specific types of microscopes.
 
 Currently the available microscopes are:
 - Widefield Epi
 - Confocal
 - Apotome
+- 2D SIM
+- 3D SIM (Gustafsson Style)
+- 3D SIM (Zeiss Lattice style)
 
 See notebooks/Microscope Imaging Models for more details
 
@@ -33,7 +34,8 @@ MODELS = {
 }
 
 
-def choose_model(model):
+def _choose_model(model):
+    """Validate model."""
     try:
         return MODELS[model.lower()]
     except KeyError:
@@ -43,7 +45,7 @@ def choose_model(model):
 
 
 class WidefieldMicroscope(object):
-    """A base class for microscope models"""
+    """A base class for microscope models."""
 
     oversample_factor = NumericProperty(
         attr="_oversample_factor",
@@ -72,10 +74,10 @@ class WidefieldMicroscope(object):
 
         self.oversample_factor = oversample_factor
         self.pixel_size = pixel_size
-        self.model = choose_model(model)(**self.psf_params)
+        self.model = _choose_model(model)(**self.psf_params)
 
     def _attribute_changed(self):
-        """What to do if an attribute has changed."""
+        # What to do if an attribute has changed.
         # try removing the PSF
         try:
             del self.PSF
@@ -89,11 +91,12 @@ class WidefieldMicroscope(object):
 
     @property
     def model_psf(self):
+        """Return internal model PSF (i.e. at full grid resolution)."""
         return self.model.PSFi
 
     @cached_property
     def PSF(self):
-        """The point spread function of the microscope"""
+        """Point spread function of the microscope."""
         psf = self.model_psf
         if self.oversample_factor > 1:
             if self.psf_params["size"] % 2 == 0:
@@ -110,11 +113,12 @@ class WidefieldMicroscope(object):
 
     @cached_property
     def OTF(self):
+        """Optical transfer function of the microscope."""
         return easy_fft(self.PSF)
 
 
 def _disk_kernel(radius):
-    """Model of the pinhole transmission function"""
+    """Model of the pinhole transmission function."""
     full_size = int(np.ceil(radius * 2))
     if full_size % 2 == 0:
         full_size += 1
@@ -125,7 +129,7 @@ def _disk_kernel(radius):
 
 
 class ConfocalMicroscope(WidefieldMicroscope):
-    """A class representing a confocal microscope"""
+    """A class representing a confocal microscope."""
 
     pinhole_size = NumericProperty(
         attr="_pinhole_size",
@@ -145,7 +149,7 @@ class ConfocalMicroscope(WidefieldMicroscope):
 
     @property
     def model_psf(self):
-        """The oversampled confocal PSF"""
+        """Oversampled confocal PSF."""
         # Calculate the AU in pixels
         airy_unit = 1.22 * self.model.wl / self.model.na / self.model.res
         logger.info(f"Airy unit = {airy_unit:}")
@@ -162,7 +166,7 @@ class ConfocalMicroscope(WidefieldMicroscope):
 
 
 class ApotomeMicroscope(WidefieldMicroscope):
-    """A class representing the approximate PSF/OTF for the apotome microscope
+    """A class representing the approximate PSF/OTF for the apotome microscope.
 
     This is a poor approximation (see notebooks) and thus has limited functionality.
 
@@ -175,7 +179,7 @@ class ApotomeMicroscope(WidefieldMicroscope):
 
     @property
     def model_psf(self):
-        """The oversampled apotome PSF"""
+        """Oversampled apotome PSF."""
         # make the hybrid OTF
         hybrid_otf = easy_fft(self.model.PSFi, axes=(1, 2))
         # get the radial average
@@ -197,7 +201,7 @@ class ApotomeMicroscope(WidefieldMicroscope):
 
 
 class BaseSIMMicroscope(WidefieldMicroscope):
-    """A base class for SIM and SIM like microscopes"""
+    """A base class for SIM and SIM like microscopes."""
 
     na_exc = NumericProperty(attr="_na_exc", vartype=float, doc="The excitation NA")
     wl_exc = NumericProperty(attr="_wl_exc", vartype=float, doc="The excitation wavelength")
@@ -211,7 +215,7 @@ class BaseSIMMicroscope(WidefieldMicroscope):
 
     def __init__(
         self, *, na_exc, wl_exc, wiener, coherent, dc, dc_suppress, orientations, **kwargs
-    ):
+    ):  # noqa: D205,D208,D400,D403
         """orientations : sequence
             The different orentation angles of the excitation
         wiener : float or None
@@ -239,7 +243,7 @@ class BaseSIMMicroscope(WidefieldMicroscope):
 
     @property
     def model_psf(self):
-        """The oversampled SIM PSF
+        """Oversampled SIM PSF.
 
         This is by no means the most general implementation, but it seems to serve
         all my use cases
@@ -327,21 +331,21 @@ class BaseSIMMicroscope(WidefieldMicroscope):
 
 
 class SIM2DMicroscope(BaseSIMMicroscope):
-    """A class for 2D-SIM, including optical sectioning SIM"""
+    """A class for 2D-SIM, including optical sectioning SIM."""
 
     def __init__(self, **kwargs):
         super().__init__(coherent=False, dc=False, **kwargs)
 
 
 class SIM3DMicroscope(BaseSIMMicroscope):
-    """A class for 3D-SIM using multiple pattern orientations"""
+    """A class for 3D-SIM using multiple pattern orientations."""
 
     def __init__(self, **kwargs):
         super().__init__(coherent=False, dc=True, **kwargs)
 
 
 class LatticeSIMMicroscope(BaseSIMMicroscope):
-    """A class for Zeiss Lattice SIM
+    """A class for Zeiss Lattice SIM.
 
     https://www.zeiss.com/microscopy/us/products/elyra-7-with-lattice-sim-for-fast-and-gentle-3d-superresolution-microscopy.html
     """
