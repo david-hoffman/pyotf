@@ -579,7 +579,26 @@ def apply_aberration(model, mcoefs, pcoefs):
 
 def apply_named_aberration(model, aberration, magnitude):
     """A convenience function to apply a specific named aberration to the PSF. This will only effect the phase"""
-    # get the Noll number and build pcoefs
+
+    pcoefs = named_aberration_to_pcoefs(aberration, magnitude)
+    return apply_aberration(model, None, pcoefs)
+
+
+def named_aberration_to_pcoefs(aberration, magnitude):
+    """Convert named aberration into phase coefficients.
+
+    Parameters
+    ----------
+    aberration: str
+        Name of aberration
+    magnitude: int
+        Magnitude of aberration
+
+    Returns
+    -------
+    np.ndarray
+        Corresponding phase coefficients
+    """
     try:
         noll = name2noll[aberration]
     except KeyError as e:
@@ -588,8 +607,32 @@ def apply_named_aberration(model, aberration, magnitude):
             + "', '".join(name2noll.keys())
             + "'"
         )
-    pcoefs = np.zeros(noll)
-    pcoefs[-1] = magnitude
+    pcoefs = np.zeros(len(name2noll))
+    pcoefs[noll - 1] = magnitude
+    return pcoefs
+
+
+def apply_named_aberrations(model, aberrations):
+    """Use to apply multiple named aberration to the PSF. This will only affect the phase.
+
+    Parameters
+    ----------
+    model: PSF
+        PSF model onto which aberration will be applied
+    aberrations: dict()
+        Dictionary of aberration-magnitude pairs
+
+    Returns
+    -------
+    PSF
+        Aberrated model
+
+    """
+
+    pcoefs = np.zeros(len(name2noll))
+    for aberration, magnitude in aberrations.items():
+        # Sum phase coefficients
+        pcoefs = np.add(pcoefs, named_aberration_to_pcoefs(aberration, magnitude))
     return apply_aberration(model, None, pcoefs)
 
 

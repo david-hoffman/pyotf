@@ -74,3 +74,11 @@ class TestSheppardPSF(unittest.TestCase, BasePSFCase):
     def test_zres(self):
         """Make sure zres is set properly"""
         self.model.zres = 100
+
+
+class TestAbberation(unittest.TestCase):
+    """Tests for abberation_applying methods"""
+
+    def test_named_aberration_to_pcoefs_should_generate_pcoefs(self):
+        res = named_aberration_to_pcoefs("tip", 1)
+        np.testing.assert_array_equal(res, np.array([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
