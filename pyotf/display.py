@@ -71,42 +71,6 @@ def fft_max_min(n: int, d: float) -> typing.Tuple[float, float]:
     return max_min(n, step_size)
 
 
-def add_scalebar(
-    ax: mpl.axes.Axes,
-    scalebar_size: float,
-    pixel_size: float,
-    unit: str = "µm",
-    edgecolor: str = None,
-    **kwargs,
-) -> None:
-    """Add a scalebar to the axis."""
-    # NOTE: this is to be moved to dphtools when the package is ready
-    scalebar_length = scalebar_size / pixel_size
-    default_scale_bar_kwargs = dict(
-        loc="lower right",
-        pad=0.5,
-        color="white",
-        frameon=False,
-        size_vertical=scalebar_length / 10,
-        fontproperties=fm.FontProperties(weight="bold"),
-    )
-    default_scale_bar_kwargs.update(kwargs)
-    if unit is not None:
-        label = f"{scalebar_size} {unit}"
-    else:
-        label = ""
-        if "lower" in default_scale_bar_kwargs["loc"]:
-            default_scale_bar_kwargs["label_top"] = True
-    scalebar = AnchoredSizeBar(ax.transData, scalebar_length, label, **default_scale_bar_kwargs)
-    if edgecolor:
-        scalebar.size_bar.get_children()[0].set_edgecolor(edgecolor)
-        scalebar.txt_label.get_children()[0].set_path_effects(
-            [path_effects.Stroke(linewidth=2, foreground=edgecolor), path_effects.Normal()]
-        )
-    # add the scalebar
-    ax.add_artist(scalebar)
-
-
 def psf_plot(
     psf: np.ndarray,
     *,
@@ -179,8 +143,6 @@ def psf_plot(
     for g in grid:
         g.xaxis.set_major_locator(plt.NullLocator())
         g.yaxis.set_major_locator(plt.NullLocator())
-    # add scalebar
-    add_scalebar(grid[3], 1, 1, None)
     # return fig and axes
     return fig, grid
 
@@ -286,7 +248,5 @@ def otf_plot(
                     fill=None,
                 )
                 g.add_patch(c2)
-    # add scalebar
-    add_scalebar(grid[3], 1, 1, None)
 
     return fig, grid
