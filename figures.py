@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # figures.py
 """
-Simple script to generate the figures in the README.md
+Simple script to generate the figures in the README.md.
 
 Copyright (c) 2020, David Hoffman
 """
@@ -32,11 +32,13 @@ OTF_MODEL = dict(
     condition="none",
 )
 
-SAVE = dict(dpi=150, transparent=True, bbox_inches="tight")
+SAVE = dict(dpi=150, transparent=False, bbox_inches="tight")
 
 
 def otf_plots(model_kwargs):
-    """NOTE: the results are _very_ close on a qualitative scale, but they do not match exactly as
+    """Make OTF plots.
+    
+    NOTE: the results are _very_ close on a qualitative scale, but they do not match exactly as
     theory says they should (they're mathematically identical to one another)
     """
     # generate a comparison
@@ -74,6 +76,7 @@ def otf_plots(model_kwargs):
 
 
 def aberration_plots(model_kwargs):
+    """Make aberration plots."""
     model_kwargs = model_kwargs.copy()
     model_kwargs["zrange"] = [0]
     model_kwargs["vec_corr"] = "total"
@@ -98,6 +101,7 @@ def aberration_plots(model_kwargs):
 
 
 def zernike_plots():
+    """Make zernike plots."""
     # make coordinates
     x = np.linspace(-1, 1, 1025)
     xx, yy = np.meshgrid(x, x)  # xy indexing is default
@@ -123,7 +127,7 @@ def zernike_plots():
 
 
 def pr_plots():
-    """Phase retrieval plots"""
+    """Make phase retrieval plots."""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         data = tif.imread("fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif")

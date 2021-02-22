@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 # utils.py
 """
-Utility functions for the pyotf module
+Utility functions for the pyotf module.
+
 Copyright (c) 2016, David Hoffman
 """
 
@@ -13,14 +14,14 @@ from scipy.ndimage._ni_support import _normalize_sequence
 
 
 def _calc_crop(s1, s2):
-    """Calc the cropping from the padding"""
+    """Calc the cropping from the padding."""
     a1 = abs(s1) if s1 < 0 else None
     a2 = s2 if s2 < 0 else None
     return slice(a1, a2, None)
 
 
 def _calc_pad(oldnum, newnum):
-    """ Calculate the proper padding for fft_pad
+    """Calculate the proper padding for fft_pad.
 
     We have three cases:
     old number even new number even
@@ -29,7 +30,7 @@ def _calc_pad(oldnum, newnum):
 
     old number odd new number even
     >>> _calc_pad(11, 16)
-    (3, 2)
+    (2, 3)
 
     old number odd new number odd
     >>> _calc_pad(11, 17)
@@ -53,15 +54,20 @@ def _calc_pad(oldnum, newnum):
     pad_s = width // 2
     # calculate the other, bigger
     pad_b = width - pad_s
-    pad1, pad2 = pad_b, pad_s
+    # if oldnum is odd and newnum is even
+    # we want to pull things backward
+    if oldnum % 2:
+        pad1, pad2 = pad_s, pad_b
+    else:
+        pad1, pad2 = pad_b, pad_s
     return pad1, pad2
 
 
 def _padding_slices(oldshape, newshape):
-    """This function takes the old shape and the new shape and calculates
-    the required padding or cropping.newshape
+    """Calculate the required padding or cropping from the old shape and new shape.
 
-    Can be used to generate the slices needed to undo fft_pad above"""
+    Can be used to generate the slices needed to undo fft_pad above
+    """
     # generate pad widths from new shape
     padding = tuple(
         _calc_pad(o, n) if n is not None else _calc_pad(o, o) for o, n in zip(oldshape, newshape)
@@ -74,25 +80,28 @@ def _padding_slices(oldshape, newshape):
 
 
 def fft_pad(array, newshape=None, mode="median", **kwargs):
-    """Pad an array to prep it for fft"""
+    """Pad an array to prep it for FFT."""
     # pull the old shape
     oldshape = array.shape
     if newshape is None:
         # update each dimension to a 5-smooth hamming number
-        newshape = tuple(scipy.fftpack.helper.next_fast_len(n) for n in oldshape)
+        newshape = tuple(scipy.fftpack.next_fast_len(n) for n in oldshape)
     else:
-        if isinstance(newshape, int):
+        if hasattr(newshape, "__iter__"):
+            # are we iterable?
+            newshape = tuple(newshape)
+        elif isinstance(newshape, int) or np.issubdtype(newshape, np.integer):
+            # test for regular python int, then numpy ints
             newshape = tuple(newshape for n in oldshape)
         else:
-            newshape = tuple(newshape)
+            raise ValueError(f"{newshape} is not a recognized shape")
     # generate padding and slices
     padding, slices = _padding_slices(oldshape, newshape)
     return np.pad(array[slices], padding, mode=mode, **kwargs)
 
 
 def slice_maker(xs, ws):
-    """
-    A utility function to generate slices for later use.
+    """Generate a tuple of slices to cut out a sub-array centered on `xs` with widths `ws`.
 
     Parameters
     ----------
@@ -115,10 +124,10 @@ def slice_maker(xs, ws):
 
     Examples
     --------
-    >>> slice_maker((30,20),10)
-    [slice(25, 35, None), slice(15, 25, None)]
-    >>> slice_maker((30,20),25)
-    [slice(18, 43, None), slice(8, 33, None)]
+    >>> slice_maker((30, 20), 10)
+    (slice(25, 35, None), slice(15, 25, None))
+    >>> slice_maker((30, 20), 25)
+    (slice(18, 43, None), slice(8, 33, None))
     """
     # normalize inputs
     xs = np.asarray(xs)
@@ -146,27 +155,27 @@ def slice_maker(xs, ws):
 
 
 def easy_fft(data, axes=None):
-    """utility method that includes fft shifting"""
+    """FFT that includes shifting."""
     return fftshift(fftn(ifftshift(data, axes=axes), axes=axes), axes=axes)
 
 
 def easy_ifft(data, axes=None):
-    """utility method that includes fft shifting"""
+    """Inverse FFT that includes shifting."""
     return ifftshift(ifftn(fftshift(data, axes=axes), axes=axes), axes=axes)
 
 
 def cart2pol(y, x):
-    """utility function for converting from cartesian to polar"""
+    """Convert from cartesian to polar coordinates."""
     theta = np.arctan2(y, x)
     rho = np.hypot(y, x)
     return rho, theta
 
 
 class NumericProperty(property):
-    """Define a property that must be numeric"""
+    """Define a property that must be numeric."""
 
     def __init__(self, fget=None, fset=None, fdel=None, doc=None, attr=None, vartype=None):
-        """A property that must be numeric.
+        """Property that must be numeric.
 
         Parameters
         ----------
@@ -206,29 +215,8 @@ class NumericProperty(property):
         super().__init__(fget, fset, fdel, doc)
 
 
-class cached_property(object):
-    """ A property that is only computed once per instance and then replaces
-    itself with an ordinary attribute. Deleting the attribute resets the
-    property.
-
-    Source: https://github.com/bottlepy/bottle/commit/fa7733e075da0d790d809aa3d2f53071897e6f76
-    
-    This will be part of the standard library starting in 3.8
-    """
-
-    def __init__(self, func):
-        self.__doc__ = getattr(func, "__doc__")
-        self.func = func
-
-    def __get__(self, obj, cls):
-        if obj is None:
-            return self
-        value = obj.__dict__[self.func.__name__] = self.func(obj)
-        return value
-
-
 def center_data(data):
-    """Utility to center the data
+    """Center data on its maximum.
 
     Parameters
     ----------
@@ -252,7 +240,10 @@ def center_data(data):
 
 
 def remove_bg(data, multiplier=1.5):
-    """Utility that measures mode of data and subtracts a multiplier of it"""
+    """Remove background from data.
+    
+    Utility that measures mode of data and subtracts a multiplier of it
+    """
     # should add bit for floats, that will find the mode using the hist
     # function bincounts with num bins specified
     mode = np.bincount(data.ravel()).argmax()
@@ -265,7 +256,7 @@ def psqrt(data):
 
 
 def prep_data_for_PR(data, xysize=None, multiplier=1.5):
-    """A utility to prepare data for phase retrieval
+    """Prepare data for phase retrieval.
 
     Will pad or crop to xysize and remove mode times multiplier and clip at zero
 
@@ -303,9 +294,7 @@ def prep_data_for_PR(data, xysize=None, multiplier=1.5):
 
 
 def bin_ndarray(ndarray, new_shape=None, bin_size=None, operation="sum"):
-    """
-    Bins an ndarray in all axes based on the target shape, by summing or
-        averaging.
+    """Bin ndarray over all axes based on the target shape, by summing or averaging.
 
     Number of output dimensions must match number of input dimensions and
         new axes must divide old ones.
@@ -355,9 +344,12 @@ def bin_ndarray(ndarray, new_shape=None, bin_size=None, operation="sum"):
 
 
 def radial_profile(data, center=None, binsize=1.0):
-    """Take the radial average of a 2D data array
+    """Take the radial average of a 2D data array.
 
     Adapted from http://stackoverflow.com/a/21242776/5030014
+
+    See https://github.com/keflavich/image_tools/blob/master/image_tools/radialprofile.py
+    for an alternative
 
     Parameters
     ----------
@@ -378,7 +370,7 @@ def radial_profile(data, center=None, binsize=1.0):
     Examples
     --------
     >>> radial_profile(np.ones((11, 11)))
-    (array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.]), array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]))
+    (array([1., 1., 1., 1., 1., 1., 1., 1.]), array([0., 0., 0., 0., 0., 0., 0., 0.]))
     """
     # test if the data is complex
     if np.iscomplexobj(data):

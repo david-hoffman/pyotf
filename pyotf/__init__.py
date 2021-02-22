@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 # __init__.py
 """
-A package to simulate optical transfer functions and point spread functions
-and perform phase retrieval on experimental data.
+A package to simulate optical transfer functions and point spread functions and perform phase retrieval on experimental data.
 
 https://en.wikipedia.org/wiki/Optical_transfer_function
 https://en.wikipedia.org/wiki/Point_spread_function
