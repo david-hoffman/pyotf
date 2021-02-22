@@ -40,7 +40,7 @@ jobs:
           black --check . -l 99
       - name: Check docstrings
         run: |
-          pydocstyle --convention=numpy
+          pydocstyle --count --convention=numpy
 
   test:
     needs: formatting
@@ -67,4 +67,4 @@ jobs:
           pip install .
       - name: Test with pytest
         run: |
-          pytest --cov-report=term-missing --cov=pyotf --doctest-modules
+          pytest --doctest-modules
