@@ -112,7 +112,15 @@ def psf_plot(
     This function is NOT unit aware, so make sure the units for `zres` and `res` are the same.
     """
     # update our default kwargs for plotting
-    dkwargs = dict(interpolation="nearest", cmap="inferno")
+    dkwargs = dict(
+        norm=mpl.colors.PowerNorm(
+            gamma=kwargs.pop("gamma", 0.5),
+            vmin=kwargs.pop("vmin", None),
+            vmax=kwargs.pop("vmax", None),
+        ),
+        interpolation="nearest",
+        cmap="inferno",
+    )
     dkwargs.update(kwargs)
     # make the fig if one isn't passed
     if fig is None:

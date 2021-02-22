@@ -20,7 +20,7 @@ import numpy as np
 from numpy.fft import fftfreq, fftshift, ifftn
 from numpy.linalg import norm
 
-from .utils import NumericProperty, cart2pol, easy_fft, easy_ifft, psqrt
+from .utils import NumericProperty, cart2pol, easy_fft, easy_ifft, psqrt, slice_maker
 from .display import psf_plot, otf_plot
 from .zernike import name2noll, zernike
 
@@ -227,7 +227,14 @@ class BasePSF(object):
         See `pyotf.display.psf_plot` for details and possible kwargs
         """
         self._validate_zrange()
-        return psf_plot(self.PSFi, zres=self.zres, res=self.res, **kwargs)
+        # smart cropping
+        # nice lateral extent
+        lateral_extent = self.wl / 2 / self.na / self.res * 32
+        axial_extent = self.wl / (self.ni - np.sqrt(self.ni ** 2 - self.na ** 2)) / self.zres * 16
+
+        max_loc = np.unravel_index(self.PSFi.argmax(), self.PSFi.shape)
+        crop = slice_maker(max_loc, (axial_extent, lateral_extent, lateral_extent))
+        return psf_plot(self.PSFi[crop], zres=self.zres, res=self.res, **kwargs)
 
     def plot_otf(self, **kwargs):
         """Plot the intensity OTF.
