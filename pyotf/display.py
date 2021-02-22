@@ -46,7 +46,7 @@ def max_min(n: int, d: float) -> typing.Tuple[float, float]:
     return -min_, max_
 
 
-def fft_max_min(n, d):
+def fft_max_min(n: int, d: float) -> typing.Tuple[float, float]:
     """Return max and min Fourier extents.
     
     Parameters
@@ -71,8 +71,16 @@ def fft_max_min(n, d):
     return max_min(n, step_size)
 
 
-def add_scalebar(ax, scalebar_size, pixel_size, unit="µm", edgecolor=None, **kwargs):
+def add_scalebar(
+    ax: mpl.Axis,
+    scalebar_size: float,
+    pixel_size: float,
+    unit: str = "µm",
+    edgecolor: str = None,
+    **kwargs,
+) -> None:
     """Add a scalebar to the axis."""
+    # NOTE: this is to be moved to dphtools when the package is ready
     scalebar_length = scalebar_size / pixel_size
     default_scale_bar_kwargs = dict(
         loc="lower right",
@@ -97,11 +105,48 @@ def add_scalebar(ax, scalebar_size, pixel_size, unit="µm", edgecolor=None, **kw
         )
     # add the scalebar
     ax.add_artist(scalebar)
-    return scalebar
 
 
-def psf_plot(psf, *, zres, res, fig=None, loc=111, mip=True, **kwargs):
-    """"""
+def psf_plot(
+    psf: np.ndarray,
+    *,
+    zres: float,
+    res: float,
+    fig: mpl.Figure = None,
+    loc: int = 111,
+    mip: bool = True,
+    **kwargs,
+):
+    """Make a nice plot for a light microscopy point spread function (PSF).
+    
+    Parameters
+    ----------
+    psf : nd.array (3d)
+        A 3d array representing an intensity PSF of a microscope.
+        NOTE: assumes that the axial steps are regularly spaced!
+    zres : float
+        Axial step/pixel size
+    res : float
+        Lateral pixel size
+    fig : Figure (optional)
+        Figure in which to place the plot
+    loc : int (optional)
+        Location to place the plot in the figure (see ImageGrid docs for details)
+    mip : bool (optional)
+        Choose to display as a maximum intensity projection or central slices
+        NOTE: data  needs to be centered for the slice plot to work.
+    kwargs : optional keyword arguments
+        kwargs are passed along to the `imshow` calls
+
+    Returns
+    -------
+    fig : Figure
+    axs : Axes
+
+    Notes
+    -----
+    This function is NOT unit aware, so make sure the units for `zres` and `res` are the same.
+    """
     # update our default kwargs for plotting
     dkwargs = dict(interpolation="nearest", cmap="inferno")
     dkwargs.update(kwargs)
@@ -140,8 +185,55 @@ def psf_plot(psf, *, zres, res, fig=None, loc=111, mip=True, **kwargs):
     return fig, grid
 
 
-def otf_plot(otf, *, na, wl, ni, zres, res, fig=None, loc=111, **kwargs):
-    """"""
+def otf_plot(
+    otf: np.ndarray,
+    *,
+    na: float,
+    ni: float,
+    wl: float,
+    zres: float,
+    res: float,
+    fig: mpl.Figure = None,
+    loc: int = 111,
+    **kwargs,
+):
+    """Make a nice plot for a light microscopy optical transfer function (OTF).
+    
+    Parameters
+    ----------
+    otf : nd.array (3d)
+        A 3d array representing an intensity OTF of a microscope.
+        NOTE: assumes that the axial steps are regularly spaced!
+    na : float
+        Numerical aperture of the microscope.
+    ni : float
+        Index of refraction of the medium of measurement
+        NOTE: assumes that the objective is used in its intended medium (index matching is satisfied)
+    wl : float
+        Approximate emission wavelength of the data
+    zres : float
+        Real space axial step/pixel size (Fourier space units are automatically calculated)
+    res : float
+        Real space lateral pixel size (Fourier space units are automatically calculated)
+    fig : Figure (optional)
+        Figure in which to place the plot
+    loc : int (optional)
+        Location to place the plot in the figure (see ImageGrid docs for details)
+    mip : bool (optional)
+        Choose to display as a maximum intensity projection or central slices
+        NOTE: data  needs to be centered for the slice plot to work.
+    kwargs : optional keyword arguments
+        kwargs are passed along to the `imshow` calls
+
+    Returns
+    -------
+    fig : Figure
+    axs : Axes
+
+    Notes
+    -----
+    This function is NOT unit aware, so make sure the units for `zres`, `res`, and `wl` are the same.
+    """
     # update our default kwargs for plotting
     dkwargs = dict(
         norm=mpl.colors.LogNorm(vmin=kwargs.pop("vmin", None), vmax=kwargs.pop("vmax", None)),
