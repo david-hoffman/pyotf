@@ -67,4 +67,4 @@ jobs:
           pip install .
       - name: Test with pytest
         run: |
-          pytest --doctest-modules
+          pytest --doctest-modules pyotf/ tests/
