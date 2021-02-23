@@ -77,6 +77,17 @@ class WidefieldMicroscope(object):
         self.pixel_size = pixel_size
         self.model = _choose_model(model)(**self.psf_params)
 
+    def __repr__(self):
+        """Return representation of a microscope object."""
+        psf_kwargs = self.psf_params.copy()
+        psf_kwargs.pop("res", None)
+        psf_kwargs_str = ", ".join(f"{k}={v}" for k, v in psf_kwargs.items())
+        return (
+            f"{self.__class__.__name__}(model='{self.model.__class__.__name__[:-3].lower()}', "
+            + f"{psf_kwargs_str}, pixel_size={self.pixel_size}, "
+            + f"oversample_factor={self.oversample_factor})"
+        )
+
     def _attribute_changed(self):
         # What to do if an attribute has changed.
         # try removing the PSF
@@ -190,6 +201,13 @@ class ConfocalMicroscope(WidefieldMicroscope):
         self.model_exc = copy.deepcopy(self.model)
         self.model_exc.wl = wl_exc
 
+    def __repr__(self):
+        """Represent a confocal microscope."""
+        return (
+            super().__repr__()[:-1]
+            + f", wl_exc={self.model_exc.wl}, pinhole_size={self.pinhole_size})"
+        )
+
     @property
     def model_psf(self):
         """Oversampled confocal PSF."""
@@ -283,6 +301,15 @@ class BaseSIMMicroscope(WidefieldMicroscope):
         self.wiener = wiener
         if self.wiener < 0:
             raise ValueError(f"self.wiener is {self.wiener:} which should be greater than zero")
+
+    def __repr__(self):
+        """Represent a SIM microscope."""
+        return (
+            super().__repr__()[:-1]
+            + f", na_exc={self.na_exc}, wl_exc={self.wl_exc}, wiener={self.wiener}, "
+            + f"coherent={self.coherent}, dc={self.dc}, dc_suppress={self.dc_suppress}, "
+            + f"orientations={self.orientations!r})"
+        )
 
     @property
     def model_psf(self):
@@ -460,6 +487,7 @@ if __name__ == "__main__":
     plt.set_cmap("inferno")
 
     for (i, p), l, col in zip(enumerate(psfs), labels, grid.axes_column):
+        print(p)
         p = p.PSF
         p /= p.max()
 
