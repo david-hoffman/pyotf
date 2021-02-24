@@ -107,7 +107,7 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, ph
             pupil_diff[i] = np.nan
         # check tolerances, how much has the pupil changed, how much has the mse changed
         # and what's the absolute mse
-        logger.info(
+        logger.debug(
             f"Iteration {i}, mse_diff = {mse_diff[i]:.2g}, pupil_diff = {pupil_diff[i]:.2g}"
         )
         if pupil_diff[i] < pupil_tol or mse_diff[i] < mse_tol or mse[i] < mse_tol:
@@ -133,6 +133,13 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, ph
     mse = mse[: i + 1]
     mse_diff = mse_diff[: i + 1]
     pupil_diff = pupil_diff[: i + 1]
+
+    # log final results
+    logger.info(
+        f"Finished with {i} iterations and rmse={np.sqrt(mse[-1]):.2g}, "
+        + "mse_diff={mse_diff[-1]:.2g}, pupil_diff={pupil_diff[-i]:.2g}"
+    )
+
     # shift mask
     mask = fftshift(mask)
     # shift phase then unwrap and mask
