@@ -137,7 +137,7 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, ph
     # log final results
     logger.info(
         f"Finished with {i} iterations and rmse={np.sqrt(mse[-1]):.2g}, "
-        + "mse_diff={mse_diff[-1]:.2g}, pupil_diff={pupil_diff[-i]:.2g}"
+        + f"mse_diff={mse_diff[-1]:.2g}, pupil_diff={pupil_diff[-1]:.2g}"
     )
 
     # shift mask
@@ -430,6 +430,9 @@ if __name__ == "__main__":
     import tifffile as tif
 
     from .utils import prep_data_for_PR
+
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.INFO)
 
     # read in data from fixtures
     with warnings.catch_warnings():
