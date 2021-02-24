@@ -129,7 +129,7 @@ def retrieve_phase(data, params, max_iters=200, pupil_tol=1e-8, mse_tol=1e-8, ph
         if phase_only:
             new_pupil = np.exp(1j * np.angle(new_pupil)) * mask
     else:
-        logger.warning("Reach max iterations without convergence")
+        logger.info("Reach max iterations without convergence")
     mse = mse[: i + 1]
     mse_diff = mse_diff[: i + 1]
     pupil_diff = pupil_diff[: i + 1]

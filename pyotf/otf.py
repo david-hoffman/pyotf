@@ -156,7 +156,7 @@ class BasePSF(object):
                 f"{value} is larger than the Abbe Limit, try a number smaller than {abbe_limit}"
             )
         if value >= abbe_limit / 2:
-            logger.warning(
+            logger.info(
                 f"res has been set to {value} which is greater than the Nyquist limit of {abbe_limit / 2}"
             )
         self._res = value
