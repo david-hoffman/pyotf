@@ -319,7 +319,14 @@ def _zernike(r, theta, n, m, norm=False):
 
     # calculate the normalization factor
     if norm:
-        raise NotImplementedError
+        # https://www.gatinel.com/en/recherche-formation/wavefront-sensing/zernike-polynomials/
+        if m == 0:
+            # m is zero
+            norm = np.sqrt(n + 1)
+        else:
+            # m not zero
+            norm = np.sqrt(2 * (n + 1))
+        zern *= norm
     return zern
 
 
@@ -334,7 +341,7 @@ if __name__ == "__main__":
     fig, axs = plt.subplots(3, 5, figsize=(20, 12))
     # fill out plot
     for ax, (k, v) in zip(axs.ravel(), noll2name.items()):
-        zern = zernike(r, theta, k, norm=False)
+        zern = zernike(r, theta, k)
         ax.imshow(
             np.ma.array(zern, mask=r > 1),
             vmin=-1,

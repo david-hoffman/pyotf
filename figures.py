@@ -111,7 +111,7 @@ def zernike_plots():
     # fill out plot
     for ax, (k, v) in zip(axs.ravel(), noll2name.items()):
         print(f"Making {v} plot")
-        zern = zernike(r, theta, k, norm=False)
+        zern = zernike(r, theta, k)
         ax.imshow(
             np.ma.array(zern, mask=r > 1),
             vmin=-1,

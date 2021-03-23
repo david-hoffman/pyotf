@@ -80,17 +80,15 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
     def test_zernike_modes_phase(self):
         """Make sure the fitted zernike modes agree."""
         self.PR_result.fit_to_zernikes(15)
-        np.testing.assert_allclose(
-            self.PR_result.zd_result.pcoefs[4:], self.pcoefs, err_msg="Phase coefs failed"
-        )
+        np.testing.assert_allclose(self.PR_result.zd_result.pcoefs[4:], self.pcoefs)
 
     def test_zernike_modes_mag(self):
         """Make sure the fitted zernike modes agree."""
         self.PR_result.fit_to_zernikes(15)
         np.testing.assert_allclose(
-            self.PR_result.zd_result.mcoefs[4:], self.mcoefs, err_msg="Mag coefs failed"
+            self.PR_result.zd_result.mcoefs[4:], self.mcoefs, rtol=1e-6, atol=1e-6
         )
 
     def test_psf_mse(self):
         """Does the phase retrieved PSF converge to the fake PSF."""
-        np.testing.assert_allclose(self.PR_result.model.PSFi, self.PSFi)
+        np.testing.assert_allclose(self.PR_result.model.PSFi, self.PSFi, rtol=1e-6, atol=1e-6)

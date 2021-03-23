@@ -71,6 +71,22 @@ def fft_max_min(n: int, d: float) -> typing.Tuple[float, float]:
     return max_min(n, step_size)
 
 
+def z_squeeze(n1: float, n2: float, na: float) -> float:
+    """Calculate amount z expands or contracts.
+    
+    When using an objective designed for one index (n1) to image into a medium with another
+    index (n2) the amount the focal plane moves within the sample will be different from the
+    amount the objective moves relative to the sample.
+    """
+    if n1 == n2:
+        return 1
+
+    def func(n):
+        return n - np.sqrt(max(0, n ** 2 - na ** 2))
+
+    return func(n1) / func(n2)
+
+
 def psf_plot(
     psf: np.ndarray,
     *,

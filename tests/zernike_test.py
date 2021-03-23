@@ -163,3 +163,21 @@ def choose_random_nm(odd=False):
     assert n >= abs(m), f"Somethings very wrong {n} not >= {m}"
     assert not (m - n + odd) % 2, f"m = {m}, n = {n}"
     return n, m
+
+
+def test_norm():
+    """Test that normalization works."""
+    # set up coordinates
+    x = np.linspace(-1, 1, 2048)
+    xx, yy = np.meshgrid(x, x)  # xy indexing is default
+    r, theta = cart2pol(yy, xx)
+    # fill out plot
+    for k, v in sorted(noll2name.items())[0:]:
+        zern = zernike(r, theta, k, norm=True)
+        print(v, noll2degrees(k))
+        n, _ = noll2degrees(k)
+        tol = 10.0 ** (n - 6)
+        np.testing.assert_allclose(
+            1.0, np.sqrt((zern[r <= 1] ** 2).mean()), err_msg=f"{v} failed!", atol=tol, rtol=tol
+        )
+
