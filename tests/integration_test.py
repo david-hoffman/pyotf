@@ -58,23 +58,19 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
         self.PSFi = model.PSFi
         # we have to converge really close for this to work.
         self.PR_result = retrieve_phase(
-            self.PSFi, self.model_kwargs, max_iters=200, pupil_tol=0, mse_tol=0, phase_only=False
+            self.PSFi, self.model_kwargs, max_iters=400, pupil_tol=0, mse_tol=0, phase_only=False
         )
 
     def test_mag(self):
         """Make sure phase retrieval returns same magnitude."""
-        np.testing.assert_allclose(
-            fftshift(self.pupil_mag), self.PR_result.mag, err_msg="Mag failed"
-        )
+        np.testing.assert_allclose(fftshift(self.pupil_mag), self.PR_result.mag)
 
     def test_phase(self):
         """Make sure phase retrieval returns same phase."""
         # from the unwrap_phase docs:
         # >>> np.std(image_unwrapped - image) < 1e-6   # A constant offset is normal
         np.testing.assert_allclose(
-            (fftshift(self.pupil_phase) - self.PR_result.phase) * self.mask,
-            0,
-            err_msg="Phase failed",
+            (fftshift(self.pupil_phase) - self.PR_result.phase) * self.mask, 0,
         )
 
     def test_zernike_modes_phase(self):
@@ -85,10 +81,8 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
     def test_zernike_modes_mag(self):
         """Make sure the fitted zernike modes agree."""
         self.PR_result.fit_to_zernikes(15)
-        np.testing.assert_allclose(
-            self.PR_result.zd_result.mcoefs[4:], self.mcoefs, rtol=1e-6, atol=1e-6
-        )
+        np.testing.assert_allclose(self.PR_result.zd_result.mcoefs[4:], self.mcoefs)
 
     def test_psf_mse(self):
         """Does the phase retrieved PSF converge to the fake PSF."""
-        np.testing.assert_allclose(self.PR_result.model.PSFi, self.PSFi, rtol=1e-6, atol=1e-6)
+        np.testing.assert_allclose(self.PR_result.model.PSFi, self.PSFi)

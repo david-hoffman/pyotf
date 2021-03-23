@@ -299,7 +299,7 @@ def _radial_zernike(r, n, m):
     return rad_zern
 
 
-def _zernike(r, theta, n, m, norm=False):
+def _zernike(r, theta, n, m, norm=True):
     """Calculate the full zernike polynomial."""
     # remember if m is negative
     mneg = m < 0
