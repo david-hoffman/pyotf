@@ -180,4 +180,3 @@ def test_norm():
         np.testing.assert_allclose(
             1.0, np.sqrt((zern[r <= 1] ** 2).mean()), err_msg=f"{v} failed!", atol=tol, rtol=tol
         )
-
