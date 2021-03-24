@@ -180,3 +180,31 @@ def test_norm():
         np.testing.assert_allclose(
             1.0, np.sqrt((zern[r <= 1] ** 2).mean()), err_msg=f"{v} failed!", atol=tol, rtol=tol
         )
+
+
+def test_norm_sum():
+    """Test RMS of sum of zernikes is the square root of the sum of the coefficients."""
+    # set up coordinates
+    x = np.linspace(-1, 1, 2048)
+    xx, yy = np.meshgrid(x, x)  # xy indexing is default
+    r, theta = cart2pol(yy, xx)
+    # make coefs
+    np.random.seed(12345)
+    c0, c1 = np.random.randn(2)
+    astig_zern = c0 * zernike(r, theta, 5, norm=True)
+    spherical_zern = c1 * zernike(r, theta, 11, norm=True)
+    np.testing.assert_allclose(
+        abs(c0), np.sqrt((astig_zern[r <= 1] ** 2).mean()), atol=1e-3, rtol=1e-3
+    )
+
+    np.testing.assert_allclose(
+        abs(c1), np.sqrt((spherical_zern[r <= 1] ** 2).mean()), atol=1e-3, rtol=1e-3
+    )
+
+    np.testing.assert_allclose(
+        np.sqrt(c0 ** 2 + c1 ** 2),
+        np.sqrt(((astig_zern + spherical_zern)[r <= 1] ** 2).mean()),
+        atol=1e-3,
+        rtol=1e-3,
+    )
+
