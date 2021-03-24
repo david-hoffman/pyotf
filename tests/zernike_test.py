@@ -207,4 +207,3 @@ def test_norm_sum():
         atol=1e-3,
         rtol=1e-3,
     )
-
