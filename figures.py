@@ -83,13 +83,11 @@ def aberration_plots(model_kwargs):
     model_kwargs["condition"] = "sine"
     model = HanserPSF(**model_kwargs)
 
-    mag = model.na / model.wl * model.res * 2 * np.pi
-
     fig, axs = plt.subplots(3, 5, figsize=(12, 8))
     # fill out plot
     for ax, name in zip(axs.ravel(), name2noll.keys()):
         print(f"Making {name} plot")
-        model2 = apply_named_aberration(model, name, mag * 2)
+        model2 = apply_named_aberration(model, name, 1)
         ax.imshow(
             model2.PSFi.squeeze()[104:-104, 104:-104], cmap="inferno", interpolation="bicubic"
         )
@@ -111,7 +109,7 @@ def zernike_plots():
     # fill out plot
     for ax, (k, v) in zip(axs.ravel(), noll2name.items()):
         print(f"Making {v} plot")
-        zern = zernike(r, theta, k)
+        zern = zernike(r, theta, k, norm=False)
         ax.imshow(
             np.ma.array(zern, mask=r > 1),
             vmin=-1,
@@ -131,9 +129,10 @@ def pr_plots():
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         data = tif.imread("fixtures/psf_wl520nm_z300nm_x130nm_na0.85_n1.0.tif")
+        print(f"Data shape: {data.shape}")
 
     # prep data
-    data_prepped = prep_data_for_PR(data, 512, 1.1)
+    data_prepped = prep_data_for_PR(data, 128, 1.05)
 
     # set up model params
     params = dict(wl=520, na=0.85, ni=1.0, res=130, zres=300)

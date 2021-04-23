@@ -719,9 +719,8 @@ if __name__ == "__main__":
         fig, axs = plt.subplots(2, 2, figsize=(9, 6), gridspec_kw=dict(width_ratios=(1, 2)))
 
         for psf, ax_sub in zip(psfs, axs):
-            print(psf)
             psf.plot_otf()
-            psf.plot_psf()
+            psf.plot_psf(interpolation="bicubic")
             # make coordinates
             ax_yx, ax_zx = ax_sub
             # get magnitude
@@ -751,13 +750,11 @@ if __name__ == "__main__":
     )
     model = HanserPSF(**model_kwargs)
 
-    mag = model.na / model.wl * model.res * 2 * np.pi
-
     with plt.style.context("dark_background"):
         fig, axs = plt.subplots(3, 5, figsize=(12, 8))
         # fill out plot
         for ax, name in zip(axs.ravel(), name2noll.keys()):
-            model2 = apply_named_aberration(model, name, mag * 2)
+            model2 = apply_named_aberration(model, name, 1)
             ax.imshow(
                 model2.PSFi.squeeze()[104:-104, 104:-104], cmap="inferno", interpolation="bicubic"
             )

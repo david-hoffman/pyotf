@@ -288,7 +288,7 @@ def prep_data_for_PR(data, xysize=None, multiplier=1.5):
     else:
         # if need to crop, crop and center and return
         my_slice = slice_maker(((ny + 1) // 2, (nx + 1) // 2), xysize)
-        return center_data(data_without_bg)[[Ellipsis] + my_slice]
+        return center_data(data_without_bg)[(Ellipsis,) + my_slice]
     # return centered data
     return np.fmax(0, pad_data)
 
