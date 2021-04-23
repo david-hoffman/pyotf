@@ -9,12 +9,13 @@ on:
       - master
     paths:
       # only run tests if package has changed
-      - 'pyotf/**.py'
-      - 'tests/**.py'
-      - 'requirements.txt'
-      - '.github/workflows/ci.yml'
+      - "pyotf/**.py"
+      - "tests/**.py"
+      - "requirements.txt"
+      - ".github/workflows/ci.yml"
   pull_request:
-    branches: [master]
+    branches:
+      - master
 
 jobs:
   formatting:
