@@ -5,13 +5,14 @@ name: ci
 
 on:
   push:
-    branches: [master]
+    branches:
+      - master
     paths:
       # only run tests if package has changed
-      - "pyotf/**"
-      - "tests/**"
-      - "requirements.txt"
-      - ".github/workflows/ci.yml"
+      - 'pyotf/**.py'
+      - 'tests/**.py'
+      - 'requirements.txt'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [master]
 
