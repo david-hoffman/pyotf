@@ -284,6 +284,7 @@ def prep_data_for_PR(data, xysize=None, multiplier=1.5):
     if xysize == ny == nx:
         pad_data = data_without_bg
     elif xysize >= max(ny, nx):
+        # pad data out to the proper size, pad with zeros
         pad_data = fft_pad(data_without_bg, (nz, xysize, xysize), mode="constant")
     else:
         # if need to crop, crop and center and return
