@@ -3,3 +3,4 @@ scipy
 scikit-image
 matplotlib
 tifffile
+dphtools

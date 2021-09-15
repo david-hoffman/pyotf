@@ -3,6 +3,7 @@ channels:
   - defaults
   - anaconda
   - conda-forge
+  - david-hoffman
 dependencies:
   - python>=3.8
   - numpy
@@ -10,3 +11,4 @@ dependencies:
   - scikit-image
   - matplotlib
   - tifffile
+  - dphtools

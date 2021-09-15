@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1 import ImageGrid
 
-from dphutils import bin_ndarray
+from dphtools.utils import bin_ndarray
 from pyotf.utils import easy_fft
 
 
