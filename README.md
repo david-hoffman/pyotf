@@ -139,10 +139,10 @@ An example of inputing a 3D stack and running this python function from LabVIEW 
 
 2. [Arnison, M. R.; Sheppard, C. J. R. A 3D Vectorial Optical Transfer Function Suitable for Arbitrary Pupil Functions. Optics Communications 2002, 211 (1–6), 53–63.][2]
 
-3. [Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W. Phase Retrieval for High-Numerical-Aperture Optical Systems. Optics Letters 2003, 28 (10), 801.][3]
+3. [Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W. Phase-Retrieved Pupil Functions in Wide-Field Fluorescence Microscopy. Journal of Microscopy 2004, 216 (1), 32–48.][3]
 
 [1]: http://dx.doi.org/10.1364/OL.28.000801, "Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W. Phase Retrieval for High-Numerical-Aperture Optical Systems.Optics Letters 2003, 28 (10), 801."
 
 [2]: http://dx.doi.org/10.1016/S0030-4018(02)01857-6 "Arnison, M. R.; Sheppard, C. J. R. A 3D Vectorial Optical Transfer Function Suitable for Arbitrary Pupil Functions. Optics Communications 2002, 211 (1–6), 53–63."
 
-[3]: http://dx.doi.org/10.1364/OL.28.000801 "Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W. Phase Retrieval for High-Numerical-Aperture Optical Systems. Optics Letters 2003, 28 (10), 801."
+[3]: https://doi.org/10.1111/j.0022-2720.2004.01393.x "Hanser, B. M.; Gustafsson, M. G. L.; Agard, D. A.; Sedat, J. W. Phase-Retrieved Pupil Functions in Wide-Field Fluorescence Microscopy. Journal of Microscopy 2004, 216 (1), 32–48."
