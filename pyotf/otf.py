@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 class BasePSF(object):
     """A base class for objects that can calculate OTF's and PSF's.
-    
+
     It is not intended to be used alone
 
     To fully describe a PSF or OTF of an objective lens, assuming no
@@ -165,7 +165,7 @@ class BasePSF(object):
     @property
     def vec_corr(self):
         """Take into account the vectorial nature of light.
-        
+
         Valid values are: "none", "x", "y", "z", "total"
         """
         return self._vec_corr
@@ -223,7 +223,7 @@ class BasePSF(object):
 
     def plot_psf(self, **kwargs):
         """Plot the intensity PSF.
-        
+
         See `pyotf.display.psf_plot` for details and possible kwargs
         """
         self._validate_zrange()
@@ -238,7 +238,7 @@ class BasePSF(object):
 
     def plot_otf(self, **kwargs):
         """Plot the intensity OTF.
-        
+
         See `pyotf.display.otf_plot` for details and possible kwargs
         """
         self._validate_zrange()
@@ -252,7 +252,13 @@ class BasePSF(object):
         dkwargs.update(kwargs)
 
         return otf_plot(
-            otf, na=self.na, ni=self.ni, wl=self.wl, zres=self.zres, res=self.res, **dkwargs,
+            otf,
+            na=self.na,
+            ni=self.ni,
+            wl=self.wl,
+            zres=self.zres,
+            res=self.res,
+            **dkwargs,
         )
 
 
@@ -271,8 +277,8 @@ class HanserPSF(BasePSF):
 
     def __init__(self, *args, zrange=None, **kwargs):  # noqa: D205,D208,D400,D403
         """zrange : array-like
-            An alternate way to specify the z range for the calculation
-            must be expressed in the same units as wavelength
+        An alternate way to specify the z range for the calculation
+        must be expressed in the same units as wavelength
         """
         super().__init__(*args, **kwargs)
         if zrange is None:
@@ -439,7 +445,7 @@ class HanserPSF(BasePSF):
 
 class SheppardPSF(BasePSF):
     """A class defining the 3D pupil function and its closely related methods.
-    
+
     Based on the following work:
 
     [(1) Arnison, M. R.; Sheppard, C. J. R. A 3D Vectorial Optical Transfer
@@ -451,7 +457,7 @@ class SheppardPSF(BasePSF):
 
     def __init__(self, *args, dual=False, **kwargs):  # noqa: D205,D208,D400,D403
         """dual : bool
-            Simulate dual objectives
+        Simulate dual objectives
         """
         super().__init__(*args, **kwargs)
         self.dual = dual
@@ -597,7 +603,7 @@ def apply_aberration(model, mcoefs, pcoefs):
         The magnitude coefficiencts
     pcoefs : ndarray (n, )
         The phase coefficients
-    
+
     Note: this function assumes the mcoefs and pcoefs are Noll ordered
     """
     # sanity checks
@@ -668,7 +674,7 @@ def named_aberration_to_pcoefs(aberration, magnitude):
             + "', '".join(name2noll.keys())
             + "'"
         )
-    pcoefs = np.zeros(len(name2noll))
+    pcoefs = np.zeros(max(name2noll.values()))
     pcoefs[noll - 1] = magnitude
     return pcoefs
 
@@ -746,7 +752,14 @@ if __name__ == "__main__":
     # as theory says they should (they're mathematically identical to one another)
 
     model_kwargs = dict(
-        wl=525, na=1.27, ni=1.33, res=70, size=256, zrange=[0], vec_corr="none", condition="none",
+        wl=525,
+        na=1.27,
+        ni=1.33,
+        res=70,
+        size=256,
+        zrange=[0],
+        vec_corr="none",
+        condition="none",
     )
     model = HanserPSF(**model_kwargs)
 

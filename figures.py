@@ -83,7 +83,7 @@ def aberration_plots(model_kwargs):
     model_kwargs["condition"] = "sine"
     model = HanserPSF(**model_kwargs)
 
-    fig, axs = plt.subplots(3, 5, figsize=(12, 8))
+    fig, axs = plt.subplots(4, 4, figsize=(10, 10))
     # fill out plot
     for ax, name in zip(axs.ravel(), name2noll.keys()):
         print(f"Making {name} plot")
@@ -105,7 +105,7 @@ def zernike_plots():
     xx, yy = np.meshgrid(x, x)  # xy indexing is default
     r, theta = cart2pol(yy, xx)
     # set up plot
-    fig, axs = plt.subplots(4, 4, figsize=(20, 12))
+    fig, axs = plt.subplots(4, 4, figsize=(16, 16))
     # fill out plot
     for ax, (k, v) in zip(axs.ravel(), noll2name.items()):
         print(f"Making {v} plot")
