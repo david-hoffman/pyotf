@@ -164,6 +164,7 @@ noll2name = {
     13: "oblique secondary astigmatism",
     14: "vertical quadrafoil",
     15: "oblique quadrafoil",
+    22: "secondary spherical",
 }
 
 name2noll = {v: k for k, v in noll2name.items()}

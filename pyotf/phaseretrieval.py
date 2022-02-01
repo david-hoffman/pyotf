@@ -292,7 +292,7 @@ class ZernikeDecomposition(object):
         # set up the subplot
         fig, ax = plt.subplots(1, 1, sharex=True, figsize=(6, 6))
         # get the ordered names
-        ordered_names = [noll2name[i + 1].title() for i in range(len(noll2name))]
+        ordered_names = [name.title() for index, name in sorted(noll2name.items())]
         # make an x range for the bar plot
         x = np.arange(len(ordered_names)) + 1
         # pull the data
@@ -339,7 +339,7 @@ class ZernikeDecomposition(object):
 
     def plot(self, smag=slice(None), sphase=slice(None), axs=None):
         """Plot the zernike decomposed pupil.
-        
+
         Parameters
         ----------
         smag : slice
@@ -370,8 +370,8 @@ def _plot_complex_pupil(mag, phase, axs=None):
     mag_img = ax_mag.matshow(mag, cmap="inferno", norm=mpl.colors.PowerNorm(0.5))
     plt.colorbar(mag_img, ax=ax_mag)
 
-    ax_phase.set_title("Pupil Phase", pad=0)
-    ax_mag.set_title("Pupil Magnitude", pad=0)
+    ax_phase.set_title("Pupil Phase")
+    ax_mag.set_title("Pupil Magnitude")
 
     for ax in (ax_phase, ax_mag):
         ax.xaxis.set_major_locator(plt.NullLocator())

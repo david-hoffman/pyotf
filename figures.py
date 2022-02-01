@@ -37,7 +37,7 @@ SAVE = dict(dpi=150, transparent=False, bbox_inches="tight")
 
 def otf_plots(model_kwargs):
     """Make OTF plots.
-    
+
     NOTE: the results are _very_ close on a qualitative scale, but they do not match exactly as
     theory says they should (they're mathematically identical to one another)
     """
@@ -105,7 +105,7 @@ def zernike_plots():
     xx, yy = np.meshgrid(x, x)  # xy indexing is default
     r, theta = cart2pol(yy, xx)
     # set up plot
-    fig, axs = plt.subplots(3, 5, figsize=(20, 12))
+    fig, axs = plt.subplots(4, 4, figsize=(20, 12))
     # fill out plot
     for ax, (k, v) in zip(axs.ravel(), noll2name.items()):
         print(f"Making {v} plot")
