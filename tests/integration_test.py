@@ -17,7 +17,7 @@ from pyotf.phaseretrieval import *
 
 class TestHanserPhaseRetrieval(unittest.TestCase):
     """Test for self consistency.
-    
+
     Generate a pupil with random zernike coefficients generate a psf and phase retrieve it.
     """
 
@@ -70,7 +70,8 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
         # from the unwrap_phase docs:
         # >>> np.std(image_unwrapped - image) < 1e-6   # A constant offset is normal
         np.testing.assert_allclose(
-            (fftshift(self.pupil_phase) - self.PR_result.phase) * self.mask, 0,
+            (fftshift(self.pupil_phase) - self.PR_result.phase) * self.mask,
+            0,
         )
 
     def test_zernike_modes_phase(self):

@@ -130,14 +130,14 @@ class WidefieldMicroscope(object):
 
     def plot_psf(self, **kwargs):
         """Plot the intensity PSF.
-        
+
         See `pyotf.display.psf_plot` for details and possible kwargs
         """
         # smart cropping
         lateral_extent = self.model.wl / 2 / self.model.na / self.pixel_size * 32
         axial_extent = (
             self.model.wl
-            / (self.model.ni - np.sqrt(self.model.ni ** 2 - self.model.na ** 2))
+            / (self.model.ni - np.sqrt(self.model.ni**2 - self.model.na**2))
             / self.pixel_size
             * 16
         )
@@ -148,7 +148,7 @@ class WidefieldMicroscope(object):
 
     def plot_otf(self, **kwargs):
         """Plot the intensity OTF.
-        
+
         See `pyotf.display.otf_plot` for details and possible kwargs
         """
         # normalize OTF and make sure it's real
@@ -177,7 +177,7 @@ def _disk_kernel(radius):
     if full_size % 2 == 0:
         full_size += 1
     coords = np.indices((full_size, full_size)) - (full_size - 1) // 2
-    r = np.sqrt((coords ** 2).sum(0))
+    r = np.sqrt((coords**2).sum(0))
     kernel = r < radius
     return kernel / kernel.sum()
 
@@ -232,7 +232,7 @@ class ApotomeMicroscope(WidefieldMicroscope):
     This is a poor approximation (see notebooks) and thus has limited functionality.
 
     The grid pattern is set at half NA
-    
+
     https://www.zeiss.com/microscopy/us/products/imaging-systems/apotome-2-for-biology.html
     https://www.osapublishing.org/abstract.cfm?URI=ol-22-24-1905
     http://www.sciencedirect.com/science/article/pii/S0030401898002107
@@ -347,7 +347,7 @@ class BaseSIMMicroscope(WidefieldMicroscope):
                 # everything within OTF support is 1
                 wiener_otf = otf > 1e-16
             else:
-                w = otf.max() * self.wiener ** 2
+                w = otf.max() * self.wiener**2
                 wiener_otf = otf / (otf + w)
             # The PSF is real, discard the imaginary part
             # we don't take the absolute value because
@@ -474,14 +474,24 @@ if __name__ == "__main__":
     fig = plt.figure(
         None,
         (plot_size * ncols, plot_size * 4),
-        subplotpars=mpl.figure.SubplotParams(bottom=0.015, left=0.025, right=0.975, top=0.965,),
+        subplotpars=mpl.figure.SubplotParams(
+            bottom=0.015,
+            left=0.025,
+            right=0.975,
+            top=0.965,
+        ),
     )
     grid = ImageGrid(fig, 111, nrows_ncols=(4, ncols), axes_pad=0.1)
 
     fig2, axp = plt.subplots(
         dpi=150,
         figsize=(plot_size * ncols, 4),
-        subplotpars=mpl.figure.SubplotParams(bottom=0.1, left=0.025, right=0.975, top=0.925,),
+        subplotpars=mpl.figure.SubplotParams(
+            bottom=0.1,
+            left=0.025,
+            right=0.975,
+            top=0.925,
+        ),
     )
 
     plt.set_cmap("inferno")

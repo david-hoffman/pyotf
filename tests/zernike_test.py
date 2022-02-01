@@ -144,7 +144,7 @@ def test_odd_nm():
 
 def choose_random_nm(odd=False):
     """Choose random n and m.
-    
+
     Optional argument specifies whether n and m are seperated by a factor of 2 or not.
     """
     m = np.nan
@@ -202,7 +202,7 @@ def test_norm_sum():
     )
 
     np.testing.assert_allclose(
-        np.sqrt(c0 ** 2 + c1 ** 2),
+        np.sqrt(c0**2 + c1**2),
         np.sqrt(((astig_zern + spherical_zern)[r <= 1] ** 2).mean()),
         atol=1e-3,
         rtol=1e-3,

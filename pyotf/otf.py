@@ -230,7 +230,7 @@ class BasePSF(object):
         # smart cropping
         # nice lateral extent
         lateral_extent = self.wl / 2 / self.na / self.res * 32
-        axial_extent = self.wl / (self.ni - np.sqrt(self.ni ** 2 - self.na ** 2)) / self.zres * 16
+        axial_extent = self.wl / (self.ni - np.sqrt(self.ni**2 - self.na**2)) / self.zres * 16
 
         max_loc = np.unravel_index(self.PSFi.argmax(), self.PSFi.shape)
         crop = slice_maker(max_loc, (axial_extent, lateral_extent, lateral_extent))
@@ -341,7 +341,7 @@ class HanserPSF(BasePSF):
         self._kmag = self.ni / self.wl
         # because the OTF only exists on a spherical shell we can calculate
         # a kz value for any pair of kx and ky values
-        self._kz = psqrt(self._kmag ** 2 - self._kr ** 2)
+        self._kz = psqrt(self._kmag**2 - self._kr**2)
 
     def _gen_pupil(self):
         """Generate an ideal pupil."""
@@ -509,7 +509,7 @@ class SheppardPSF(BasePSF):
         # save output for user
         self.dk, self.dkz = dk, dkz
         # determine the min value for kz given the NA and wavelength
-        kz_min = np.sqrt(kmag ** 2 - (self.na / self.wl) ** 2)
+        kz_min = np.sqrt(kmag**2 - (self.na / self.wl) ** 2)
         # make sure we're not crazy
         assert kz_min >= 0, "Something went horribly wrong"
         # if the user gave us different z and x/y res we need to calculate
@@ -558,9 +558,9 @@ class SheppardPSF(BasePSF):
                 plist.append(-n)  # Pzy
             if self.vec_corr == "y" or self.vec_corr == "total":
                 plist.append(-n * m / (1 + s))  # Pyx
-                plist.append(1 - n ** 2 / (1 + s))  # Pyy
+                plist.append(1 - n**2 / (1 + s))  # Pyy
             if self.vec_corr == "x" or self.vec_corr == "total":
-                plist.append(1 - m ** 2 / (1 + s))  # Pxx
+                plist.append(1 - m**2 / (1 + s))  # Pxx
                 plist.append(-m * n / (1 + s))  # Pxy
             # generate empty otf
             otf = np.zeros((len(plist), self.zsize, self.size, self.size), dtype="D")

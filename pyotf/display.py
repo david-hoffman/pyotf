@@ -22,7 +22,7 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 def max_min(n: int, d: float) -> typing.Tuple[float, float]:
     """Return max and min extents.
-    
+
     Parameters
     ----------
     n : int
@@ -48,7 +48,7 @@ def max_min(n: int, d: float) -> typing.Tuple[float, float]:
 
 def fft_max_min(n: int, d: float) -> typing.Tuple[float, float]:
     """Return max and min Fourier extents.
-    
+
     Parameters
     ----------
     n : int
@@ -73,7 +73,7 @@ def fft_max_min(n: int, d: float) -> typing.Tuple[float, float]:
 
 def z_squeeze(n1: float, n2: float, na: float) -> float:
     """Calculate amount z expands or contracts.
-    
+
     When using an objective designed for one index (n1) to image into a medium with another
     index (n2) the amount the focal plane moves within the sample will be different from the
     amount the objective moves relative to the sample.
@@ -82,7 +82,7 @@ def z_squeeze(n1: float, n2: float, na: float) -> float:
         return 1
 
     def func(n):
-        return n - np.sqrt(max(0, n ** 2 - na ** 2))
+        return n - np.sqrt(max(0, n**2 - na**2))
 
     return func(n1) / func(n2)
 
@@ -98,7 +98,7 @@ def psf_plot(
     **kwargs,
 ):
     """Make a nice plot for a light microscopy point spread function (PSF).
-    
+
     Parameters
     ----------
     psf : nd.array (3d)
@@ -184,7 +184,7 @@ def otf_plot(
     **kwargs,
 ):
     """Make a nice plot for a light microscopy optical transfer function (OTF).
-    
+
     Parameters
     ----------
     otf : nd.array (3d)

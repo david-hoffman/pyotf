@@ -295,8 +295,8 @@ def _radial_zernike(r, n, m):
     # calculate the coefs
     coef1 = (n + m) // 2
     coef2 = (n - m) // 2
-    jacobi = eval_jacobi(coef2, m, 0, 1 - 2 * rprime ** 2)
-    rad_zern[valid_points] = (-1) ** coef2 * rprime ** m * jacobi
+    jacobi = eval_jacobi(coef2, m, 0, 1 - 2 * rprime**2)
+    rad_zern[valid_points] = (-1) ** coef2 * rprime**m * jacobi
     return rad_zern
 
 
