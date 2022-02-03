@@ -7,6 +7,7 @@ Test suite for zernike.py.
 Copyright (c) 2020, David Hoffman
 """
 
+from multiprocessing.sharedctypes import Value
 import numpy as np
 import pytest
 
@@ -15,14 +16,14 @@ from pyotf.zernike import *
 
 def test_degrees_input():
     """Make sure an error is returned if n and m aren't seperated by two."""
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         degrees2noll(1, 2)
 
 
 @pytest.mark.parametrize("test_input", (0, -1))
 def test_noll_input(test_input):
     """Make sure an error is raised if noll isn't a positive integer."""
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         noll2degrees(test_input)
 
 

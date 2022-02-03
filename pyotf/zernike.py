@@ -44,20 +44,29 @@ noll2name = {
 name2noll = {v: k for k, v in noll2name.items()}
 
 
+def _ingest_degrees(n, m):
+    n, m = np.asarray(n), np.asarray(m)
+
+    # check inputs
+    if np.any((n < abs(m)) | ((n - m) % 2 == 1)):
+        raise ValueError(f"Invalid combination of ({n}, {m}) in Noll indexing")
+
+    if not np.issubdtype(n.dtype, np.signedinteger):
+        raise ValueError("Radial degree is not integer, input = {n}")
+
+    if not np.issubdtype(m.dtype, np.signedinteger):
+        raise ValueError("Azimuthal degree is not integer, input = {m}")
+
+    return n, m
+
+
 def degrees2osa(n: int, m: int) -> int:
     """Convert the integer pair (n,m) that defines the Zernike polynomial Z_n^m(ρ,θ) to the sequential OSA/ANSI stardard index number.
     Returns NaN for invalid integer pairs.
     See also: [`mn2Noll`], [`OSA2mn`]
     Source: "Standards for Reporting the Optical Aberrations of Eyes", Journal of Refractive Surgery Volume 18 September/October 2002
     """
-    n, m = np.asarray(n), np.asarray(m)
-
-    # check inputs
-    assert not np.all((n < abs(m)) | ((n - m) % 2 == 1)), "Invalid indices"
-    if not np.issubdtype(n.dtype, np.signedinteger):
-        raise ValueError("Radial degree is not integer, input = {n}")
-    if not np.issubdtype(m.dtype, np.signedinteger):
-        raise ValueError("Azimuthal degree is not integer, input = {m}")
+    n, m = _ingest_degrees(n, m)
 
     return ((1 / 2) * (n * (n + 2) + m)).astype(int)
 
@@ -69,16 +78,7 @@ def degrees2noll(n: int, m: int) -> int:
     Source: (https://en.wikipedia.org/wiki/Zernike_polynomials)
     """
 
-    n, m = np.asarray(n), np.asarray(m)
-
-    # check inputs
-    assert not np.all(
-        (n < abs(m)) | ((n - m) % 2 == 1)
-    ), f"Invalid combination of ({m}, {n}) in Noll indexing"
-    if not np.issubdtype(n.dtype, np.signedinteger):
-        raise ValueError("Radial degree is not integer, input = {n}")
-    if not np.issubdtype(m.dtype, np.signedinteger):
-        raise ValueError("Azimuthal degree is not integer, input = {m}")
+    n, m = _ingest_degrees(n, m)
 
     p = np.full_like(m, -1)
     n_mod_4 = n % 4
@@ -87,9 +87,20 @@ def degrees2noll(n: int, m: int) -> int:
     p[(m >= 0) & (n_mod_4 > 1)] = 1
     p[(m <= 0) & (n_mod_4 < 2)] = 1
 
-    if any(p < 0):
+    if np.any(p < 0):
         raise RuntimeError
     return (n * (n + 1) / 2 + abs(m) + p).astype(int)
+
+
+def _ingest_index(j):
+    j = np.asarray(j)
+
+    # check inputs
+    if not (j > 0).all():
+        raise ValueError("Invalid Noll index")
+    if not np.issubdtype(j.dtype, np.signedinteger):
+        raise ValueError("Index is not integer, input = {j}")
+    return j
 
 
 def osa2degrees(j: int) -> Tuple[int, int]:
@@ -97,12 +108,7 @@ def osa2degrees(j: int) -> Tuple[int, int]:
     See also: [`Noll2mn`], [`mn2OSA`], [`OSA2Noll`]
     Source: "Standards for Reporting the Optical Aberrations of Eyes", Journal of Refractive Surgery Volume 18 September/October 2002
     """
-    j = np.asarray(j)
-
-    # check inputs
-    assert (j > 0).all(), "Invalid Noll index"
-    if not np.issubdtype(j.dtype, np.signedinteger):
-        raise ValueError("Azimuthal degree is not integer, input = {j}")
+    j = _ingest_index(j)
 
     n = (np.ceil((-3 + np.sqrt(9 + 8 * j)) / 2)).astype(int)
     m = 2 * j - n * (n + 2)
@@ -115,12 +121,7 @@ def noll2degrees(j: int) -> Tuple[int, int]:
     See also: [`OSA2mn`], [`mn2Noll`], [`Noll2OSA`]
     Source: (https://en.wikipedia.org/wiki/Zernike_polynomials)
     """
-    j = np.asarray(j)
-
-    # check inputs
-    assert (j > 0).all(), "Invalid Noll index"
-    if not np.issubdtype(j.dtype, np.signedinteger):
-        raise ValueError("Azimuthal degree is not integer, input = {j}")
+    j = _ingest_index(j)
 
     n = (np.ceil((-3 + np.sqrt(1 + 8 * j)) / 2)).astype(int)
     jr = j - (n * (n + 1) / 2).astype(int)
