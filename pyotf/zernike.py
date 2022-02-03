@@ -99,6 +99,7 @@ def degrees2osa(n: int, m: int) -> int:
     Returns NaN for invalid integer pairs.
     See also: [`mn2Noll`], [`OSA2mn`]
     Source: "Standards for Reporting the Optical Aberrations of Eyes", Journal of Refractive Surgery Volume 18 September/October 2002
+    https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
     """
     n, m = _ingest_degrees(n, m)
 
@@ -110,6 +111,7 @@ def degrees2noll(n: int, m: int) -> int:
     Returns NaN for invalid integer pairs.
     See also: [`mn2OSA`], [`Noll2mn`]
     Source: (https://en.wikipedia.org/wiki/Zernike_polynomials)
+    https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
     """
 
     n, m = _ingest_degrees(n, m)
@@ -141,6 +143,7 @@ def osa2degrees(j: int) -> Tuple[int, int]:
     """Convert the sequential OSA/ANSI stardard index number j to the integer pair (n,m) that defines the Zernike polynomial Z_n^m(ρ,θ).
     See also: [`Noll2mn`], [`mn2OSA`], [`OSA2Noll`]
     Source: "Standards for Reporting the Optical Aberrations of Eyes", Journal of Refractive Surgery Volume 18 September/October 2002
+    https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
     """
     j = _ingest_index(j)
 
@@ -154,6 +157,7 @@ def noll2degrees(j: int) -> Tuple[int, int]:
     Convert the Noll index number j to the integer pair (n,m) that defines the Zernike polynomial Z_n^m(ρ,θ).
     See also: [`OSA2mn`], [`mn2Noll`], [`Noll2OSA`]
     Source: (https://en.wikipedia.org/wiki/Zernike_polynomials)
+    https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
     """
     j = _ingest_index(j)
 
@@ -195,22 +199,6 @@ def noll2degrees(j: int) -> Tuple[int, int]:
     m[~idx1] = m2[~idx1]
 
     return n, m
-
-
-# def degrees2noll(n, m):
-#     """Convert from radial and azimuthal degrees to Noll's index."""
-#     n, m = np.asarray(n), np.asarray(m)
-#     # check inputs
-#     if not np.issubdtype(n.dtype, np.signedinteger):
-#         raise ValueError("Radial degree is not integer, input = {n}")
-#     if not np.issubdtype(m.dtype, np.signedinteger):
-#         raise ValueError("Azimuthal degree is not integer, input = {m}")
-#     if ((n - m) % 2).any():
-#         raise ValueError("The difference between radial and azimuthal degree isn't mod 2")
-#     # do the mapping
-#     mod = n % 4
-#     if mod < 2:
-#     return noll
 
 
 def zernike(r: float, theta: float, n: int, m: int, norm: bool = True) -> float:
