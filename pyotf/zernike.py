@@ -22,26 +22,60 @@ from typing import Tuple
 
 # classical names for the Noll indices
 # https://en.wikipedia.org/wiki/Zernike_polynomials
-noll2name = {
-    1: "piston",
-    2: "tip",
-    3: "tilt",
-    4: "defocus",
-    5: "oblique astigmatism",
-    6: "vertical astigmatism",
-    7: "vertical coma",
-    8: "horizontal coma",
-    9: "vertical trefoil",
-    10: "oblique trefoil",
-    11: "primary spherical",
-    12: "vertical secondary astigmatism",
-    13: "oblique secondary astigmatism",
-    14: "vertical quadrafoil",
-    15: "oblique quadrafoil",
-    22: "secondary spherical",
+degrees2name = {
+    (0, 0): "piston",
+    #
+    (1, -1): "tip",
+    (1, 1): "tilt",
+    #
+    (2, -2): "oblique astigmatism",
+    (2, 0): "defocus",
+    (2, 2): "vertical astigmatism",
+    #
+    (3, -3): "vertical trefoil",
+    (3, -1): "vertical coma",
+    (3, 1): "horizontal coma",
+    (3, 3): "oblique trefoil",
+    #
+    (4, -4): "oblique quadrafoil",
+    (4, -2): "oblique secondary astigmatism",
+    (4, 0): "primary spherical",
+    (4, 2): "vertical secondary astigmatism",
+    (4, 4): "vertical quadrafoil",
+    #
+    # (5, -5): "vertical pentafoil",
+    (5, -3): "vertical secondary trefoil",
+    (5, -1): "vertical secondary coma",
+    (5, 1): "horizontal seconday coma",
+    (5, 3): "horizontal secondary trefoil",
+    # (5, 5): "horizontal pentafoil",
+    #
+    (6, -4): "oblique secondary quadrafoil",
+    (6, -2): "oblique tertiary astigmatism",
+    (6, 0): "secondary spherical",
+    (6, 2): "vertical tertiary astigmatism",
+    (6, 4): "vertical secondary quadrafoil",
+    #
+    (7, -3): "vertical tertiary trefoil",
+    (7, -1): "vertical tertiary coma",
+    (7, 1): "horizontal tertiary coma",
+    (7, 3): "horizontal tertiary trefoil",
+    #
+    (8, -2): "oblique quaternary astigmatism",
+    (8, 0): "tertiary spherical",
+    (8, 2): "vertical quaternary astigmatism",
+    #
+    (9, -3): "vertical quaternary trefoil",
+    (9, -1): "vertical quaternary coma",
+    (9, 1): "horizontal quaternary coma",
+    (9, 3): "horizontal quaternary trefoil",
+    #
+    (10, 0): "quaternary spherical",
 }
 
-name2noll = {v: k for k, v in noll2name.items()}
+name2degrees = {v: k for k, v in degrees2name.items()}
+
+assert len(name2degrees) == len(degrees2name)
 
 
 def _ingest_degrees(n, m):
@@ -300,14 +334,14 @@ if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
     # make coordinates
-    x = np.linspace(-1, 1, 257)
+    x = np.linspace(-1, 1, 513)
     xx, yy = np.meshgrid(x, x)  # xy indexing is default
     r, theta = cart2pol(yy, xx)
     # set up plot
-    fig, axs = plt.subplots(3, 5, figsize=(20, 12))
+    fig, axs = plt.subplots(6, 6, figsize=(12, 12))
     # fill out plot
-    for ax, (k, v) in zip(axs.ravel(), noll2name.items()):
-        zern = zernike(r, theta, k, norm=False)
+    for ax, ((n, m), v) in zip(axs.ravel(), degrees2name.items()):
+        zern = zernike(r, theta, n, m, norm=False)
         ax.imshow(
             np.ma.array(zern, mask=r > 1),
             vmin=-1,
@@ -315,7 +349,7 @@ if __name__ == "__main__":
             cmap="coolwarm",
             interpolation="bicubic",
         )
-        ax.set_title(v + r", $Z_{{{}}}^{{{}}}$".format(*noll2degrees(k)))
+        ax.set_title(v + r", $Z_{{{}}}^{{{}}}$".format(n, m))
         ax.axis("off")
     fig.tight_layout()
     plt.show()
