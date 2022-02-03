@@ -15,14 +15,14 @@ from pyotf.zernike import *
 
 def test_degrees_input():
     """Make sure an error is returned if n and m aren't seperated by two."""
-    with pytest.raises(ValueError):
+    with pytest.raises(AssertionError):
         degrees2noll(1, 2)
 
 
 @pytest.mark.parametrize("test_input", (0, -1))
 def test_noll_input(test_input):
     """Make sure an error is raised if noll isn't a positive integer."""
-    with pytest.raises(ValueError):
+    with pytest.raises(AssertionError):
         noll2degrees(test_input)
 
 
@@ -33,6 +33,8 @@ def test_noll_input(test_input):
         (noll2degrees, (1.0,)),
         (degrees2noll, (1.0, 3.0)),
         (degrees2noll, (1.5, 3.5)),
+        (degrees2osa, (1.0, 3.0)),
+        (degrees2osa, (1.5, 3.5)),
     ),
 )
 def test_integer_input(test_func, test_input):
@@ -63,7 +65,8 @@ def test_forward_mapping():
     )
     j = np.array((1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
     n, m = degrees.T
-    assert (degrees2noll(n, m) == j).all()
+    j_test = degrees2noll(n, m)
+    assert (j_test == j).all(), f"{j_test} != {j}"
 
 
 def test_reverse_mapping():
@@ -83,7 +86,7 @@ def test_r_theta_dims():
     """Make sure that a ValueError is raised if the dims are greater than 2."""
     r = np.ones((3, 3, 3))
     with pytest.raises(ValueError):
-        zernike(r, r, 10)
+        zernike(r, r, 0, 0)
 
 
 def test_zernike_return_shape():
@@ -91,14 +94,13 @@ def test_zernike_return_shape():
     x = np.linspace(-1, 1, 512)
     xx, yy = np.meshgrid(x, x)
     r, theta = cart2pol(yy, xx)
-    zern = zernike(r, theta, 10)
+    zern = zernike(r, theta, 0, 0)
     assert zern.shape == r.shape
 
 
 @pytest.mark.parametrize(
     "test_input",
     (
-        (0, 0, np.ones((2, 2, 2))),  # check noll dims
         (
             0,
             0,
@@ -173,7 +175,7 @@ def test_norm():
     r, theta = cart2pol(yy, xx)
     # fill out plot
     for k, v in sorted(noll2name.items())[0:]:
-        zern = zernike(r, theta, k, norm=True)
+        zern = zernike(r, theta, *noll2degrees(k), norm=True)
         print(v, noll2degrees(k))
         n, _ = noll2degrees(k)
         tol = 10.0 ** (n - 6)
@@ -191,8 +193,8 @@ def test_norm_sum():
     # make coefs
     np.random.seed(12345)
     c0, c1 = np.random.randn(2)
-    astig_zern = c0 * zernike(r, theta, 5, norm=True)
-    spherical_zern = c1 * zernike(r, theta, 11, norm=True)
+    astig_zern = c0 * zernike(r, theta, 2, -2, norm=True)
+    spherical_zern = c1 * zernike(r, theta, 3, -3, norm=True)
     np.testing.assert_allclose(
         abs(c0), np.sqrt((astig_zern[r <= 1] ** 2).mean()), atol=1e-3, rtol=1e-3
     )
