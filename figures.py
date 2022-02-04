@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 import tifffile as tif
 
 from pyotf.otf import HanserPSF, SheppardPSF, apply_named_aberration
-from pyotf.zernike import zernike, cart2pol, noll2name, noll2degrees, name2noll
+from pyotf.zernike import zernike, cart2pol, degrees2name, noll2degrees, name2noll
 from pyotf.phaseretrieval import retrieve_phase
 from pyotf.utils import prep_data_for_PR
 
@@ -83,9 +83,9 @@ def aberration_plots(model_kwargs):
     model_kwargs["condition"] = "sine"
     model = HanserPSF(**model_kwargs)
 
-    fig, axs = plt.subplots(4, 4, figsize=(10, 10))
+    fig, axs = plt.subplots(6, 6, figsize=(18, 18))
     # fill out plot
-    for ax, name in zip(axs.ravel(), name2noll.keys()):
+    for ax, name in zip(axs.ravel(), degrees2name.values()):
         print(f"Making {name} plot")
         model2 = apply_named_aberration(model, name, 1)
         ax.imshow(
@@ -105,11 +105,11 @@ def zernike_plots():
     xx, yy = np.meshgrid(x, x)  # xy indexing is default
     r, theta = cart2pol(yy, xx)
     # set up plot
-    fig, axs = plt.subplots(4, 4, figsize=(16, 16))
+    fig, axs = plt.subplots(6, 6, figsize=(18, 18))
     # fill out plot
-    for ax, (k, v) in zip(axs.ravel(), noll2name.items()):
+    for ax, ((n, m), v) in zip(axs.ravel(), degrees2name.items()):
         print(f"Making {v} plot")
-        zern = zernike(r, theta, k, norm=False)
+        zern = zernike(r, theta, n, m, norm=False)
         ax.imshow(
             np.ma.array(zern, mask=r > 1),
             vmin=-1,
@@ -117,7 +117,7 @@ def zernike_plots():
             cmap="coolwarm",
             interpolation="bicubic",
         )
-        ax.set_title(v + r", $Z_{{{}}}^{{{}}}$".format(*noll2degrees(k)))
+        ax.set_title(v + r", $Z_{{{}}}^{{{}}}$".format(n, m))
         ax.axis("off")
     fig.tight_layout()
 

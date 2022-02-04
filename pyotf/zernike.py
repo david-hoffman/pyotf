@@ -17,190 +17,227 @@ import numpy as np
 from scipy.special import eval_jacobi
 from .utils import cart2pol
 
-# forward mapping of Noll indices https://oeis.org/A176988
-noll_mapping = np.array(
-    [
-        1,
-        3,
-        2,
-        5,
-        4,
-        6,
-        9,
-        7,
-        8,
-        10,
-        15,
-        13,
-        11,
-        12,
-        14,
-        21,
-        19,
-        17,
-        16,
-        18,
-        20,
-        27,
-        25,
-        23,
-        22,
-        24,
-        26,
-        28,
-        35,
-        33,
-        31,
-        29,
-        30,
-        32,
-        34,
-        36,
-        45,
-        43,
-        41,
-        39,
-        37,
-        38,
-        40,
-        42,
-        44,
-        55,
-        53,
-        51,
-        49,
-        47,
-        46,
-        48,
-        50,
-        52,
-        54,
-        65,
-        63,
-        61,
-        59,
-        57,
-        56,
-        58,
-        60,
-        62,
-        64,
-        66,
-        77,
-        75,
-        73,
-        71,
-        69,
-        67,
-        68,
-        70,
-        72,
-        74,
-        76,
-        78,
-        91,
-        89,
-        87,
-        85,
-        83,
-        81,
-        79,
-        80,
-        82,
-        84,
-        86,
-        88,
-        90,
-        105,
-        103,
-        101,
-        99,
-        97,
-        95,
-        93,
-        92,
-        94,
-        96,
-        98,
-        100,
-        102,
-        104,
-        119,
-        117,
-        115,
-        113,
-        111,
-        109,
-        107,
-        106,
-        108,
-        110,
-        112,
-        114,
-        116,
-        118,
-        120,
-    ]
-)
+from typing import Tuple
 
-# reverse mapping of noll indices
-noll_inverse = noll_mapping.argsort()
 
 # classical names for the Noll indices
 # https://en.wikipedia.org/wiki/Zernike_polynomials
-noll2name = {
-    1: "piston",
-    2: "tip",
-    3: "tilt",
-    4: "defocus",
-    5: "oblique astigmatism",
-    6: "vertical astigmatism",
-    7: "vertical coma",
-    8: "horizontal coma",
-    9: "vertical trefoil",
-    10: "oblique trefoil",
-    11: "primary spherical",
-    12: "vertical secondary astigmatism",
-    13: "oblique secondary astigmatism",
-    14: "vertical quadrafoil",
-    15: "oblique quadrafoil",
-    22: "secondary spherical",
+degrees2name = {
+    (0, 0): "piston",
+    #
+    (1, -1): "tilt",
+    (1, 1): "tip",
+    #
+    (2, -2): "oblique astigmatism",
+    (2, 0): "defocus",
+    (2, 2): "vertical astigmatism",
+    #
+    (3, -3): "vertical trefoil",
+    (3, -1): "vertical coma",
+    (3, 1): "horizontal coma",
+    (3, 3): "oblique trefoil",
+    #
+    (4, -4): "oblique quadrafoil",
+    (4, -2): "oblique secondary astigmatism",
+    (4, 0): "primary spherical",
+    (4, 2): "vertical secondary astigmatism",
+    (4, 4): "vertical quadrafoil",
+    #
+    # (5, -5): "vertical pentafoil",
+    (5, -3): "vertical secondary trefoil",
+    (5, -1): "vertical secondary coma",
+    (5, 1): "horizontal seconday coma",
+    (5, 3): "horizontal secondary trefoil",
+    # (5, 5): "horizontal pentafoil",
+    #
+    (6, -4): "oblique secondary quadrafoil",
+    (6, -2): "oblique tertiary astigmatism",
+    (6, 0): "secondary spherical",
+    (6, 2): "vertical tertiary astigmatism",
+    (6, 4): "vertical secondary quadrafoil",
+    #
+    (7, -3): "vertical tertiary trefoil",
+    (7, -1): "vertical tertiary coma",
+    (7, 1): "horizontal tertiary coma",
+    (7, 3): "horizontal tertiary trefoil",
+    #
+    (8, -2): "oblique quaternary astigmatism",
+    (8, 0): "tertiary spherical",
+    (8, 2): "vertical quaternary astigmatism",
+    #
+    (9, -3): "vertical quaternary trefoil",
+    (9, -1): "vertical quaternary coma",
+    (9, 1): "horizontal quaternary coma",
+    (9, 3): "horizontal quaternary trefoil",
+    #
+    (10, 0): "quaternary spherical",
 }
 
-name2noll = {v: k for k, v in noll2name.items()}
+name2degrees = {v: k for k, v in degrees2name.items()}
 
 
-def noll2degrees(noll):
-    """Convert from Noll's indices to radial degree and azimuthal degree."""
-    noll = np.asarray(noll)
-    if not np.issubdtype(noll.dtype, np.signedinteger):
-        raise ValueError(f"input is not integer, input = {noll}")
-    if not (noll > 0).all():
-        raise ValueError(f"Noll indices must be greater than 0, input = {noll}")
-    # need to subtract 1 from the Noll's indices because they start at 1.
-    p = noll_inverse[noll - 1]
-    n = np.ceil((-3 + np.sqrt(9 + 8 * p)) / 2)
-    m = 2 * p - n * (n + 2)
+assert len(name2degrees) == len(degrees2name)
+
+
+def _ingest_degrees(n, m):
+    """Convert inputs to arrays and do type and validity checking."""
+    n, m = np.asarray(n), np.asarray(m)
+
+    # check inputs
+    if np.any((n < abs(m)) | ((n - m) % 2 == 1)):
+        raise ValueError(f"Invalid combination of ({n}, {m}) in Noll indexing")
+
+    if not np.issubdtype(n.dtype, np.signedinteger):
+        raise ValueError("Radial degree is not integer, input = {n}")
+
+    if not np.issubdtype(m.dtype, np.signedinteger):
+        raise ValueError("Azimuthal degree is not integer, input = {m}")
+
+    return n, m
+
+
+def degrees2osa(n: int, m: int) -> int:
+    """Convert Zernike polynomial radial degree (n) and azimuthal degree (m) to OSA/ANSI sequential indices.
+
+    NOTE: inputs are vectorized and outputs will be ndarrays
+
+    Source: "Standards for Reporting the Optical Aberrations of Eyes", Journal of Refractive Surgery Volume 18 September/October 2002
+    Converted from https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
+    """
+    n, m = _ingest_degrees(n, m)
+
+    return ((1 / 2) * (n * (n + 2) + m)).astype(int)
+
+
+def degrees2fringe(n: int, m: int) -> int:
+    """Convert Zernike polynomial radial degree (n) and azimuthal degree (m) to Fringe sequential indices.
+
+    NOTE: inputs are vectorized and outputs will be ndarrays
+    """
+    n, m = _ingest_degrees(n, m)
+
+    return ((1 + (n + abs(m)) / 2) ** 2 - 2 * abs(m) + (1 - np.sign(m)) / 2).astype(int)
+
+
+def degrees2noll(n: int, m: int) -> int:
+    """Convert Zernike polynomial radial degree (n) and azimuthal degree (m) to Noll sequential indices.
+
+    NOTE: inputs are vectorized and outputs will be ndarrays
+
+    Source: "Standards for Reporting the Optical Aberrations of Eyes", Journal of Refractive Surgery Volume 18 September/October 2002
+    Converted from https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
+    """
+    n, m = _ingest_degrees(n, m)
+
+    p = np.full_like(m, -1)
+    n_mod_4 = n % 4
+    p[(m > 0) & (n_mod_4 < 2)] = 0
+    p[(m < 0) & (n_mod_4 > 1)] = 0
+    p[(m >= 0) & (n_mod_4 > 1)] = 1
+    p[(m <= 0) & (n_mod_4 < 2)] = 1
+
+    if np.any(p < 0):
+        raise RuntimeError
+    return (n * (n + 1) / 2 + abs(m) + p).astype(int)
+
+
+def _ingest_index(j):
+    """Convert inputs to arrays and do type and validity checking."""
+    j = np.asarray(j)
+
+    # check inputs
+    if not (j > 0).all():
+        raise ValueError("Invalid Noll index")
+    if not np.issubdtype(j.dtype, np.signedinteger):
+        raise ValueError("Index is not integer, input = {j}")
+    return j
+
+
+def osa2degrees(j: int) -> Tuple[int, int]:
+    """Convert the sequential OSA/ANSI stardard index number j to the integer pair (n, m) that defines the Zernike polynomial Z_n^m(ρ, θ).
+
+    NOTE: inputs are vectorized and outputs will be ndarrays
+
+    Source: "Standards for Reporting the Optical Aberrations of Eyes", Journal of Refractive Surgery Volume 18 September/October 2002
+    https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
+    """
+    j = _ingest_index(j)
+
+    n = (np.ceil((-3 + np.sqrt(9 + 8 * j)) / 2)).astype(int)
+    m = 2 * j - n * (n + 2)
     return n.astype(int), m.astype(int)
 
 
-def degrees2noll(n, m):
-    """Convert from radial and azimuthal degrees to Noll's index."""
-    n, m = np.asarray(n), np.asarray(m)
-    # check inputs
-    if not np.issubdtype(n.dtype, np.signedinteger):
-        raise ValueError("Radial degree is not integer, input = {n}")
-    if not np.issubdtype(m.dtype, np.signedinteger):
-        raise ValueError("Azimuthal degree is not integer, input = {m}")
-    if ((n - m) % 2).any():
-        raise ValueError("The difference between radial and azimuthal degree isn't mod 2")
-    # do the mapping
-    p = (m + n * (n + 2)) / 2
-    noll = noll_mapping[p.astype(int)]
-    return noll
+def noll2degrees(j: int) -> Tuple[int, int]:
+    """Convert the Noll index number j to the integer pair (n, m) that defines the Zernike polynomial Z_n^m(ρ, θ).
+
+    NOTE: inputs are vectorized and outputs will be ndarrays
+
+    Source: (https://en.wikipedia.org/wiki/Zernike_polynomials)
+    https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
+    """
+    j = _ingest_index(j)
+
+    n = (np.ceil((-3 + np.sqrt(1 + 8 * j)) / 2)).astype(int)
+    jr = j - (n * (n + 1) / 2).astype(int)
+
+    # if (n % 4) < 2:
+    #     m1 = jr
+    #     m2 = -(jr - 1)
+    #     if (n - m1) % 2 == 0:
+    #         m = m1
+    #     else:
+    #         m = m2
+    # else:  # mod(n,4) ∈ (2,3)
+    #     m1 = jr - 1
+    #     m2 = -(jr)
+    #     if (n - m1) % 2 == 0:
+    #         m = m1
+    #     else:
+    #         m = m2
+
+    # below is the vectorization version of the above.
+
+    m1 = np.zeros_like(jr)
+    m2 = np.zeros_like(jr)
+    m = np.zeros_like(jr)
+
+    n_mod_4 = n % 4
+
+    idx0 = n_mod_4 < 2
+    m1[idx0] = jr[idx0]
+    m2[idx0] = -(jr[idx0] - 1)
+
+    m1[~idx0] = jr[~idx0] - 1
+    m2[~idx0] = -jr[~idx0]
+
+    idx1 = (n - m1) % 2 == 0
+    m[idx1] = m1[idx1]
+    m[~idx1] = m2[~idx1]
+
+    return n, m
 
 
-def zernike(r, theta, *args, **kwargs):
+def fringe2degrees(j: int):
+    """Convert the Fringe index number j to the integer pair (n, m) that defines the Zernike polynomial Z_n^m(ρ, θ).
+
+    NOTE: inputs are vectorized and outputs will be ndarrays
+    """
+    raise NotImplementedError
+
+
+# pre-computed mappings
+noll2name = {degrees2noll(n, m): name for (n, m), name in degrees2name.items()}
+name2noll = {v: k for k, v in noll2name.items()}
+
+osa2name = {degrees2osa(n, m): name for (n, m), name in degrees2name.items()}
+name2osa = {v: k for k, v in osa2name.items()}
+
+fringe2name = {degrees2fringe(n, m): name for (n, m), name in degrees2name.items()}
+name2fringe = {v: k for k, v in fringe2name.items()}
+
+
+def zernike(r: float, theta: float, n: int, m: int, norm: bool = True) -> float:
     """Calculate the Zernike polynomial on the unit disk for the requested orders.
 
     Parameters
@@ -233,29 +270,15 @@ def zernike(r, theta, *args, **kwargs):
     >>> x = np.linspace(-1, 1, 512)
     >>> xx, yy = np.meshgrid(x, x)
     >>> r, theta = cart2pol(yy, xx)
-    >>> zern = zernike(r, theta, 4)  # generates the defocus zernike polynomial
+    >>> zern = zernike(r, theta, 4, 0)  # generates the defocus zernike polynomial
     """
-    if len(args) == 1:
-        args = np.asarray(args[0])
-        if args.ndim < 2:
-            n, m = noll2degrees(args)
-        elif args.ndim == 2:
-            if args.shape[0] == 2:
-                n, m = args
-            else:
-                raise RuntimeError("This shouldn't happen")
-        else:
-            raise ValueError(f"{args.shape} is the wrong shape")
-    elif len(args) == 2:
-        n, m = np.asarray(args)
-        if n.ndim > 1:
-            raise ValueError("Radial degree has the wrong shape")
-        if m.ndim > 1:
-            raise ValueError("Azimuthal degree has the wrong shape")
-        if n.shape != m.shape:
-            raise ValueError("Radial and Azimuthal degrees have different shapes")
-    else:
-        raise ValueError(f"{len(args)} is an invalid number of arguments")
+    n, m = np.asarray(n), np.asarray(m)
+    if n.ndim > 1:
+        raise ValueError("Radial degree has the wrong shape")
+    if m.ndim > 1:
+        raise ValueError("Azimuthal degree has the wrong shape")
+    if n.shape != m.shape:
+        raise ValueError("Radial and Azimuthal degrees have different shapes")
 
     # make sure r and theta are arrays
     r = np.asarray(r, dtype=float)
@@ -275,7 +298,7 @@ def zernike(r, theta, *args, **kwargs):
         raise ValueError("n must always be greater or equal to m")
 
     # return column of zernike polynomials
-    return np.array([_zernike(r, theta, nn, mm, **kwargs) for nn, mm in zip(n, m)]).squeeze()
+    return np.array([_zernike(r, theta, nn, mm, norm) for nn, mm in zip(n, m)]).squeeze()
 
 
 def _radial_zernike(r, n, m):
@@ -335,14 +358,14 @@ if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
     # make coordinates
-    x = np.linspace(-1, 1, 257)
+    x = np.linspace(-1, 1, 513)
     xx, yy = np.meshgrid(x, x)  # xy indexing is default
     r, theta = cart2pol(yy, xx)
     # set up plot
-    fig, axs = plt.subplots(3, 5, figsize=(20, 12))
+    fig, axs = plt.subplots(6, 6, figsize=(12, 12))
     # fill out plot
-    for ax, (k, v) in zip(axs.ravel(), noll2name.items()):
-        zern = zernike(r, theta, k, norm=False)
+    for ax, ((n, m), v) in zip(axs.ravel(), degrees2name.items()):
+        zern = zernike(r, theta, n, m, norm=False)
         ax.imshow(
             np.ma.array(zern, mask=r > 1),
             vmin=-1,
@@ -350,7 +373,7 @@ if __name__ == "__main__":
             cmap="coolwarm",
             interpolation="bicubic",
         )
-        ax.set_title(v + r", $Z_{{{}}}^{{{}}}$".format(*noll2degrees(k)))
+        ax.set_title(v + r", $Z_{{{}}}^{{{}}}$".format(n, m))
         ax.axis("off")
     fig.tight_layout()
     plt.show()

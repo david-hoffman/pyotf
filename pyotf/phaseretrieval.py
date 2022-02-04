@@ -24,7 +24,7 @@ from skimage.restoration import unwrap_phase
 
 from .otf import HanserPSF
 from .utils import fft_pad, psqrt
-from .zernike import noll2name, zernike
+from .zernike import noll2degrees, noll2name, zernike
 
 logger = logging.getLogger(__name__)
 
@@ -187,13 +187,13 @@ class PhaseRetrievalResult(object):
         # pull specific model parameters
         self.na, self.wl = model.na, model.wl
 
-    def fit_to_zernikes(self, num_zerns):
+    def fit_to_zernikes(self, num_zerns, *, mapping=noll2degrees):
         """Fits the data to a number of zernikes."""
         # normalize r so that 1 = diffraction limit
         r, theta = self.r, self.theta
         r = r / (self.na / self.wl)
         # generate zernikes
-        zerns = zernike(r, theta, np.arange(1, num_zerns + 1))
+        zerns = zernike(r, theta, *mapping(np.arange(1, num_zerns + 1)))
         mag_coefs = _fit_to_zerns(self.mag, zerns, r)
         phase_coefs = _fit_to_zerns(self.phase, zerns, r)
         self.zd_result = ZernikeDecomposition(mag_coefs, phase_coefs, zerns)

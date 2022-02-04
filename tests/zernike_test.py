@@ -7,16 +7,11 @@ Test suite for zernike.py.
 Copyright (c) 2020, David Hoffman
 """
 
+from multiprocessing.sharedctypes import Value
 import numpy as np
 import pytest
 
 from pyotf.zernike import *
-
-
-def test_degrees_input():
-    """Make sure an error is returned if n and m aren't seperated by two."""
-    with pytest.raises(ValueError):
-        degrees2noll(1, 2)
 
 
 @pytest.mark.parametrize("test_input", (0, -1))
@@ -29,10 +24,19 @@ def test_noll_input(test_input):
 @pytest.mark.parametrize(
     "test_func,test_input",
     (
+        # test non-integer index
         (noll2degrees, (2.5,)),
         (noll2degrees, (1.0,)),
+        (osa2degrees, (2.5,)),
+        (osa2degrees, (1.0,)),
+        # test non-integer degrees
         (degrees2noll, (1.0, 3.0)),
         (degrees2noll, (1.5, 3.5)),
+        (degrees2osa, (1.0, 3.0)),
+        (degrees2osa, (1.5, 3.5)),
+        # test degrees not separated by 2
+        (degrees2noll, (1, 2)),
+        (degrees2osa, (1, 2)),
     ),
 )
 def test_integer_input(test_func, test_input):
@@ -41,11 +45,15 @@ def test_integer_input(test_func, test_input):
         test_func(*test_input)
 
 
-def test_indices():
+@pytest.mark.parametrize(
+    "forward,inverse",
+    ((noll2degrees, degrees2noll), (osa2degrees, degrees2osa)),
+)
+def test_indices(forward, inverse):
     """Make sure that noll2degrees and degrees2noll are opposites of each other."""
     test_noll = np.random.randint(1, 36, 10)
-    test_n, test_m = noll2degrees(test_noll)
-    test_noll2 = degrees2noll(test_n, test_m)
+    test_n, test_m = forward(test_noll)
+    test_noll2 = inverse(test_n, test_m)
     assert (test_noll == test_noll2).all(), f"{test_noll} != {test_noll2}"
 
 
@@ -55,7 +63,7 @@ def test_n_lt_m():  # noqa: D403
         zernike(0.5, 0.0, 4, 5)
 
 
-def test_forward_mapping():
+def test_noll_forward_mapping():
     """Make sure that the mapping from degrees to Noll's indices is correct."""
     # from https://en.wikipedia.org/wiki/Zernike_polynomials
     degrees = np.array(
@@ -63,10 +71,11 @@ def test_forward_mapping():
     )
     j = np.array((1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
     n, m = degrees.T
-    assert (degrees2noll(n, m) == j).all()
+    j_test = degrees2noll(n, m)
+    assert (j_test == j).all(), f"{j_test} != {j}"
 
 
-def test_reverse_mapping():
+def test_noll_reverse_mapping():
     """Make sure that the mapping from Noll's indices to degrees is correct."""
     # from https://en.wikipedia.org/wiki/Zernike_polynomials
     degrees = np.array(
@@ -79,11 +88,35 @@ def test_reverse_mapping():
     assert (n_test == n).all(), f"{n_test} != {n}"
 
 
+def test_osa_forward_mapping():
+    """Make sure that the mapping from degrees to Noll's indices is correct."""
+    # from https://en.wikipedia.org/wiki/Zernike_polynomials
+    degrees = np.array(
+        ((0, 0), (1, 1), (1, -1), (2, 0), (2, -2), (2, 2), (3, -1), (3, 1), (3, -3), (3, 3))
+    )
+    j = np.array((0, 2, 1, 4, 3, 5, 7, 8, 6, 9))
+    n, m = degrees.T
+    j_test = degrees2osa(n, m)
+    assert (j_test == j).all(), f"{j_test} != {j}"
+
+
+def test_fringe_forward_mapping():
+    """Make sure that the mapping from degrees to Noll's indices is correct."""
+    # from https://en.wikipedia.org/wiki/Zernike_polynomials
+    degrees = np.array(
+        ((0, 0), (1, 1), (1, -1), (2, 0), (2, -2), (2, 2), (3, -1), (3, 1), (3, -3), (3, 3))
+    )
+    j = np.array((1, 2, 3, 4, 6, 5, 8, 7, 11, 10))
+    n, m = degrees.T
+    j_test = degrees2fringe(n, m)
+    assert (j_test == j).all(), f"{j_test} != {j}"
+
+
 def test_r_theta_dims():
     """Make sure that a ValueError is raised if the dims are greater than 2."""
     r = np.ones((3, 3, 3))
     with pytest.raises(ValueError):
-        zernike(r, r, 10)
+        zernike(r, r, 0, 0)
 
 
 def test_zernike_return_shape():
@@ -91,14 +124,13 @@ def test_zernike_return_shape():
     x = np.linspace(-1, 1, 512)
     xx, yy = np.meshgrid(x, x)
     r, theta = cart2pol(yy, xx)
-    zern = zernike(r, theta, 10)
+    zern = zernike(r, theta, 0, 0)
     assert zern.shape == r.shape
 
 
 @pytest.mark.parametrize(
     "test_input",
     (
-        (0, 0, np.ones((2, 2, 2))),  # check noll dims
         (
             0,
             0,
@@ -172,10 +204,8 @@ def test_norm():
     xx, yy = np.meshgrid(x, x)  # xy indexing is default
     r, theta = cart2pol(yy, xx)
     # fill out plot
-    for k, v in sorted(noll2name.items())[0:]:
-        zern = zernike(r, theta, k, norm=True)
-        print(v, noll2degrees(k))
-        n, _ = noll2degrees(k)
+    for (n, m), v in sorted(degrees2name.items())[0:]:
+        zern = zernike(r, theta, n, m, norm=True)
         tol = 10.0 ** (n - 6)
         np.testing.assert_allclose(
             1.0, np.sqrt((zern[r <= 1] ** 2).mean()), err_msg=f"{v} failed!", atol=tol, rtol=tol
@@ -191,8 +221,8 @@ def test_norm_sum():
     # make coefs
     np.random.seed(12345)
     c0, c1 = np.random.randn(2)
-    astig_zern = c0 * zernike(r, theta, 5, norm=True)
-    spherical_zern = c1 * zernike(r, theta, 11, norm=True)
+    astig_zern = c0 * zernike(r, theta, 2, -2, norm=True)
+    spherical_zern = c1 * zernike(r, theta, 3, -3, norm=True)
     np.testing.assert_allclose(
         abs(c0), np.sqrt((astig_zern[r <= 1] ** 2).mean()), atol=1e-3, rtol=1e-3
     )
