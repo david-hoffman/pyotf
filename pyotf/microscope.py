@@ -23,8 +23,9 @@ from functools import cached_property
 import numpy as np
 from scipy.signal import fftconvolve
 
+from dphtools.utils import bin_ndarray, radial_profile, slice_maker
 from .otf import HanserPSF, SheppardPSF
-from .utils import NumericProperty, bin_ndarray, easy_fft, easy_ifft, radial_profile, slice_maker
+from .utils import NumericProperty, easy_fft, easy_ifft
 from .display import psf_plot, otf_plot
 
 logger = logging.getLogger(__name__)
