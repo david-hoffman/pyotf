@@ -63,7 +63,7 @@ def test_n_lt_m():  # noqa: D403
         zernike(0.5, 0.0, 4, 5)
 
 
-def test_forward_mapping():
+def test_noll_forward_mapping():
     """Make sure that the mapping from degrees to Noll's indices is correct."""
     # from https://en.wikipedia.org/wiki/Zernike_polynomials
     degrees = np.array(
@@ -75,7 +75,7 @@ def test_forward_mapping():
     assert (j_test == j).all(), f"{j_test} != {j}"
 
 
-def test_reverse_mapping():
+def test_noll_reverse_mapping():
     """Make sure that the mapping from Noll's indices to degrees is correct."""
     # from https://en.wikipedia.org/wiki/Zernike_polynomials
     degrees = np.array(
@@ -86,6 +86,30 @@ def test_reverse_mapping():
     n_test, m_test = noll2degrees(j)
     assert (m_test == m).all(), f"{m_test} != {m}"
     assert (n_test == n).all(), f"{n_test} != {n}"
+
+
+def test_osa_forward_mapping():
+    """Make sure that the mapping from degrees to Noll's indices is correct."""
+    # from https://en.wikipedia.org/wiki/Zernike_polynomials
+    degrees = np.array(
+        ((0, 0), (1, 1), (1, -1), (2, 0), (2, -2), (2, 2), (3, -1), (3, 1), (3, -3), (3, 3))
+    )
+    j = np.array((0, 2, 1, 4, 3, 5, 7, 8, 6, 9))
+    n, m = degrees.T
+    j_test = degrees2osa(n, m)
+    assert (j_test == j).all(), f"{j_test} != {j}"
+
+
+def test_fringe_forward_mapping():
+    """Make sure that the mapping from degrees to Noll's indices is correct."""
+    # from https://en.wikipedia.org/wiki/Zernike_polynomials
+    degrees = np.array(
+        ((0, 0), (1, 1), (1, -1), (2, 0), (2, -2), (2, 2), (3, -1), (3, 1), (3, -3), (3, 3))
+    )
+    j = np.array((1, 2, 3, 4, 6, 5, 8, 7, 11, 10))
+    n, m = degrees.T
+    j_test = degrees2fringe(n, m)
+    assert (j_test == j).all(), f"{j_test} != {j}"
 
 
 def test_r_theta_dims():

@@ -80,6 +80,7 @@ assert len(name2degrees) == len(degrees2name)
 
 
 def _ingest_degrees(n, m):
+    """Convert inputs to arrays and do type and validity checking."""
     n, m = np.asarray(n), np.asarray(m)
 
     # check inputs
@@ -96,23 +97,35 @@ def _ingest_degrees(n, m):
 
 
 def degrees2osa(n: int, m: int) -> int:
-    """Convert the integer pair (n,m) that defines the Zernike polynomial Z_n^m(ρ,θ) to the sequential OSA/ANSI stardard index number.
-    Returns NaN for invalid integer pairs.
-    See also: [`mn2Noll`], [`OSA2mn`]
+    """Convert Zernike polynomial radial degree (n) and azimuthal degree (m) to OSA/ANSI sequential indices.
+
+    NOTE: inputs are vectorized and outputs will be ndarrays
+
     Source: "Standards for Reporting the Optical Aberrations of Eyes", Journal of Refractive Surgery Volume 18 September/October 2002
-    https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
+    Converted from https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
     """
     n, m = _ingest_degrees(n, m)
 
     return ((1 / 2) * (n * (n + 2) + m)).astype(int)
 
 
+def degrees2fringe(n: int, m: int) -> int:
+    """Convert Zernike polynomial radial degree (n) and azimuthal degree (m) to Fringe sequential indices.
+
+    NOTE: inputs are vectorized and outputs will be ndarrays
+    """
+    n, m = _ingest_degrees(n, m)
+
+    return ((1 + (n + abs(m)) / 2) ** 2 - 2 * abs(m) + (1 - np.sign(m)) / 2).astype(int)
+
+
 def degrees2noll(n: int, m: int) -> int:
-    """Convert the integer pair (n,m) that defines the Zernike polynomial Z_n^m(ρ,θ) to the sequential Noll index number.
-    Returns NaN for invalid integer pairs.
-    See also: [`mn2OSA`], [`Noll2mn`]
-    Source: (https://en.wikipedia.org/wiki/Zernike_polynomials)
-    https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
+    """Convert Zernike polynomial radial degree (n) and azimuthal degree (m) to Noll sequential indices.
+
+    NOTE: inputs are vectorized and outputs will be ndarrays
+
+    Source: "Standards for Reporting the Optical Aberrations of Eyes", Journal of Refractive Surgery Volume 18 September/October 2002
+    Converted from https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
     """
 
     n, m = _ingest_degrees(n, m)
@@ -130,6 +143,7 @@ def degrees2noll(n: int, m: int) -> int:
 
 
 def _ingest_index(j):
+    """Convert inputs to arrays and do type and validity checking."""
     j = np.asarray(j)
 
     # check inputs
@@ -141,8 +155,10 @@ def _ingest_index(j):
 
 
 def osa2degrees(j: int) -> Tuple[int, int]:
-    """Convert the sequential OSA/ANSI stardard index number j to the integer pair (n,m) that defines the Zernike polynomial Z_n^m(ρ,θ).
-    See also: [`Noll2mn`], [`mn2OSA`], [`OSA2Noll`]
+    """Convert the sequential OSA/ANSI stardard index number j to the integer pair (n, m) that defines the Zernike polynomial Z_n^m(ρ, θ).
+
+    NOTE: inputs are vectorized and outputs will be ndarrays
+
     Source: "Standards for Reporting the Optical Aberrations of Eyes", Journal of Refractive Surgery Volume 18 September/October 2002
     https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
     """
@@ -154,9 +170,10 @@ def osa2degrees(j: int) -> Tuple[int, int]:
 
 
 def noll2degrees(j: int) -> Tuple[int, int]:
-    """
-    Convert the Noll index number j to the integer pair (n,m) that defines the Zernike polynomial Z_n^m(ρ,θ).
-    See also: [`OSA2mn`], [`mn2Noll`], [`Noll2OSA`]
+    """Convert the Noll index number j to the integer pair (n, m) that defines the Zernike polynomial Z_n^m(ρ, θ).
+
+    NOTE: inputs are vectorized and outputs will be ndarrays
+
     Source: (https://en.wikipedia.org/wiki/Zernike_polynomials)
     https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
     """
@@ -202,12 +219,23 @@ def noll2degrees(j: int) -> Tuple[int, int]:
     return n, m
 
 
+def fringe2degrees(j: int):
+    """Convert the Fringe index number j to the integer pair (n, m) that defines the Zernike polynomial Z_n^m(ρ, θ).
+
+    NOTE: inputs are vectorized and outputs will be ndarrays
+    """
+    raise NotImplementedError
+
+
 # pre-computed mappings
 noll2name = {degrees2noll(n, m): name for (n, m), name in degrees2name.items()}
 name2noll = {v: k for k, v in noll2name.items()}
 
 osa2name = {degrees2osa(n, m): name for (n, m), name in degrees2name.items()}
 name2osa = {v: k for k, v in osa2name.items()}
+
+fringe2name = {degrees2fringe(n, m): name for (n, m), name in degrees2name.items()}
+name2fringe = {v: k for k, v in fringe2name.items()}
 
 
 def zernike(r: float, theta: float, n: int, m: int, norm: bool = True) -> float:
