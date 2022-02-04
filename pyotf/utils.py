@@ -143,7 +143,7 @@ def remove_bg(data: np.ndarray, multiplier: float) -> np.ndarray:
 
 def psqrt(data):
     """Take the positive square root, negative values will be set to zero.
-    
+
     Example
     -------
     >>> psqrt((-4, 4))
