@@ -22,7 +22,7 @@ from numpy.linalg import norm
 
 from .utils import NumericProperty, cart2pol, easy_fft, easy_ifft, psqrt, slice_maker
 from .display import psf_plot, otf_plot
-from .zernike import name2noll, zernike
+from .zernike import name2noll, zernike, noll2degrees
 
 logger = logging.getLogger(__name__)
 
@@ -630,7 +630,7 @@ def apply_aberration(model, mcoefs, pcoefs):
     # make zernikes (need to convert kr to r where r = 1 when kr is at
     # diffraction limit)
     r = kr * model.wl / model.na
-    zerns = zernike(r, theta, np.arange(len(mcoefs)) + 1)
+    zerns = zernike(r, theta, *noll2degrees(np.arange(len(mcoefs)) + 1))
 
     pupil_phase = (zerns * pcoefs[:, None, None]).sum(0)
     pupil_mag = (zerns * mcoefs[:, None, None]).sum(0)
