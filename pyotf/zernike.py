@@ -127,7 +127,6 @@ def degrees2noll(n: int, m: int) -> int:
     Source: "Standards for Reporting the Optical Aberrations of Eyes", Journal of Refractive Surgery Volume 18 September/October 2002
     Converted from https://github.com/rdoelman/ZernikePolynomials.jl/blob/2825846679607f7bf335fdb9edd3b7145d65082b/src/ZernikePolynomials.jl
     """
-
     n, m = _ingest_degrees(n, m)
 
     p = np.full_like(m, -1)
