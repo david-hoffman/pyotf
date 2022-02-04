@@ -25,8 +25,8 @@ from typing import Tuple
 degrees2name = {
     (0, 0): "piston",
     #
-    (1, -1): "tip",
-    (1, 1): "tilt",
+    (1, -1): "tilt",
+    (1, 1): "tip",
     #
     (2, -2): "oblique astigmatism",
     (2, 0): "defocus",
@@ -74,6 +74,7 @@ degrees2name = {
 }
 
 name2degrees = {v: k for k, v in degrees2name.items()}
+
 
 assert len(name2degrees) == len(degrees2name)
 
@@ -199,6 +200,14 @@ def noll2degrees(j: int) -> Tuple[int, int]:
     m[~idx1] = m2[~idx1]
 
     return n, m
+
+
+# pre-computed mappings
+noll2name = {degrees2noll(n, m): name for (n, m), name in degrees2name.items()}
+name2noll = {v: k for k, v in noll2name.items()}
+
+osa2name = {degrees2osa(n, m): name for (n, m), name in degrees2name.items()}
+name2osa = {v: k for k, v in osa2name.items()}
 
 
 def zernike(r: float, theta: float, n: int, m: int, norm: bool = True) -> float:

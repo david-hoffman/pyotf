@@ -85,6 +85,6 @@ class TestAbberation(unittest.TestCase):
     def test_named_aberration_to_pcoefs_should_generate_pcoefs(self):
         """Test that named aberration matches expectation."""
         res = named_aberration_to_pcoefs("tip", 1)
-        expected = np.zeros(22)
+        expected = np.zeros(56)
         expected[1] = 1
         np.testing.assert_array_equal(res, expected)

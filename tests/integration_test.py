@@ -13,6 +13,7 @@ import numpy as np
 
 from pyotf.otf import *
 from pyotf.phaseretrieval import *
+from pyotf.zernike import noll2degrees
 
 
 class TestHanserPhaseRetrieval(unittest.TestCase):
@@ -46,7 +47,7 @@ class TestHanserPhaseRetrieval(unittest.TestCase):
         # diffraction limit)
         r = kr * model.wl / model.na
         self.mask = r <= 1
-        zerns = zernike(r, theta, np.arange(5, 16))
+        zerns = zernike(r, theta, *noll2degrees(np.arange(5, 16)))
         # make fake phase and magnitude coefs
         self.pcoefs = np.random.rand(zerns.shape[0])
         self.mcoefs = np.random.rand(zerns.shape[0])

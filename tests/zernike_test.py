@@ -14,12 +14,6 @@ import pytest
 from pyotf.zernike import *
 
 
-def test_degrees_input():
-    """Make sure an error is returned if n and m aren't seperated by two."""
-    with pytest.raises(ValueError):
-        degrees2noll(1, 2)
-
-
 @pytest.mark.parametrize("test_input", (0, -1))
 def test_noll_input(test_input):
     """Make sure an error is raised if noll isn't a positive integer."""
@@ -30,12 +24,19 @@ def test_noll_input(test_input):
 @pytest.mark.parametrize(
     "test_func,test_input",
     (
+        # test non-integer index
         (noll2degrees, (2.5,)),
         (noll2degrees, (1.0,)),
+        (osa2degrees, (2.5,)),
+        (osa2degrees, (1.0,)),
+        # test non-integer degrees
         (degrees2noll, (1.0, 3.0)),
         (degrees2noll, (1.5, 3.5)),
         (degrees2osa, (1.0, 3.0)),
         (degrees2osa, (1.5, 3.5)),
+        # test degrees not separated by 2
+        (degrees2noll, (1, 2)),
+        (degrees2osa, (1, 2)),
     ),
 )
 def test_integer_input(test_func, test_input):
@@ -44,11 +45,15 @@ def test_integer_input(test_func, test_input):
         test_func(*test_input)
 
 
-def test_indices():
+@pytest.mark.parametrize(
+    "forward,inverse",
+    ((noll2degrees, degrees2noll), (osa2degrees, degrees2osa)),
+)
+def test_indices(forward, inverse):
     """Make sure that noll2degrees and degrees2noll are opposites of each other."""
     test_noll = np.random.randint(1, 36, 10)
-    test_n, test_m = noll2degrees(test_noll)
-    test_noll2 = degrees2noll(test_n, test_m)
+    test_n, test_m = forward(test_noll)
+    test_noll2 = inverse(test_n, test_m)
     assert (test_noll == test_noll2).all(), f"{test_noll} != {test_noll2}"
 
 
@@ -175,10 +180,8 @@ def test_norm():
     xx, yy = np.meshgrid(x, x)  # xy indexing is default
     r, theta = cart2pol(yy, xx)
     # fill out plot
-    for k, v in sorted(noll2name.items())[0:]:
-        zern = zernike(r, theta, *noll2degrees(k), norm=True)
-        print(v, noll2degrees(k))
-        n, _ = noll2degrees(k)
+    for (n, m), v in sorted(degrees2name.items())[0:]:
+        zern = zernike(r, theta, n, m, norm=True)
         tol = 10.0 ** (n - 6)
         np.testing.assert_allclose(
             1.0, np.sqrt((zern[r <= 1] ** 2).mean()), err_msg=f"{v} failed!", atol=tol, rtol=tol
