@@ -8,7 +8,7 @@ Copyright (c) 2016, David Hoffman
 """
 
 import numpy as np
-from dphtools.utils import slice_maker, fft_pad, radial_profile, bin_ndarray
+from dphtools.utils import slice_maker, fft_pad
 from numpy.fft import fftn, fftshift, ifftn, ifftshift
 
 
@@ -85,6 +85,33 @@ def center_data(data):
     -------
     centered_data : ndarray same shape as data
         data with max value at the central location of the array
+
+    Example
+    -------
+    >>> data = np.array(
+    ...     (
+    ...         (1, 0, 0),
+    ...         (0, 0, 0),
+    ...         (0, 0, 0),
+    ...     )
+    ... )
+    >>> center_data(data)
+    array([[0, 0, 0],
+           [0, 1, 0],
+           [0, 0, 0]])
+
+
+    >>> data = np.array(
+    ...     (
+    ...         (2, 1, 0, 0),
+    ...         (1, 0, 0, 0),
+    ...         (0, 0, 0, 0),
+    ...     )
+    ... )
+    >>> center_data(data)
+    array([[0, 0, 0, 0],
+           [0, 0, 2, 1],
+           [0, 0, 1, 0]])
     """
     # copy data
     centered_data = data.copy()
@@ -97,19 +124,31 @@ def center_data(data):
     return centered_data
 
 
-def remove_bg(data, multiplier=1.5):
+def remove_bg(data: np.ndarray, multiplier: float) -> np.ndarray:
     """Remove background from data.
 
     Utility that measures mode of data and subtracts a multiplier of it
+
+    Example
+    -------
+    >>> data = np.array([1, 1, 1, 0, 2])
+    >>> remove_bg(data, 1)
+    array([ 0.,  0.,  0., -1.,  1.])
     """
-    # should add bit for floats, that will find the mode using the hist
+    # TODO: should add bit for floats, that will find the mode using the hist
     # function bincounts with num bins specified
     mode = np.bincount(data.ravel()).argmax()
-    return data - multiplier * mode
+    return data - multiplier * float(mode)
 
 
 def psqrt(data):
-    """Take the positive square root, negative values will be set to zero."""
+    """Take the positive square root, negative values will be set to zero.
+    
+    Example
+    -------
+    >>> psqrt((-4, 4))
+    array([0., 2.])
+    """
     return np.sqrt(np.fmax(0, data))
 
 
@@ -134,11 +173,14 @@ def prep_data_for_PR(data, xysize=None, multiplier=1.5):
     """
     # pull shape
     nz, ny, nx = data.shape
+
     # remove background
     data_without_bg = remove_bg(data, multiplier)
+
     # figure out padding or cropping
     if xysize is None:
         xysize = max(ny, nx)
+
     if xysize == ny == nx:
         pad_data = data_without_bg
     elif xysize >= max(ny, nx):
@@ -148,5 +190,6 @@ def prep_data_for_PR(data, xysize=None, multiplier=1.5):
         # if need to crop, crop and center and return
         my_slice = slice_maker(((ny + 1) // 2, (nx + 1) // 2), xysize)
         return center_data(data_without_bg)[(Ellipsis,) + my_slice]
+
     # return centered data
     return np.fmax(0, pad_data)
