@@ -105,11 +105,11 @@ def center_data(data):
     ...     (
     ...         (2, 1, 0, 0),
     ...         (1, 0, 0, 0),
-    ...         (0, 0, 0, 0),
+    ...         (0, 0, 0, 1),
     ...     )
     ... )
     >>> center_data(data)
-    array([[0, 0, 0, 0],
+    array([[0, 1, 0, 0],
            [0, 0, 2, 1],
            [0, 0, 1, 0]])
     """
@@ -137,7 +137,13 @@ def remove_bg(data: np.ndarray, multiplier: float) -> np.ndarray:
     """
     # TODO: should add bit for floats, that will find the mode using the hist
     # function bincounts with num bins specified
-    mode = np.bincount(data.ravel()).argmax()
+    if np.issubdtype(data.dtype, np.integer):
+        if np.any(data < 0):
+            raise ValueError("Negative values unsupported")
+        else:
+            mode = np.bincount(data.ravel()).argmax()
+    else:
+        raise ValueError("Floating point numbers unsupported")
     return data - multiplier * float(mode)
 
 
@@ -152,7 +158,7 @@ def psqrt(data):
     return np.sqrt(np.fmax(0, data))
 
 
-def prep_data_for_PR(data, xysize=None, multiplier=1.5):
+def prep_data_for_PR(data, xysize=None, multiplier=1.05):
     """Prepare data for phase retrieval.
 
     Will pad or crop to xysize and remove mode times multiplier and clip at zero
@@ -189,7 +195,7 @@ def prep_data_for_PR(data, xysize=None, multiplier=1.5):
     else:
         # if need to crop, crop and center and return
         my_slice = slice_maker(((ny + 1) // 2, (nx + 1) // 2), xysize)
-        return center_data(data_without_bg)[(Ellipsis,) + my_slice]
+        pad_data = center_data(data_without_bg)[(Ellipsis,) + my_slice]
 
     # return centered data
     return np.fmax(0, pad_data)
