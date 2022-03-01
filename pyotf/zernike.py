@@ -228,12 +228,21 @@ def fringe2degrees(j: int):
 
 # pre-computed mappings
 noll2name = {degrees2noll(n, m): name for (n, m), name in degrees2name.items()}
+# sort
+noll2name = dict(sorted(noll2name.items()))
+# reverse
 name2noll = {v: k for k, v in noll2name.items()}
 
 osa2name = {degrees2osa(n, m): name for (n, m), name in degrees2name.items()}
+# sort
+osa2name = dict(sorted(osa2name.items()))
+# reverse
 name2osa = {v: k for k, v in osa2name.items()}
 
 fringe2name = {degrees2fringe(n, m): name for (n, m), name in degrees2name.items()}
+# sort
+fringe2name = dict(sorted(fringe2name.items()))
+# reverse
 name2fringe = {v: k for k, v in fringe2name.items()}
 
 
