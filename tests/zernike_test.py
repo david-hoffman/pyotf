@@ -212,6 +212,22 @@ def test_norm():
         )
 
 
+# the expected value is more difficult than this
+# def test_pv():
+#     """Test that normalization works."""
+#     # set up coordinates
+#     x = np.linspace(-1, 1, 2048)
+#     xx, yy = np.meshgrid(x, x)  # xy indexing is default
+#     r, theta = cart2pol(yy, xx)
+#     # fill out plot
+#     for (n, m), v in sorted(degrees2name.items())[1:]:
+#         zern = zernike(r, theta, n, m, norm=False)
+#         zern_flat = zern[r <= 1]
+#         np.testing.assert_allclose(
+#             2.0, zern_flat.max() - zern_flat.min(), err_msg=f"{v} failed!", atol=1e-2, rtol=1e-3
+#         )
+
+
 def test_norm_sum():
     """Test RMS of sum of zernikes is the square root of the sum of the coefficients."""
     # set up coordinates
@@ -237,3 +253,8 @@ def test_norm_sum():
         atol=1e-3,
         rtol=1e-3,
     )
+
+
+@pytest.mark.parametrize("mapping", (noll2name, osa2name, fringe2name))
+def test_mapping_monotonic(mapping):
+    assert (np.diff(list(mapping.keys())) > 0).all()
