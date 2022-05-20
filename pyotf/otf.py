@@ -695,7 +695,7 @@ def apply_named_aberrations(model, aberrations):
         Aberrated model
 
     """
-    pcoefs = np.zeros(len(name2noll))
+    pcoefs = np.zeros(max(name2noll.values()))
     for aberration, magnitude in aberrations.items():
         # Sum phase coefficients
         pcoefs = np.add(pcoefs, named_aberration_to_pcoefs(aberration, magnitude))
