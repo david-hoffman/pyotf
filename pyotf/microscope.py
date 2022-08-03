@@ -21,12 +21,12 @@ import logging
 from functools import cached_property
 
 import numpy as np
+from dphtools.utils import bin_ndarray, radial_profile, slice_maker
 from scipy.signal import fftconvolve
 
-from dphtools.utils import bin_ndarray, radial_profile, slice_maker
+from .display import otf_plot, psf_plot
 from .otf import HanserPSF, SheppardPSF
 from .utils import NumericProperty, easy_fft, easy_ifft
-from .display import psf_plot, otf_plot
 
 logger = logging.getLogger(__name__)
 

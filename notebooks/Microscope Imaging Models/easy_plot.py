@@ -10,9 +10,9 @@ Copyright (c) 2020, David Hoffman
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from dphtools.utils import bin_ndarray
 from mpl_toolkits.axes_grid1 import ImageGrid
 
-from dphtools.utils import bin_ndarray
 from pyotf.utils import easy_fft
 
 

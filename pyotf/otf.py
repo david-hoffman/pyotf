@@ -20,9 +20,9 @@ import numpy as np
 from numpy.fft import fftfreq, fftshift, ifftn
 from numpy.linalg import norm
 
+from .display import otf_plot, psf_plot
 from .utils import NumericProperty, cart2pol, easy_fft, easy_ifft, psqrt, slice_maker
-from .display import psf_plot, otf_plot
-from .zernike import name2noll, zernike, noll2degrees
+from .zernike import name2noll, noll2degrees, zernike
 
 logger = logging.getLogger(__name__)
 

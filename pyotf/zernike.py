@@ -13,12 +13,12 @@ http://mathworld.wolfram.com/ZernikePolynomial.html
 Copyright (c) 2016, David Hoffman
 """
 
-import numpy as np
-from scipy.special import eval_jacobi
-from .utils import cart2pol
-
 from typing import Tuple
 
+import numpy as np
+from scipy.special import eval_jacobi
+
+from .utils import cart2pol
 
 # classical names for the Noll indices
 # https://en.wikipedia.org/wiki/Zernike_polynomials

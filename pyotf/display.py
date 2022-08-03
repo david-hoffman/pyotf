@@ -14,9 +14,8 @@ import matplotlib.font_manager as fm
 import matplotlib.patches as patches
 import matplotlib.patheffects as path_effects
 import matplotlib.pyplot as plt
-
-from mpl_toolkits.axes_grid1 import ImageGrid
 import numpy as np
+from mpl_toolkits.axes_grid1 import ImageGrid
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 

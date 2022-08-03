@@ -8,7 +8,7 @@ Copyright (c) 2016, David Hoffman
 """
 
 import numpy as np
-from dphtools.utils import slice_maker, fft_pad
+from dphtools.utils import fft_pad, slice_maker
 from numpy.fft import fftn, fftshift, ifftn, ifftshift
 
 

@@ -8,6 +8,7 @@ Copyright (c) 2020, David Hoffman
 """
 
 from multiprocessing.sharedctypes import Value
+
 import numpy as np
 import pytest
 
