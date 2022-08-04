@@ -149,12 +149,12 @@ def psf_plot(
     # do plotting
     if mip:
         grid[3].imshow(psf.max(0), **dkwargs, extent=(*kx, *ky))
-        grid[2].imshow(psf.max(1).T, **dkwargs, extent=(*kz, *ky))
-        grid[1].imshow(psf.max(2), **dkwargs, extent=(*kx, *kz))
+        grid[2].imshow(psf.max(2).T, **dkwargs, extent=(*kz, *ky))
+        grid[1].imshow(psf.max(1), **dkwargs, extent=(*kx, *kz))
     else:
         grid[3].imshow(psf[nz // 2, :, :], **dkwargs, extent=(*kx, *ky))
-        grid[2].imshow(psf[:, ny // 2, :].T, **dkwargs, extent=(*kz, *ky))
-        grid[1].imshow(psf[:, :, nx // 2], **dkwargs, extent=(*kx, *kz))
+        grid[2].imshow(psf[:, :, nx // 2].T, **dkwargs, extent=(*kz, *ky))
+        grid[1].imshow(psf[:, ny // 2, :], **dkwargs, extent=(*kx, *kz))
     grid[0].axis("off")
 
     fd = {"fontweight": "bold"}
@@ -237,8 +237,8 @@ def otf_plot(
     kz, ky, kx = [fft_max_min(n, d) for n, d in zip(otf.shape, (zres, res, res))]
 
     grid[3].imshow(otf[nz // 2, :, :], **dkwargs, extent=(*kx, *ky))
-    grid[2].imshow(otf[:, ny // 2, :].T, **dkwargs, extent=(*kz, *ky))
-    grid[1].imshow(otf[:, :, nx // 2], **dkwargs, extent=(*kx, *kz))
+    grid[2].imshow(otf[:, :, nx // 2].T, **dkwargs, extent=(*kz, *ky))
+    grid[1].imshow(otf[:, ny // 2, :], **dkwargs, extent=(*kx, *kz))
     grid[0].axis("off")
 
     fd = {"fontweight": "bold"}
