@@ -314,7 +314,7 @@ class ZernikeDecomposition(object):
         # pull the data
         data = self.pcoefs[: len(ordered_names)]
         # make the bar plot
-        ax.bar(x[4:], data[4:], align="center", tick_label=ordered_names[4:])
+        ax.bar(x[4 : len(data)], data[4:], align="center", tick_label=ordered_names[4 : len(data)])
         # set up axes
         ax.axis("tight")
         ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
