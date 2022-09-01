@@ -73,18 +73,19 @@ def test_prep_pr_size_positive(shape_in, xysize, shape_out):
     assert np.all(data_out >= 0)
 
 
-def test_prep_pr_center():
+@pytest.mark.parametrize("size", [3, 4, 5, 6, 7])
+def test_prep_pr_center(size):
     shape_in = (10, 8, 8)
-    shape_out = (10, 5, 5)
+    shape_out = (10, size, size)
     data_in = np.ones(shape_in, dtype=int)
     data_in[0, 0, 0] = 2
     data_in[-1, -1, -1] = 0
-    data_out = prep_data_for_PR(data_in, xysize=5)
+    data_out = prep_data_for_PR(data_in, xysize=size)
     assert data_out.shape == shape_out
 
     nz, ny, nx = data_out.shape
     assert np.unravel_index(data_out.argmax(), data_out.shape) == (
-        (nz + 1) // 2,
-        (ny + 1) // 2,
-        (nx + 1) // 2,
+        nz // 2,
+        ny // 2,
+        nx // 2,
     )
