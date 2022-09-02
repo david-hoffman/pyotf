@@ -48,3 +48,44 @@ def test_cart2pol():
     test_r, test_theta = cart2pol(z.imag, z.real)
     assert np.allclose(test_theta, theta), "theta failed"
     assert np.allclose(test_r, r), "r failed"
+
+
+@pytest.mark.parametrize(
+    "shape_in,xysize,shape_out",
+    [
+        ((5, 5), None, (5, 5)),
+        ((5, 4), None, (5, 5)),
+        ((5, 4), 10, (10, 10)),
+        ((5, 4), 3, (3, 3)),
+    ],
+)
+def test_prep_pr_size_positive(shape_in, xysize, shape_out):
+    """Test proper sizing and clipping at zero."""
+    # need to add z dimension
+    shape_in = (10,) + shape_in
+    shape_out = (10,) + shape_out
+    data_in = np.ones(shape_in, dtype=int)
+    data_in[0, 0, 0] = 2
+    data_in[-1, -1, -1] = 0
+    data_out = prep_data_for_PR(data_in, xysize=xysize)
+    assert data_out.shape == shape_out
+
+    assert np.all(data_out >= 0)
+
+
+@pytest.mark.parametrize("size", [3, 4, 5, 6, 7])
+def test_prep_pr_center(size):
+    shape_in = (10, 8, 8)
+    shape_out = (10, size, size)
+    data_in = np.ones(shape_in, dtype=int)
+    data_in[0, 0, 0] = 2
+    data_in[-1, -1, -1] = 0
+    data_out = prep_data_for_PR(data_in, xysize=size)
+    assert data_out.shape == shape_out
+
+    nz, ny, nx = data_out.shape
+    assert np.unravel_index(data_out.argmax(), data_out.shape) == (
+        nz // 2,
+        ny // 2,
+        nx // 2,
+    )

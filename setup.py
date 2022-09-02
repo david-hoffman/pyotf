@@ -8,6 +8,7 @@ Copyright (c) 2020, David Hoffman
 """
 
 import setuptools
+
 import versioneer
 
 # read in long description

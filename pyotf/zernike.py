@@ -13,63 +13,65 @@ http://mathworld.wolfram.com/ZernikePolynomial.html
 Copyright (c) 2016, David Hoffman
 """
 
-import numpy as np
-from scipy.special import eval_jacobi
-from .utils import cart2pol
-
 from typing import Tuple
 
+import numpy as np
+from scipy.special import eval_jacobi
+
+from .utils import cart2pol
 
 # classical names for the Noll indices
 # https://en.wikipedia.org/wiki/Zernike_polynomials
 degrees2name = {
     (0, 0): "piston",
-    #
+    # 1st order
     (1, -1): "tilt",
     (1, 1): "tip",
-    #
+    # 2nd order
     (2, -2): "oblique astigmatism",
     (2, 0): "defocus",
     (2, 2): "vertical astigmatism",
-    #
+    # 3rd order
     (3, -3): "vertical trefoil",
     (3, -1): "vertical coma",
     (3, 1): "horizontal coma",
     (3, 3): "oblique trefoil",
-    #
-    (4, -4): "oblique quadrafoil",
+    # 4th order
+    (4, -4): "oblique quadrafoil",  # sometimes called tetrafoil
     (4, -2): "oblique secondary astigmatism",
     (4, 0): "primary spherical",
     (4, 2): "vertical secondary astigmatism",
     (4, 4): "vertical quadrafoil",
-    #
+    # 5th order
     # (5, -5): "vertical pentafoil",
     (5, -3): "vertical secondary trefoil",
     (5, -1): "vertical secondary coma",
     (5, 1): "horizontal seconday coma",
     (5, 3): "horizontal secondary trefoil",
     # (5, 5): "horizontal pentafoil",
-    #
+    # 6th order
+    # (6, -6): "vertical hexafoil",
     (6, -4): "oblique secondary quadrafoil",
     (6, -2): "oblique tertiary astigmatism",
     (6, 0): "secondary spherical",
     (6, 2): "vertical tertiary astigmatism",
     (6, 4): "vertical secondary quadrafoil",
-    #
+    # (6, -6): "horizontal hexafoil",
+    # 7th order
     (7, -3): "vertical tertiary trefoil",
     (7, -1): "vertical tertiary coma",
     (7, 1): "horizontal tertiary coma",
     (7, 3): "horizontal tertiary trefoil",
-    #
+    # 8th order
     (8, -2): "oblique quaternary astigmatism",
     (8, 0): "tertiary spherical",
     (8, 2): "vertical quaternary astigmatism",
-    #
+    # 9th order
     (9, -3): "vertical quaternary trefoil",
     (9, -1): "vertical quaternary coma",
     (9, 1): "horizontal quaternary coma",
     (9, 3): "horizontal quaternary trefoil",
-    #
+    # 10th order
     (10, 0): "quaternary spherical",
 }
 

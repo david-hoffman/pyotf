@@ -7,9 +7,10 @@ Thin wrapper so that labview can perform phase retrieval.
 Copyright (c) 2018, David Hoffman
 """
 
+import numpy as np
+
 from pyotf.phaseretrieval import retrieve_phase
 from pyotf.utils import prep_data_for_PR
-import numpy as np
 
 
 def labview(
@@ -61,9 +62,10 @@ def labview(
 
 if __name__ == "__main__":
     # phase retrieve a pupil
+    import logging
     import os
     import time
-    import logging
+
     import tifffile as tif
     from matplotlib import pyplot as plt
 

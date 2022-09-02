@@ -11,14 +11,13 @@ import time
 import warnings
 
 import numpy as np
+import tifffile as tif
 from matplotlib import pyplot as plt
 
-import tifffile as tif
-
 from pyotf.otf import HanserPSF, SheppardPSF, apply_named_aberration
-from pyotf.zernike import zernike, cart2pol, degrees2name, noll2degrees, name2noll
 from pyotf.phaseretrieval import retrieve_phase
 from pyotf.utils import prep_data_for_PR
+from pyotf.zernike import cart2pol, degrees2name, name2noll, noll2degrees, zernike
 
 OTF_MODEL = dict(
     wl=525,  # units in nm

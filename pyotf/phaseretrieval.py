@@ -187,6 +187,17 @@ class PhaseRetrievalResult(object):
         # pull specific model parameters
         self.na, self.wl = model.na, model.wl
 
+    @property
+    def rms_error(self):
+        """RMS wavefront error."""
+        return np.sqrt((self.phase[self.r <= self.na / self.wl] ** 2).mean())
+
+    @property
+    def pv_error(self):
+        """PV wavefront error."""
+        wavefront_flat = self.phase[self.r <= self.na / self.wl]
+        return wavefront_flat.max() - wavefront_flat.min()
+
     def fit_to_zernikes(self, num_zerns, *, mapping=noll2degrees):
         """Fits the data to a number of zernikes."""
         # normalize r so that 1 = diffraction limit
@@ -284,6 +295,11 @@ class ZernikeDecomposition(object):
         self.pcoefs = phase_coefs
         self.zerns = zerns
 
+    @property
+    def rms_error(self):
+        """RMS wavefront error."""
+        return np.sqrt((self.pcoefs**2).sum())
+
     def plot_named_coefs(self):
         """Plot the first 11 zernike mode coefficients (no piston, tip, tilt or defocus).
 
@@ -298,7 +314,7 @@ class ZernikeDecomposition(object):
         # pull the data
         data = self.pcoefs[: len(ordered_names)]
         # make the bar plot
-        ax.bar(x[4:], data[4:], align="center", tick_label=ordered_names[4:])
+        ax.bar(x[4 : len(data)], data[4:], align="center", tick_label=ordered_names[4 : len(data)])
         # set up axes
         ax.axis("tight")
         ax.set_xticklabels(ax.get_xticklabels(), rotation=90)

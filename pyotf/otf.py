@@ -20,9 +20,9 @@ import numpy as np
 from numpy.fft import fftfreq, fftshift, ifftn
 from numpy.linalg import norm
 
+from .display import otf_plot, psf_plot
 from .utils import NumericProperty, cart2pol, easy_fft, easy_ifft, psqrt, slice_maker
-from .display import psf_plot, otf_plot
-from .zernike import name2noll, zernike, noll2degrees
+from .zernike import name2noll, noll2degrees, zernike
 
 logger = logging.getLogger(__name__)
 
@@ -352,7 +352,7 @@ class HanserPSF(BasePSF):
         diff_limit = self._na / self._wl
         # return a circle of intensity 1 over the ideal passband of the
         # objective make sure data is complex
-        return (kr < diff_limit).astype(complex)
+        return (kr <= diff_limit).astype(complex)
 
     def _calc_defocus(self):
         """Calculate the defocus to apply to the base pupil."""
@@ -695,7 +695,7 @@ def apply_named_aberrations(model, aberrations):
         Aberrated model
 
     """
-    pcoefs = np.zeros(len(name2noll))
+    pcoefs = np.zeros(max(name2noll.values()))
     for aberration, magnitude in aberrations.items():
         # Sum phase coefficients
         pcoefs = np.add(pcoefs, named_aberration_to_pcoefs(aberration, magnitude))
