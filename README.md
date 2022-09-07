@@ -1,4 +1,5 @@
 [![PyPI version](https://badge.fury.io/py/pyotf.svg)](https://badge.fury.io/py/pyotf)
+[![PyPI downloads](https://img.shields.io/pypi/dm/pyotf.svg?color=magenta&logo=pypi)](https://pypi.org/project/pyotf)
 [![Anaconda version](https://anaconda.org/david-hoffman/pyotf/badges/downloads.svg)](https://anaconda.org/david-hoffman/pyotf)
 [![Conda Badge](https://anaconda.org/david-hoffman/pyotf/badges/installer/conda.svg)](https://anaconda.org/david-hoffman/pyotf)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
