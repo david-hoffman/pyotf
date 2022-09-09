@@ -2,7 +2,7 @@ on:
   push:
     # Sequence of patterns matched against refs/tags
     tags:
-      - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
+      - "*.*.*" # Push events to matching semver versioning
 
 name: Create Release
 
@@ -25,18 +25,6 @@ jobs:
       - name: build
         run: |
           python setup.py sdist bdist_wheel
-      # actions/create-release@latest is no longer maintained.
-      # - name: Create Release
-      #   id: create_release
-      #   uses: actions/create-release@latest
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-      #   with:
-      #     tag_name: ${{ github.ref }}
-      #     release_name: Release ${{ github.ref }}
-      #     body: ${{ github.event.head_commit.message }}
-      #     draft: false
-      #     prerelease: ${{ contains(github.ref, 'rc') }}
       - name: Publish distribution 📦 to Test PyPI
         if: success() && startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -49,9 +37,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_TOKEN }}
-      - name: Publish Conda package to Anaconda.org
-        if: success() && !contains(github.ref, 'rc')
-        uses: maxibor/conda-package-publish-action@v1.1
-        with:
-          subDir: "conda.recipe"
-          AnacondaToken: ${{ secrets.ANACONDA_TOKEN }}
