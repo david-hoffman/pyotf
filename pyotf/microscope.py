@@ -96,7 +96,7 @@ class WidefieldMicroscope(object):
             del self.PSF
         except AttributeError:
             pass
-        # try removing the PSF
+        # try removing the OTF
         try:
             del self.OTF
         except AttributeError:
@@ -145,7 +145,7 @@ class WidefieldMicroscope(object):
 
         max_loc = np.unravel_index(self.PSF.argmax(), self.PSF.shape)
         crop = slice_maker(max_loc, (axial_extent, lateral_extent, lateral_extent))
-        return psf_plot(self.PSF[crop], zres=self.pixel_size, res=self.pixel_size, **kwargs)
+        return psf_plot(self.PSF[crop], zres=self.zres, res=self.pixel_size, **kwargs)
 
     def plot_otf(self, **kwargs):
         """Plot the intensity OTF.
