@@ -381,6 +381,8 @@ class HanserPSF(BasePSF):
         else:
             assert pupil_base.ndim == 2, f"`pupil_base` is wrong shape: {pupil_base.shape}"
             # Maybe we should do ifftshift here so user doesn't have too
+        # save to add applications
+        self._pupil_base = pupil_base
         # pull relevant internal state variables
         kr = self._kr
         phi = self._phi
@@ -427,7 +429,7 @@ class HanserPSF(BasePSF):
         # save the PSF internally
         return PSFa
 
-    def apply_pupil(self, pupil):
+    def apply_pupil(self, pupil) -> None:
         """Apply a pupil function to the model."""
         self._attribute_changed()
         self.PSFa = self._gen_psf(pupil)
@@ -441,6 +443,18 @@ class HanserPSF(BasePSF):
     def PSFa(self):
         """Amplitude PSF."""
         return self._gen_psf()
+
+    def shift(self, dy: float, dx: float) -> None:
+        """Shift psf laterally by dy, dx pixels."""
+        self._gen_kr()
+        k = self._k
+        pupil = getattr(self, "_pupil_base", self._gen_pupil())
+        pupil = (
+            np.exp(-2 * np.pi * 1j * k[None] * dx * self.res)
+            * np.exp(-2 * np.pi * 1j * k[:, None] * dy * self.res)
+            * pupil
+        )
+        self.apply_pupil(pupil)
 
 
 class SheppardPSF(BasePSF):
@@ -592,7 +606,7 @@ class SheppardPSF(BasePSF):
         return easy_ifft(self.OTFa, axes=(1, 2, 3))
 
 
-def apply_aberration(model, mcoefs, pcoefs):
+def apply_aberration(model: HanserPSF, mcoefs, pcoefs) -> HanserPSF:
     """Apply a set of abberations to a model PSF.
 
     Parameters
@@ -636,6 +650,7 @@ def apply_aberration(model, mcoefs, pcoefs):
     pupil_mag = (zerns * mcoefs[:, None, None]).sum(0)
 
     # apply aberrations to unaberrated pupil (N.B. the unaberrated phase is 0)
+    logger.debug(f"Removing all aberrations from {model} before adding more.")
     pupil_mag += abs(model._gen_pupil())
 
     # generate the PSF, assign to attribute
@@ -645,7 +660,7 @@ def apply_aberration(model, mcoefs, pcoefs):
     return model
 
 
-def apply_named_aberration(model, aberration, magnitude):
+def apply_named_aberration(model: HanserPSF, aberration, magnitude) -> HanserPSF:
     """Apply a specific named aberration to the PSF. This will only effect the phase."""
     pcoefs = named_aberration_to_pcoefs(aberration, magnitude)
     return apply_aberration(model, None, pcoefs)
@@ -707,7 +722,7 @@ if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
     # generate a comparison
-    kwargs = dict(
+    psf_params = dict(
         wl=520e-3,
         na=1.27,
         ni=1.33,
@@ -718,19 +733,18 @@ if __name__ == "__main__":
         vec_corr="none",
         condition="none",
     )
-    psfs = HanserPSF(**kwargs), SheppardPSF(**kwargs)
+    psfs = HanserPSF(**psf_params), SheppardPSF(**psf_params)
 
     with plt.style.context("dark_background"):
-
         fig, axs = plt.subplots(2, 2, figsize=(9, 6), gridspec_kw=dict(width_ratios=(1, 2)))
 
-        for psf, ax_sub in zip(psfs, axs):
-            psf.plot_otf()
-            psf.plot_psf(interpolation="bicubic")
+        for self, ax_sub in zip(psfs, axs):
+            self.plot_otf()
+            self.plot_psf(interpolation="bicubic")
             # make coordinates
             ax_yx, ax_zx = ax_sub
             # get magnitude
-            otf = abs(psf.OTFi)
+            otf = abs(self.OTFi)
             # normalize
             otf /= otf.max()
             otf /= otf.mean()
@@ -739,9 +753,9 @@ if __name__ == "__main__":
             # plot
             style = dict(vmin=-3, vmax=5, cmap="inferno", interpolation="bicubic")
             ax_yx.matshow(otf[otf.shape[0] // 2], **style)
-            ax_yx.set_title("{} $k_y k_x$ plane".format(psf.__class__.__name__))
+            ax_yx.set_title("{} $k_y k_x$ plane".format(self.__class__.__name__))
             ax_zx.matshow(otf[..., otf.shape[1] // 2], **style)
-            ax_zx.set_title("{} $k_z k_x$ plane".format(psf.__class__.__name__))
+            ax_zx.set_title("{} $k_z k_x$ plane".format(self.__class__.__name__))
 
             for ax in ax_sub:
                 ax.xaxis.set_major_locator(plt.NullLocator())
@@ -752,10 +766,10 @@ if __name__ == "__main__":
     # as theory says they should (they're mathematically identical to one another)
 
     model_kwargs = dict(
-        wl=525,
+        wl=0.525,
         na=1.27,
         ni=1.33,
-        res=70,
+        res=0.070,
         size=256,
         zrange=[0],
         vec_corr="none",
@@ -775,5 +789,28 @@ if __name__ == "__main__":
             ax.xaxis.set_major_locator(plt.NullLocator())
             ax.yaxis.set_major_locator(plt.NullLocator())
 
-        # fig.tight_layout()
+    # simulate a single slice in a 3d volume populated by identical sub-diffractive sources
+
+    model_kwargs["size"] = 128
+    result = np.zeros((model_kwargs["size"], model_kwargs["size"]))  # 64 pixel simulation
+    for _ in range(50):
+        dy, dx = (np.random.rand(2) - 0.5) * model_kwargs["size"]
+        model_kwargs["zrange"] = (np.random.rand(1) - 0.5) * 2  # 2 µm thick simulation
+        psf_2d = HanserPSF(**model_kwargs)
+        psf_2d.shift(dy, dx)
+        result += psf_2d.PSFi.squeeze()
+
+    result = np.random.poisson(
+        result
+        / result.sum()  # normalize
+        * 50  # we modeled 50 emitters
+        * 1000  # each emitter has 1000 photoelectrons
+    )
+
+    with plt.style.context("dark_background"):
+        fig, ax = plt.subplots(figsize=(8, 8))
+        ax.matshow(result, cmap="inferno")
+        ax.xaxis.set_major_locator(plt.NullLocator())
+        ax.yaxis.set_major_locator(plt.NullLocator())
+
     plt.show()
