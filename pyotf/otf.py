@@ -221,7 +221,7 @@ class BasePSF(object):
         except AttributeError:
             pass
 
-    def plot_psf(self, **kwargs):
+    def plot_psf(self, *, crop_size=32, **kwargs):
         """Plot the intensity PSF.
 
         See `pyotf.display.psf_plot` for details and possible kwargs
@@ -229,8 +229,10 @@ class BasePSF(object):
         self._validate_zrange()
         # smart cropping
         # nice lateral extent
-        lateral_extent = self.wl / 2 / self.na / self.res * 32
-        axial_extent = self.wl / (self.ni - np.sqrt(self.ni**2 - self.na**2)) / self.zres * 16
+        lateral_extent = self.wl / 2 / self.na / self.res * crop_size
+        axial_extent = (
+            self.wl / (self.ni - np.sqrt(self.ni**2 - self.na**2)) / self.zres * crop_size / 2
+        )
 
         max_loc = np.unravel_index(self.PSFi.argmax(), self.PSFi.shape)
         crop = slice_maker(max_loc, (axial_extent, lateral_extent, lateral_extent))
