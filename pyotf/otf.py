@@ -721,7 +721,6 @@ if __name__ == "__main__":
     psfs = HanserPSF(**kwargs), SheppardPSF(**kwargs)
 
     with plt.style.context("dark_background"):
-
         fig, axs = plt.subplots(2, 2, figsize=(9, 6), gridspec_kw=dict(width_ratios=(1, 2)))
 
         for psf, ax_sub in zip(psfs, axs):
