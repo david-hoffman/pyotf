@@ -69,6 +69,6 @@ jobs:
           pip install -r requirements.txt
           # install package
           pip install .
-        name: Test with pytest
+      - name: Test with pytest
         run: |
           pytest --doctest-modules pyotf/ tests/
